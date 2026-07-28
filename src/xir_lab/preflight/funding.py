@@ -70,6 +70,18 @@ def _parse_time(value: str) -> datetime:
     return parsed.astimezone(UTC)
 
 
+def _wei(value: Any, label: str) -> int:
+    if (
+        not isinstance(value, str)
+        or not value
+        or (value != "0" and value.startswith("0"))
+        or not value.isascii()
+        or not value.isdecimal()
+    ):
+        raise FundingHandoffError(f"{label} must be a canonical decimal wei string")
+    return int(value)
+
+
 def build_funding_request(
     *,
     estimate: EstimateReport,
@@ -92,12 +104,12 @@ def build_funding_request(
             "native_test_token": item.native_test_token,
             "role": item.role,
             "recipient": item.recipient_address,
-            "observed_balance_wei": item.observed_balance_wei,
-            "estimated_spend_wei": item.estimated_spend_wei,
-            "balance_floor_wei": item.balance_floor_wei,
-            "required_manual_deposit_wei": item.required_manual_deposit_wei,
-            "maximum_manual_deposit_wei": item.maximum_deposit_wei,
-            "approved_budget_wei": item.estimated_spend_wei + item.margin_wei,
+            "observed_balance_wei": str(item.observed_balance_wei),
+            "estimated_spend_wei": str(item.estimated_spend_wei),
+            "balance_floor_wei": str(item.balance_floor_wei),
+            "required_manual_deposit_wei": str(item.required_manual_deposit_wei),
+            "maximum_manual_deposit_wei": str(item.maximum_deposit_wei),
+            "approved_budget_wei": str(item.estimated_spend_wei + item.margin_wei),
         }
         for item in sorted(
             estimate.funding_instructions,
@@ -162,7 +174,7 @@ def verify_funding_handoff(
     targets = {
         (cast(int, item["chain_id"]), cast(str, item["role"])): item
         for item in cast(list[dict[str, Any]], request_payload["targets"])
-        if cast(int, item["required_manual_deposit_wei"]) > 0
+        if _wei(item["required_manual_deposit_wei"], "required deposit") > 0
     }
     receipts = cast(list[dict[str, Any]], handoff_payload["receipts"])
     cells = [(cast(int, item["chain_id"]), cast(str, item["role"])) for item in receipts]
@@ -190,7 +202,7 @@ def verify_funding_handoff(
         expected = (
             chain_id,
             cast(str, target["recipient"]).lower(),
-            cast(int, receipt["amount_wei"]),
+            _wei(receipt["amount_wei"], "funding receipt amount"),
             cast(int, receipt["observation_block"]),
             cast(str, receipt["observation_block_hash"]).lower(),
         )
@@ -208,17 +220,17 @@ def verify_funding_handoff(
             raise FundingHandoffError("funding observation block is no longer canonical")
         amount = public.amount_wei
         if not (
-            cast(int, target["required_manual_deposit_wei"])
+            _wei(target["required_manual_deposit_wei"], "required deposit")
             <= amount
-            <= cast(int, target["maximum_manual_deposit_wei"])
+            <= _wei(target["maximum_manual_deposit_wei"], "maximum deposit")
         ):
             raise FundingHandoffError("funding amount is outside frozen request bounds")
         balance = providers[chain_id].balance_at(public.recipient, public.block_number)
-        if balance != receipt["resulting_balance_wei"]:
+        if balance != _wei(receipt["resulting_balance_wei"], "resulting balance"):
             raise FundingHandoffError("resulting public balance mismatch")
         required_balance = (
-            cast(int, target["approved_budget_wei"])
-            + cast(int, target["balance_floor_wei"])
+            _wei(target["approved_budget_wei"], "approved budget")
+            + _wei(target["balance_floor_wei"], "balance floor")
         )
         if balance < required_balance:
             raise FundingHandoffError("resulting public balance remains below floor")
@@ -228,9 +240,9 @@ def verify_funding_handoff(
                 "role": role,
                 "recipient": public.recipient,
                 "transaction_hash": transaction_hash,
-                "amount_wei": amount,
+                "amount_wei": str(amount),
                 "observation_block": public.block_number,
-                "resulting_balance_wei": balance,
+                "resulting_balance_wei": str(balance),
                 "approved_budget_wei": target["approved_budget_wei"],
             }
         )

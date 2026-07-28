@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import copy
 import hashlib
+from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
@@ -94,12 +95,14 @@ def _handoff(
         transaction_hash = f"0x{index + 1:064x}"
         block_number = 1000 + index
         block_hash = f"0x{index + 101:064x}"
-        balance = target["approved_budget_wei"] + target["balance_floor_wei"]
+        balance = int(target["approved_budget_wei"]) + int(
+            target["balance_floor_wei"]
+        )
         public = PublicFundingTransaction(
             transaction_hash=transaction_hash,
             chain_id=target["chain_id"],
             recipient=target["recipient"],
-            amount_wei=target["required_manual_deposit_wei"],
+            amount_wei=int(target["required_manual_deposit_wei"]),
             block_number=block_number,
             block_hash=block_hash,
             canonical=True,
@@ -117,7 +120,7 @@ def _handoff(
                 "amount_wei": target["required_manual_deposit_wei"],
                 "observation_block": block_number,
                 "observation_block_hash": block_hash,
-                "resulting_balance_wei": balance,
+                "resulting_balance_wei": str(balance),
                 "observed_at": (NOW + timedelta(minutes=5)).isoformat(),
             }
         )
@@ -154,6 +157,39 @@ def test_public_funding_request_is_expiring_bounded_and_zero_write() -> None:
     assert set(request["effects"].values()) == {0}
 
 
+def test_realistic_wei_values_exceeding_json_safe_integer_round_trip() -> None:
+    estimate = _estimate()
+    large = replace(
+        estimate,
+        funding_instructions=tuple(
+            replace(
+                item,
+                estimated_spend_wei=10**18,
+                margin_wei=10**17,
+                balance_floor_wei=10**17,
+                required_manual_deposit_wei=12 * 10**17,
+                maximum_deposit_wei=2 * 10**18,
+            )
+            for item in estimate.funding_instructions
+        ),
+    )
+    request = build_funding_request(
+        estimate=large,
+        config_sha256="11" * 32,
+        generated_at=NOW,
+        expires_at=NOW + timedelta(hours=1),
+    )
+    assert request["payload"]["targets"][0]["approved_budget_wei"] == (
+        "1100000000000000000"
+    )
+    handoff, providers = _handoff(request)
+    assert verify_funding_handoff(
+        request=request,
+        handoff=handoff,
+        providers=providers,
+    )["outcome"] == "pass"
+
+
 def test_public_receipts_balances_and_canonical_blocks_verify() -> None:
     request = _request()
     handoff, providers = _handoff(request)
@@ -164,7 +200,7 @@ def test_public_receipts_balances_and_canonical_blocks_verify() -> None:
     )
     assert result["outcome"] == "pass"
     assert len(result["receipts"]) == 6
-    assert all(item["approved_budget_wei"] == 110 for item in result["receipts"])
+    assert all(item["approved_budget_wei"] == "110" for item in result["receipts"])
     assert set(result["effects"].values()) == {0}
 
 
@@ -194,7 +230,7 @@ def test_missing_duplicate_wrong_recipient_amount_balance_and_expiry_fail(
     elif mutation == "recipient":
         receipts[0]["recipient"] = "0x" + "ff" * 20
     elif mutation == "amount":
-        receipts[0]["amount_wei"] = 201
+        receipts[0]["amount_wei"] = "201"
         tx_hash = receipts[0]["transaction_hash"]
         provider = providers[receipts[0]["chain_id"]]
         providers[receipts[0]["chain_id"]].transactions[tx_hash] = (
@@ -206,7 +242,7 @@ def test_missing_duplicate_wrong_recipient_amount_balance_and_expiry_fail(
             )
         )
     elif mutation == "balance":
-        receipts[0]["resulting_balance_wei"] = 1
+        receipts[0]["resulting_balance_wei"] = "1"
     else:
         receipts[0]["observed_at"] = (NOW + timedelta(hours=2)).isoformat()
     _resign(handoff)

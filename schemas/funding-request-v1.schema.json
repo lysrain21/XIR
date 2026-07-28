@@ -66,6 +66,7 @@
   "$defs": {
     "digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "address": {"type": "string", "pattern": "^0x[0-9a-fA-F]{40}$"},
+    "wei": {"type": "string", "pattern": "^(0|[1-9][0-9]*)$"},
     "target": {
       "type": "object",
       "additionalProperties": false,
@@ -88,12 +89,12 @@
         "native_test_token": {"type": "string", "minLength": 1},
         "role": {"enum": ["deployer", "runner"]},
         "recipient": {"$ref": "#/$defs/address"},
-        "observed_balance_wei": {"type": "integer", "minimum": 0},
-        "estimated_spend_wei": {"type": "integer", "minimum": 0},
-        "balance_floor_wei": {"type": "integer", "minimum": 0},
-        "required_manual_deposit_wei": {"type": "integer", "minimum": 0},
-        "maximum_manual_deposit_wei": {"type": "integer", "minimum": 0},
-        "approved_budget_wei": {"type": "integer", "minimum": 0}
+        "observed_balance_wei": {"$ref": "#/$defs/wei"},
+        "estimated_spend_wei": {"$ref": "#/$defs/wei"},
+        "balance_floor_wei": {"$ref": "#/$defs/wei"},
+        "required_manual_deposit_wei": {"$ref": "#/$defs/wei"},
+        "maximum_manual_deposit_wei": {"$ref": "#/$defs/wei"},
+        "approved_budget_wei": {"$ref": "#/$defs/wei"}
       }
     }
   }

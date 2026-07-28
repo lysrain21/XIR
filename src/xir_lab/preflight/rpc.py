@@ -166,7 +166,10 @@ class HttpJsonRpcClient:
                     "params": params,
                 }
             ).encode(),
-            headers={"Content-Type": "application/json"},
+            headers={
+                "Content-Type": "application/json",
+                "User-Agent": "xir-testnet-lab/0.1 rpc-preflight",
+            },
             method="POST",
         )
         try:
