@@ -1,0 +1,120 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xir.example/schemas/lab-public-identities-v1.schema.json",
+  "title": "XIR pre-deployment public signer identities",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "config_id",
+    "implementation_commit",
+    "networks",
+    "signers",
+    "verification"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "xir-lab-public-identities-v1"
+    },
+    "config_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+    },
+    "implementation_commit": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "networks": {
+      "const": [
+        {
+          "network_id": "op-sepolia",
+          "chain_id": 11155420
+        },
+        {
+          "network_id": "arbitrum-sepolia",
+          "chain_id": 421614
+        },
+        {
+          "network_id": "base-sepolia",
+          "chain_id": 84532
+        }
+      ]
+    },
+    "signers": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "signer_id",
+          "role",
+          "kind",
+          "reference",
+          "public_identity",
+          "identity_sha256"
+        ],
+        "properties": {
+          "signer_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+          },
+          "role": {
+            "enum": [
+              "deployer",
+              "runner",
+              "approval-authority"
+            ]
+          },
+          "kind": {
+            "enum": [
+              "external-evm-signer",
+              "ed25519-approval-authority"
+            ]
+          },
+          "reference": {
+            "type": "string",
+            "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,127}$"
+          },
+          "public_identity": {
+            "type": "string",
+            "pattern": "^(0x[0-9a-fA-F]{40}|ed25519:[0-9a-f]{64})$"
+          },
+          "identity_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        }
+      }
+    },
+    "verification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "external_custody",
+        "permissions_checked",
+        "backup_checked",
+        "private_material_recorded",
+        "remote_ci_waived_by_operator"
+      ],
+      "properties": {
+        "external_custody": {
+          "const": true
+        },
+        "permissions_checked": {
+          "const": true
+        },
+        "backup_checked": {
+          "const": true
+        },
+        "private_material_recorded": {
+          "const": false
+        },
+        "remote_ci_waived_by_operator": {
+          "const": true
+        }
+      }
+    }
+  }
+}

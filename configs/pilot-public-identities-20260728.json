@@ -1,0 +1,52 @@
+{
+  "schema_version": "xir-lab-public-identities-v1",
+  "config_id": "pilot-public-identities-20260728",
+  "implementation_commit": "e5f5ee42ec36e10ee2fc31a5cf0c9ceda5944ebf",
+  "networks": [
+    {
+      "network_id": "op-sepolia",
+      "chain_id": 11155420
+    },
+    {
+      "network_id": "arbitrum-sepolia",
+      "chain_id": 421614
+    },
+    {
+      "network_id": "base-sepolia",
+      "chain_id": 84532
+    }
+  ],
+  "signers": [
+    {
+      "signer_id": "pilot-deployer",
+      "role": "deployer",
+      "kind": "external-evm-signer",
+      "reference": "xir.external-signer.deployer.pilot-20260728",
+      "public_identity": "0x4Bb2c9a9e455a4f2e1DE4c6176399e8675efA5cd",
+      "identity_sha256": "6ea95884a359b25d189d85b7b51ab6c7893618ff12b52612af5f5a2ae659ff55"
+    },
+    {
+      "signer_id": "pilot-runner",
+      "role": "runner",
+      "kind": "external-evm-signer",
+      "reference": "xir.external-signer.runner.pilot-20260728",
+      "public_identity": "0x3E5cb3e0a9263202ab92D61387D112A5c4530f2D",
+      "identity_sha256": "ebf77cb618d76e20a0c780b32898d6b6a2b700c7a6c03a3edf9f10c979c9d47e"
+    },
+    {
+      "signer_id": "pilot-approval-authority",
+      "role": "approval-authority",
+      "kind": "ed25519-approval-authority",
+      "reference": "xir.approval-authority.pilot-20260728",
+      "public_identity": "ed25519:f64d0aac416d96b3a046e61f93b926873dc7033fba3ee7a6ea35d8e319180be3",
+      "identity_sha256": "6a1c71b9c0fde98b6adcc9f7d102d0555ec4128b56098df44a35f156bc1b7fe5"
+    }
+  ],
+  "verification": {
+    "external_custody": true,
+    "permissions_checked": true,
+    "backup_checked": true,
+    "private_material_recorded": false,
+    "remote_ci_waived_by_operator": true
+  }
+}
