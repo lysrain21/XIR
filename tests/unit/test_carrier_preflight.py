@@ -15,9 +15,12 @@ from xir_lab.preflight.carriers import (
     LayerZeroState,
     RegistryCandidate,
     SimulationResult,
+    UnsignedCallTemplate,
     UnsignedSimulationRequest,
+    build_unsigned_call_simulations,
     collect_carrier_routes,
     freeze_carrier_snapshot,
+    freeze_simulation_snapshot,
     registry_candidate_digest,
     validate_registry_candidates,
     validate_unsigned_simulations,
@@ -35,6 +38,7 @@ def _candidates() -> tuple[RegistryCandidate, ...]:
             endpoint_address=f"0x{index + 1:040x}",
             remote_selector=index + 100,
             peer_address=f"0x{index + 10:040x}",
+            local_adapter_address=f"0x{index + 20:040x}",
             source_url=(
                 "https://github.com/hyperlane-xyz/hyperlane-registry"
                 if protocol == "hyperlane"
@@ -179,6 +183,26 @@ def test_changed_or_unofficial_registry_candidate_is_never_authority() -> None:
         )
 
 
+def test_frozen_endpoint_runtime_mismatch_blocks_route() -> None:
+    candidates = list(_candidates())
+    candidates[0] = replace(
+        candidates[0],
+        expected_endpoint_runtime_sha256="ff" * 32,
+    )
+    provider = FixtureCarrier()
+    suite = collect_carrier_routes(
+        candidates=tuple(candidates),
+        providers={"hyperlane": provider, "layerzero-v2": provider},
+        maximum_quote_wei=_maximums(tuple(candidates)),
+        allow_partial_conditions=False,
+    )
+    assert suite.outcome == "blocked"
+    assert any(
+        "carrier_runtime_code_mismatch" in item.reason_codes
+        for item in suite.observations
+    )
+
+
 def _simulations() -> tuple[UnsignedSimulationRequest, ...]:
     requests: list[UnsignedSimulationRequest] = []
     for category in ("deployment", "configuration"):
@@ -241,6 +265,52 @@ def test_unsigned_simulations_cover_deploy_configure_and_all_eight_pilot_cells()
     assert len(results) == 14
 
 
+def test_unsigned_call_builder_binds_real_calldata_and_complete_coverage() -> None:
+    templates: list[UnsignedCallTemplate] = []
+    for category in ("deployment", "configuration"):
+        for network in ("op-sepolia", "arbitrum-sepolia", "base-sepolia"):
+            templates.append(
+                UnsignedCallTemplate(
+                    simulation_id=f"{category}-{network}",
+                    category=category,  # type: ignore[arg-type]
+                    network_id=network,
+                    condition=None,
+                    arm=None,
+                    destination=(
+                        None if category == "deployment" else "0x" + "11" * 20
+                    ),
+                    sender="0x" + "22" * 20,
+                    value_wei=0,
+                    calldata=f"{category}-{network}".encode(),
+                    gas_limit=100_000,
+                )
+            )
+    for condition in ("HH", "HL", "LH", "LL"):
+        for arm in ("baseline", "xir"):
+            templates.append(
+                UnsignedCallTemplate(
+                    simulation_id=f"pilot-{condition}-{arm}",
+                    category="pilot",
+                    network_id="op-sepolia",
+                    condition=condition,
+                    arm=arm,
+                    destination="0x" + "11" * 20,
+                    sender="0x" + "22" * 20,
+                    value_wei=1,
+                    calldata=f"{condition}-{arm}".encode(),
+                    gas_limit=200_000,
+                )
+            )
+    requests = build_unsigned_call_simulations(tuple(templates))
+    assert len(requests) == 14
+    assert all(
+        request.calldata_hex is not None
+        and hashlib.sha256(bytes.fromhex(request.calldata_hex[2:])).hexdigest()
+        == request.calldata_sha256
+        for request in requests
+    )
+
+
 def test_missing_or_failed_simulation_blocks() -> None:
     with pytest.raises(CarrierPreflightError, match="coverage"):
         validate_unsigned_simulations(
@@ -273,5 +343,25 @@ def test_carrier_snapshot_has_a_validity_window_and_content_address(
         validity_seconds=60,
         store=store,
     )
+    assert document["valid_until"] == "2026-07-28T00:01:00+00:00"
+    assert store.read_raw(digest) == rfc8785.dumps(document)
+
+
+def test_simulation_snapshot_has_validity_window_and_content_address(
+    tmp_path: Path,
+) -> None:
+    results = validate_unsigned_simulations(
+        requests=_simulations(),
+        provider=FixtureSimulation(),
+    )
+    store = EvidenceStore(tmp_path / "evidence.sqlite", tmp_path / "raw")
+    store.initialize()
+    document, digest = freeze_simulation_snapshot(
+        results,
+        observed_at=datetime(2026, 7, 28, tzinfo=UTC),
+        validity_seconds=60,
+        store=store,
+    )
+    assert document["outcome"] == "pass"
     assert document["valid_until"] == "2026-07-28T00:01:00+00:00"
     assert store.read_raw(digest) == rfc8785.dumps(document)

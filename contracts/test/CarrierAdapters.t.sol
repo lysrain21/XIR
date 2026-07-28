@@ -95,6 +95,7 @@ contract CarrierAdaptersTest {
         adapter = new LayerZeroAdapter(
             address(endpoint), REMOTE_EID, REMOTE_PEER, address(this), address(runner)
         );
+        adapter.setEnforcedOptions(bytes("options"));
     }
 
     function testQuoteAndSendUseConfiguredEidPeerAndRunnerRefund() public {
@@ -163,6 +164,17 @@ contract CarrierAdaptersTest {
         ) {
             revert("unknown route delivered");
         } catch {}
+    }
+
+    function testOptionsAreFrozenAndMismatchesRevert() public {
+        LayerZeroAdapter.ForwardRequest memory request = _request();
+        request.options = bytes("changed");
+        try adapter.quoteForward(request) {
+            revert("changed options accepted");
+        } catch {}
+        adapter.setEnforcedOptions(bytes("changed"));
+        MessagingFee memory fee = adapter.quoteForward(request);
+        require(fee.nativeFee == 7, "updated frozen options not used");
     }
 
     function _request() private pure returns (LayerZeroAdapter.ForwardRequest memory request) {

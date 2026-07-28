@@ -47,6 +47,8 @@ contract LayerZeroAdapter is IXIRCarrierAdapter, IBaselineCarrier, OutboundContr
     error UnverifiedPriorEvidence(uint256 index);
     error UnknownMessageKind();
     error UnknownBaselineRoute();
+    error OptionsNotConfigured();
+    error OptionsMismatch();
 
     struct Origin {
         uint32 srcEid;
@@ -75,6 +77,7 @@ contract LayerZeroAdapter is IXIRCarrierAdapter, IBaselineCarrier, OutboundContr
     address public immutable endpoint;
     uint32 public immutable remoteEid;
     bytes32 public remotePeer;
+    bytes32 public enforcedOptionsHash;
     mapping(bytes32 => bool) public acceptedEvidence;
     mapping(bytes32 => address) public baselineReceivers;
 
@@ -100,6 +103,7 @@ contract LayerZeroAdapter is IXIRCarrierAdapter, IBaselineCarrier, OutboundContr
     event VerifiedEvidenceForwarded(bytes32 indexed guid, uint64 indexed nonce, uint256 nativeFee);
     event BaselineDispatched(bytes32 indexed guid, uint64 indexed nonce, uint256 nativeFee);
     event BaselineReceiverSet(bytes32 indexed routeId, address indexed receiver);
+    event EnforcedOptionsSet(bytes32 indexed optionsHash);
 
     constructor(
         address endpoint_,
@@ -121,6 +125,11 @@ contract LayerZeroAdapter is IXIRCarrierAdapter, IBaselineCarrier, OutboundContr
         emit RemotePeerSet(remotePeer_);
     }
 
+    function setEnforcedOptions(bytes calldata options) external onlyAdministrator {
+        enforcedOptionsHash = keccak256(options);
+        emit EnforcedOptionsSet(enforcedOptionsHash);
+    }
+
     function setBaselineReceiver(bytes32 routeId, address receiver) external onlyAdministrator {
         if (routeId == bytes32(0) || receiver == address(0)) revert InvalidPeer();
         baselineReceivers[routeId] = receiver;
@@ -133,6 +142,7 @@ contract LayerZeroAdapter is IXIRCarrierAdapter, IBaselineCarrier, OutboundContr
         returns (MessagingFee memory)
     {
         _checkBundle(request);
+        _checkOptions(request.options);
         return ILayerZeroEndpointV2(endpoint).quote(_params(request), address(this));
     }
 
@@ -141,6 +151,7 @@ contract LayerZeroAdapter is IXIRCarrierAdapter, IBaselineCarrier, OutboundContr
         view
         returns (uint256)
     {
+        _checkOptions(options);
         return ILayerZeroEndpointV2(endpoint).quote(
             _rawParams(routeId, message, options), address(this)
         )
@@ -174,6 +185,7 @@ contract LayerZeroAdapter is IXIRCarrierAdapter, IBaselineCarrier, OutboundContr
         returns (MessagingReceipt memory receipt)
     {
         _checkBundle(request);
+        _checkOptions(request.options);
         for (uint256 i = 0; i < request.verifiers.length; i++) {
             if (
                 request.verifiers[i] == address(0)
@@ -222,6 +234,7 @@ contract LayerZeroAdapter is IXIRCarrierAdapter, IBaselineCarrier, OutboundContr
         private
         returns (bytes32)
     {
+        _checkOptions(options);
         MessagingReceipt memory receipt =
             ILayerZeroEndpointV2(endpoint).send{value: msg.value}(
                 _rawParams(routeId, message, options), runner
@@ -339,5 +352,10 @@ contract LayerZeroAdapter is IXIRCarrierAdapter, IBaselineCarrier, OutboundContr
                 || request.verifiers.length != request.evidenceHashes.length
                 || request.verifiers.length != request.transitionHashes.length
         ) revert InvalidBundle();
+    }
+
+    function _checkOptions(bytes calldata options) private view {
+        if (enforcedOptionsHash == bytes32(0)) revert OptionsNotConfigured();
+        if (keccak256(options) != enforcedOptionsHash) revert OptionsMismatch();
     }
 }

@@ -24,7 +24,10 @@ READ_ONLY_METHODS = frozenset(
         "eth_chainId",
         "eth_getBalance",
         "eth_getBlockByNumber",
+        "eth_getCode",
         "eth_getTransactionCount",
+        "eth_call",
+        "eth_estimateGas",
         "eth_gasPrice",
         "eth_maxPriorityFeePerGas",
     }

@@ -25,6 +25,7 @@ OFFICIAL_DISCOVERY_HOSTS = frozenset(
         "raw.githubusercontent.com",
         "docs.hyperlane.xyz",
         "docs.layerzero.network",
+        "metadata.layerzero-api.com",
     }
 )
 
@@ -41,8 +42,10 @@ class RegistryCandidate:
     endpoint_address: str
     remote_selector: int
     peer_address: str
+    local_adapter_address: str
     source_url: str
     source_sha256: str
+    expected_endpoint_runtime_sha256: str | None = None
 
 
 @dataclass(frozen=True)
@@ -115,6 +118,22 @@ class UnsignedSimulationRequest:
     value_wei: int
     calldata_sha256: str
     gas_limit: int
+    sender: str | None = None
+    calldata_hex: str | None = None
+
+
+@dataclass(frozen=True)
+class UnsignedCallTemplate:
+    simulation_id: str
+    category: Literal["deployment", "configuration", "pilot"]
+    network_id: str
+    condition: str | None
+    arm: str | None
+    destination: str | None
+    sender: str | None
+    value_wei: int
+    calldata: bytes
+    gas_limit: int
 
 
 @dataclass(frozen=True)
@@ -156,10 +175,16 @@ def validate_registry_candidates(
             raise CarrierPreflightError("registry candidate source is not an approved official host")
         _address(candidate.endpoint_address, "endpoint")
         _address(candidate.peer_address, "peer")
+        _address(candidate.local_adapter_address, "local adapter")
         if candidate.remote_selector <= 0:
             raise CarrierPreflightError("remote selector must be positive")
         if len(candidate.source_sha256) != 64:
             raise CarrierPreflightError("registry source digest is invalid")
+        if (
+            candidate.expected_endpoint_runtime_sha256 is not None
+            and len(candidate.expected_endpoint_runtime_sha256) != 64
+        ):
+            raise CarrierPreflightError("expected endpoint runtime digest is invalid")
     return candidates
 
 
@@ -177,7 +202,11 @@ def registry_candidate_digest(
                     "endpoint_address": item.endpoint_address.lower(),
                     "remote_selector": item.remote_selector,
                     "peer_address": item.peer_address.lower(),
+                    "local_adapter_address": item.local_adapter_address.lower(),
                     "source_sha256": item.source_sha256,
+                    "expected_endpoint_runtime_sha256": (
+                        item.expected_endpoint_runtime_sha256
+                    ),
                 }
                 for item in sorted(
                     validated,
@@ -260,6 +289,11 @@ def collect_carrier_routes(
             reasons.append("carrier_state_unavailable")
         if runtime is None or runtime == "0" * 64:
             reasons.append("carrier_runtime_code_missing")
+        elif (
+            candidate.expected_endpoint_runtime_sha256 is not None
+            and runtime != candidate.expected_endpoint_runtime_sha256
+        ):
+            reasons.append("carrier_runtime_code_mismatch")
         if security is None or security == "0" * 64:
             reasons.append("carrier_security_unknown")
         maximum = maximum_quote_wei.get(route_id)
@@ -359,6 +393,60 @@ def validate_unsigned_simulations(
     return tuple(results)
 
 
+def build_unsigned_call_simulations(
+    templates: tuple[UnsignedCallTemplate, ...],
+) -> tuple[UnsignedSimulationRequest, ...]:
+    """Materialize complete, digest-bound call inputs without invoking a signer."""
+
+    requests = tuple(
+        UnsignedSimulationRequest(
+            simulation_id=item.simulation_id,
+            category=item.category,
+            network_id=item.network_id,
+            condition=item.condition,
+            arm=item.arm,
+            destination=item.destination,
+            value_wei=item.value_wei,
+            calldata_sha256=hashlib.sha256(item.calldata).hexdigest(),
+            gas_limit=item.gas_limit,
+            sender=item.sender,
+            calldata_hex="0x" + item.calldata.hex(),
+        )
+        for item in templates
+    )
+    deployment_networks = {
+        item.network_id for item in requests if item.category == "deployment"
+    }
+    configuration_networks = {
+        item.network_id for item in requests if item.category == "configuration"
+    }
+    pilot_cells = {
+        (item.condition, item.arm)
+        for item in requests
+        if item.category == "pilot"
+    }
+    expected_networks = {"op-sepolia", "arbitrum-sepolia", "base-sepolia"}
+    expected_cells = {
+        (condition, arm)
+        for condition in ("HH", "HL", "LH", "LL")
+        for arm in ("baseline", "xir")
+    }
+    if (
+        deployment_networks != expected_networks
+        or configuration_networks != expected_networks
+        or pilot_cells != expected_cells
+    ):
+        raise CarrierPreflightError("unsigned call templates lack complete fixed-route coverage")
+    if len({item.simulation_id for item in requests}) != len(requests):
+        raise CarrierPreflightError("duplicate simulation ID")
+    for request in requests:
+        if request.value_wei < 0 or request.gas_limit <= 0:
+            raise CarrierPreflightError("simulation value/gas bounds are invalid")
+        if request.category != "deployment" and request.destination is None:
+            raise CarrierPreflightError("call simulation destination is unavailable")
+    return requests
+
+
 def freeze_carrier_snapshot(
     suite: CarrierRouteSuite,
     *,
@@ -414,3 +502,52 @@ def carrier_snapshot_digest(suite: CarrierRouteSuite, *, observed_at: datetime) 
         observed_at=observed_at,
         validity_seconds=1,
     )[1]
+
+
+def freeze_simulation_snapshot(
+    results: tuple[SimulationResult, ...],
+    *,
+    observed_at: datetime,
+    validity_seconds: int,
+    store: EvidenceStore | None = None,
+) -> tuple[dict[str, Any], str]:
+    if not results or validity_seconds <= 0:
+        raise CarrierPreflightError("simulation snapshot inputs are invalid")
+    if len({item.simulation_id for item in results}) != len(results):
+        raise CarrierPreflightError("simulation snapshot contains duplicate IDs")
+    observed = observed_at.astimezone(UTC)
+    document: dict[str, Any] = {
+        "schema_version": "xir-lab-simulation-snapshot-v1",
+        "observed_at": observed.isoformat(),
+        "valid_until": datetime.fromtimestamp(
+            observed.timestamp() + validity_seconds,
+            tz=UTC,
+        ).isoformat(),
+        "outcome": "pass" if all(item.success for item in results) else "blocked",
+        "simulations": [
+            {
+                "simulation_id": item.simulation_id,
+                "success": item.success,
+                "raw_sha256": item.raw_sha256,
+                "reason_code": item.reason_code,
+            }
+            for item in sorted(results, key=lambda item: item.simulation_id)
+        ],
+        "effects": {
+            "signing_operations": 0,
+            "deployments": 0,
+            "configurations": 0,
+            "broadcasts": 0,
+        },
+    }
+    raw = rfc8785.dumps(document)
+    digest = hashlib.sha256(raw).hexdigest()
+    if store is not None:
+        stored = store.put_raw(
+            raw,
+            media_type="application/json",
+            metadata={"kind": "unsigned-simulation-snapshot", "public_facts_only": True},
+        )
+        if stored != digest:
+            raise CarrierPreflightError("simulation snapshot digest changed during storage")
+    return document, digest
