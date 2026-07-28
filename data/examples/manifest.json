@@ -1,0 +1,1 @@
+{"schema_version":"xir-lab-sanitized-example-manifest-v1","artifacts":[{"path":"trace.json","bytes":386,"sha256":"9a5356ccb3517c9c4ef8b5009f93ad55884b0c6ae414dab42a044b5fdd0824bb"}],"trace_path":["figure_value","normalized_row","raw_sha256"],"credentials_present":false,"reusable_signed_data_present":false,"result_status":"synthetic_not_formal"}

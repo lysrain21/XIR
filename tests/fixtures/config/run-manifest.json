@@ -1,0 +1,37 @@
+{
+  "schema_version": "xir-lab-run-manifest-v1",
+  "manifest_id": "fixture-manifest",
+  "run_id": "fixture-run",
+  "profile_id": "fixture-profile",
+  "config_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+  "toolchain_lock_sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+  "dependency_lock_sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+  "schema_digests": {
+    "lab-config-v1": "4444444444444444444444444444444444444444444444444444444444444444"
+  },
+  "code_provenance": {
+    "revision_unavailable_reason": "fixture has no Git revision"
+  },
+  "deployment_sha256": "5555555555555555555555555555555555555555555555555555555555555555",
+  "approval": {
+    "approval_id": "fixture-approval",
+    "payload_sha256": "6666666666666666666666666666666666666666666666666666666666666666",
+    "issuer_id": "fixture-issuer",
+    "issuer_sequence": 1,
+    "signature_verified": true,
+    "revocation_record_sha256": "7777777777777777777777777777777777777777777777777777777777777777"
+  },
+  "ordered_networks": [
+    "op-sepolia",
+    "arbitrum-sepolia",
+    "base-sepolia"
+  ],
+  "conditions": [
+    "HH",
+    "HL",
+    "LH",
+    "LL"
+  ],
+  "generated_at": "2026-07-25T00:00:00Z",
+  "semantic_output_digests": {}
+}

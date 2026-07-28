@@ -1,0 +1,43 @@
+{
+  "schema_version": "xir-lab-approval-envelope-v1",
+  "payload": {
+    "approval_id": "{{APPROVAL_ID}}",
+    "issuer_id": "{{ISSUER_ID}}",
+    "approval_key_id": "{{APPROVAL_KEY_ID}}",
+    "issuer_sequence": "{{ISSUER_SEQUENCE}}",
+    "operation_type": "{{OPERATION_TYPE}}",
+    "operation_id": "{{OPERATION_ID}}",
+    "run_id": "{{RUN_ID_OR_NULL}}",
+    "issued_at": "{{UTC_TIMESTAMP}}",
+    "valid_from": "{{UTC_TIMESTAMP}}",
+    "valid_until": "{{UTC_TIMESTAMP}}",
+    "expected_pre_state_sha256": "{{SHA256}}",
+    "authorized_transition_sha256": "{{SHA256}}",
+    "config_sha256": "{{SHA256}}",
+    "profile_sha256": "{{SHA256}}",
+    "code_sha256": "{{SHA256}}",
+    "schema_sha256": "{{SHA256}}",
+    "deployment_sha256": "{{SHA256}}",
+    "signer_identity_sha256": "{{SHA256}}",
+    "network_identity_sha256": "{{SHA256}}",
+    "addresses": {
+      "deployer_administrator": "{{PUBLIC_EVM_ADDRESS}}",
+      "runner": "{{PUBLIC_EVM_ADDRESS}}"
+    },
+    "networks": "{{THREE_ORDERED_NETWORK_IDENTITIES}}",
+    "deployment_ids": "{{APPLICABLE_DEPLOYMENT_IDS}}",
+    "condition_scope": ["HH", "HL", "LH", "LL"],
+    "planned_counts": {
+      "pair_slots": "{{PAIR_SLOTS}}",
+      "designated_attempts": "{{DESIGNATED_ATTEMPTS}}",
+      "warmup_attempts": "{{WARMUP_ATTEMPTS}}"
+    },
+    "max_retries_per_lineage": "{{MAX_RETRIES}}",
+    "max_concurrency": "{{MAX_CONCURRENCY}}",
+    "allow_partial_conditions": false,
+    "stop_policy_sha256": "{{SHA256}}",
+    "per_chain_limits": "{{CHAIN_ID_TO_NATIVE_WEI_LIMIT}}"
+  },
+  "payload_sha256": "{{RFC8785_PAYLOAD_SHA256}}",
+  "signature": "{{DETACHED_ED25519_SIGNATURE_HEX}}"
+}

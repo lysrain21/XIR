@@ -1,0 +1,78 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+dist/
+build/
+*.egg-info/
+
+# Foundry and Solidity
+contracts/cache/
+contracts/out/
+contracts/broadcast/
+contracts/lib/
+cache/
+out/
+broadcast/
+
+# JavaScript dependencies used by optional tooling
+node_modules/
+
+# Editors and operating systems
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# Secrets and authenticated endpoints
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.p12
+*.pfx
+*.keystore
+keystore/
+keystores/
+secrets/
+credentials/
+
+# Live state, private signing recovery, and mutable evidence
+.xir-lab/
+runs/
+live/
+private/
+private-spool/
+recovery-spool/
+signed-transactions/
+*.sqlite
+*.sqlite3
+*.sqlite-*
+*.db
+*.db-*
+
+# Raw or large generated evidence; sanitized examples remain tracked
+data/raw/
+data/blobs/
+data/releases/
+results/
+artifacts/
+release/
+releases/
+
+# Logs, temporary files, and archives
+*.log
+*.tmp
+*.temp
+*.bak
+*.tar
+*.tar.gz
+*.tgz
+*.zip

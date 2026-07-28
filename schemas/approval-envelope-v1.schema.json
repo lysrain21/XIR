@@ -1,0 +1,203 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xir.example/schemas/approval-envelope-v1.schema.json",
+  "title": "Generic operation-scoped approval envelope",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "payload",
+    "payload_sha256",
+    "signature"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "xir-lab-approval-envelope-v1"
+    },
+    "payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "approval_id",
+        "issuer_id",
+        "approval_key_id",
+        "issuer_sequence",
+        "operation_type",
+        "operation_id",
+        "run_id",
+        "issued_at",
+        "valid_from",
+        "valid_until",
+        "expected_pre_state_sha256",
+        "authorized_transition_sha256",
+        "config_sha256",
+        "profile_sha256",
+        "code_sha256",
+        "schema_sha256",
+        "deployment_sha256",
+        "signer_identity_sha256",
+        "network_identity_sha256",
+        "addresses",
+        "networks",
+        "deployment_ids",
+        "condition_scope",
+        "planned_counts",
+        "max_retries_per_lineage",
+        "max_concurrency",
+        "allow_partial_conditions",
+        "stop_policy_sha256",
+        "per_chain_limits"
+      ],
+      "properties": {
+        "approval_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]{2,95}$"
+        },
+        "issuer_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "approval_key_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "issuer_sequence": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "operation_type": {
+          "enum": [
+            "deployment",
+            "configuration",
+            "pilot",
+            "primary",
+            "scale",
+            "closeout"
+          ]
+        },
+        "operation_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "run_id": {
+          "type": ["string", "null"],
+          "minLength": 1
+        },
+        "issued_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "valid_from": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "valid_until": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "expected_pre_state_sha256": {
+          "$ref": "#/$defs/digest"
+        },
+        "authorized_transition_sha256": {
+          "$ref": "#/$defs/digest"
+        },
+        "config_sha256": {
+          "$ref": "#/$defs/digest"
+        },
+        "profile_sha256": {
+          "$ref": "#/$defs/digest"
+        },
+        "code_sha256": {
+          "$ref": "#/$defs/digest"
+        },
+        "schema_sha256": {
+          "$ref": "#/$defs/digest"
+        },
+        "deployment_sha256": {
+          "$ref": "#/$defs/digest"
+        },
+        "signer_identity_sha256": {
+          "$ref": "#/$defs/digest"
+        },
+        "network_identity_sha256": {
+          "$ref": "#/$defs/digest"
+        },
+        "addresses": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["deployer_administrator", "runner"],
+          "properties": {
+            "deployer_administrator": {"$ref": "#/$defs/address"},
+            "runner": {"$ref": "#/$defs/address"}
+          }
+        },
+        "networks": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["network_id", "chain_id", "checkpoint_sha256"],
+            "properties": {
+              "network_id": {"type": "string"},
+              "chain_id": {"type": "integer", "minimum": 1},
+              "checkpoint_sha256": {"$ref": "#/$defs/digest"}
+            }
+          }
+        },
+        "deployment_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "condition_scope": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"enum": ["HH", "HL", "LH", "LL"]}
+        },
+        "planned_counts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["pair_slots", "designated_attempts", "warmup_attempts"],
+          "properties": {
+            "pair_slots": {"type": "integer", "minimum": 0},
+            "designated_attempts": {"type": "integer", "minimum": 0},
+            "warmup_attempts": {"type": "integer", "minimum": 0}
+          }
+        },
+        "max_retries_per_lineage": {"type": "integer", "minimum": 0},
+        "max_concurrency": {"type": "integer", "minimum": 1},
+        "allow_partial_conditions": {"type": "boolean"},
+        "stop_policy_sha256": {
+          "$ref": "#/$defs/digest"
+        },
+        "per_chain_limits": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      }
+    },
+    "payload_sha256": {
+      "$ref": "#/$defs/digest"
+    },
+    "signature": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{128}$"
+    }
+  },
+  "$defs": {
+    "digest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "address": {
+      "type": "string",
+      "pattern": "^0x[0-9a-fA-F]{40}$"
+    }
+  }
+}

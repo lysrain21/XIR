@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xir.example/schemas/preflight-experiment-v1.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "operation_type",
+    "operation_id",
+    "approval_id",
+    "network_identity_sha256",
+    "deployment_sha256",
+    "profile_sha256",
+    "contracts",
+    "carrier_routes"
+  ],
+  "properties": {
+    "schema_version": {"const": "xir-lab-preflight-experiment-v1"},
+    "operation_type": {"enum": ["pilot", "primary", "scale"]},
+    "operation_id": {"type": "string", "minLength": 1},
+    "approval_id": {"type": "string", "minLength": 1},
+    "network_identity_sha256": {"$ref": "#/$defs/digest"},
+    "deployment_sha256": {"$ref": "#/$defs/digest"},
+    "profile_sha256": {"$ref": "#/$defs/digest"},
+    "contracts": {
+      "type": "array",
+      "minItems": 3,
+      "items": {"$ref": "#/$defs/contract"}
+    },
+    "carrier_routes": {
+      "type": "array",
+      "minItems": 4,
+      "items": {"$ref": "#/$defs/route"}
+    }
+  },
+  "$defs": {
+    "digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "address": {"type": "string", "pattern": "^0x[0-9a-fA-F]{40}$"},
+    "network": {
+      "enum": ["op-sepolia", "arbitrum-sepolia", "base-sepolia"]
+    },
+    "contract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "contract_id",
+        "network_id",
+        "address",
+        "runtime_code_sha256",
+        "administrator",
+        "active_runner",
+        "outbound_paused",
+        "route_profile_state_sha256"
+      ],
+      "properties": {
+        "contract_id": {"type": "string", "minLength": 1},
+        "network_id": {"$ref": "#/$defs/network"},
+        "address": {"$ref": "#/$defs/address"},
+        "runtime_code_sha256": {"$ref": "#/$defs/digest"},
+        "administrator": {"$ref": "#/$defs/address"},
+        "active_runner": {"$ref": "#/$defs/address"},
+        "outbound_paused": {"type": "boolean"},
+        "route_profile_state_sha256": {"$ref": "#/$defs/digest"}
+      }
+    },
+    "route": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "route_id",
+        "protocol",
+        "local_network",
+        "remote_network",
+        "endpoint_address",
+        "peer_address",
+        "remote_selector",
+        "security_config_sha256"
+      ],
+      "properties": {
+        "route_id": {"type": "string", "minLength": 1},
+        "protocol": {"enum": ["hyperlane", "layerzero-v2"]},
+        "local_network": {
+          "enum": ["op-sepolia", "arbitrum-sepolia"]
+        },
+        "remote_network": {
+          "enum": ["arbitrum-sepolia", "base-sepolia"]
+        },
+        "endpoint_address": {"$ref": "#/$defs/address"},
+        "peer_address": {"$ref": "#/$defs/address"},
+        "remote_selector": {"type": "integer", "minimum": 1},
+        "security_config_sha256": {"$ref": "#/$defs/digest"}
+      }
+    }
+  }
+}

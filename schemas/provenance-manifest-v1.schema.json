@@ -1,0 +1,129 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xir.example/schemas/provenance-manifest-v1.schema.json",
+  "title": "XIR Testnet Lab provenance manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "source_workspace",
+    "entries"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "xir-lab-provenance-manifest-v1"
+    },
+    "source_workspace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "root_hint": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "entries": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/entry"
+      }
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "destination_path",
+        "destination_sha256",
+        "source_path",
+        "source_sha256",
+        "license",
+        "extracted_on",
+        "modification_status",
+        "modifications"
+      ],
+      "properties": {
+        "destination_path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "destination_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "source_path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "source_revision": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_revision_unavailable_reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "license": {
+          "type": "string",
+          "minLength": 1
+        },
+        "extracted_on": {
+          "type": "string",
+          "format": "date"
+        },
+        "modification_status": {
+          "enum": [
+            "unmodified",
+            "modified"
+          ]
+        },
+        "modifications": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "source_revision"
+          ],
+          "not": {
+            "required": [
+              "source_revision_unavailable_reason"
+            ]
+          }
+        },
+        {
+          "required": [
+            "source_revision_unavailable_reason"
+          ],
+          "not": {
+            "required": [
+              "source_revision"
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xir.example/schemas/revocation-record-v1.schema.json",
+  "title": "Signed XIR approval revocation v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "payload", "payload_sha256", "signature"],
+  "properties": {
+    "schema_version": {"const": "xir-lab-revocation-record-v1"},
+    "payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "revocation_id",
+        "approval_id",
+        "issuer_id",
+        "approval_key_id",
+        "issuer_sequence",
+        "revoked_at",
+        "reason"
+      ],
+      "properties": {
+        "revocation_id": {"type": "string", "minLength": 1},
+        "approval_id": {"type": "string", "minLength": 1},
+        "issuer_id": {"type": "string", "minLength": 1},
+        "approval_key_id": {"type": "string", "minLength": 1},
+        "issuer_sequence": {"type": "integer", "minimum": 1},
+        "revoked_at": {"type": "string", "format": "date-time"},
+        "reason": {"type": "string", "minLength": 1}
+      }
+    },
+    "payload_sha256": {"$ref": "#/$defs/digest"},
+    "signature": {"type": "string", "pattern": "^[0-9a-f]{128}$"}
+  },
+  "$defs": {
+    "digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

@@ -1,0 +1,111 @@
+{
+  "schema_version": "xir-lab-provenance-manifest-v1",
+  "source_workspace": {
+    "name": "XIR paper workspace",
+    "root_hint": ".."
+  },
+  "entries": [
+    {
+      "destination_path": "contracts/src/XIRTypes.sol",
+      "destination_sha256": "8c8fa75a38441168ba38dc4ee086fd3a800e8e14daa1dc7691e7db44a7994ad9",
+      "source_path": "experiments/contracts/evm/src/XIRTypes.sol",
+      "source_sha256": "8c8fa75a38441168ba38dc4ee086fd3a800e8e14daa1dc7691e7db44a7994ad9",
+      "source_revision_unavailable_reason": "The source paper workspace is not a Git work tree.",
+      "license": "MIT",
+      "extracted_on": "2026-07-25",
+      "modification_status": "unmodified",
+      "modifications": []
+    },
+    {
+      "destination_path": "contracts/src/XIREncoding.sol",
+      "destination_sha256": "b783b71f7c8765f45a5e4c26571d0696314f5273af56fe4a8d5dde003693bc06",
+      "source_path": "experiments/contracts/evm/src/XIREncoding.sol",
+      "source_sha256": "b783b71f7c8765f45a5e4c26571d0696314f5273af56fe4a8d5dde003693bc06",
+      "source_revision_unavailable_reason": "The source paper workspace is not a Git work tree.",
+      "license": "MIT",
+      "extracted_on": "2026-07-25",
+      "modification_status": "unmodified",
+      "modifications": []
+    },
+    {
+      "destination_path": "contracts/src/XIRRegistry.sol",
+      "destination_sha256": "35a2473fb877ce1d71b02cf88854081babd76b7d47c3b8eb6931e571b0f54f6e",
+      "source_path": "experiments/contracts/evm/src/XIRRegistry.sol",
+      "source_sha256": "35a2473fb877ce1d71b02cf88854081babd76b7d47c3b8eb6931e571b0f54f6e",
+      "source_revision_unavailable_reason": "The source paper workspace is not a Git work tree.",
+      "license": "MIT",
+      "extracted_on": "2026-07-25",
+      "modification_status": "unmodified",
+      "modifications": []
+    },
+    {
+      "destination_path": "contracts/src/IXIRCarrierAdapter.sol",
+      "destination_sha256": "e7523d5b87c98877462e4cc818960156ff4076f53991a4649e0b0f39de8f2bcd",
+      "source_path": "experiments/contracts/evm/src/IXIRCarrierAdapter.sol",
+      "source_sha256": "e7523d5b87c98877462e4cc818960156ff4076f53991a4649e0b0f39de8f2bcd",
+      "source_revision_unavailable_reason": "The source paper workspace is not a Git work tree.",
+      "license": "MIT",
+      "extracted_on": "2026-07-25",
+      "modification_status": "unmodified",
+      "modifications": []
+    },
+    {
+      "destination_path": "contracts/src/IXIRReceiver.sol",
+      "destination_sha256": "661271595abd0a682f47053304b85adfc2a6c2242c0b8b4abf5b59ff157bc13e",
+      "source_path": "experiments/contracts/evm/src/IXIRReceiver.sol",
+      "source_sha256": "661271595abd0a682f47053304b85adfc2a6c2242c0b8b4abf5b59ff157bc13e",
+      "source_revision_unavailable_reason": "The source paper workspace is not a Git work tree.",
+      "license": "MIT",
+      "extracted_on": "2026-07-25",
+      "modification_status": "unmodified",
+      "modifications": []
+    },
+    {
+      "destination_path": "contracts/src/XIRGateway.sol",
+      "destination_sha256": "8a39249c5ca0f89de915bdafdf5a718e4ddbcbc893f666a15532681dbd5051f8",
+      "source_path": "experiments/contracts/evm/src/XIRGateway.sol",
+      "source_sha256": "3fe279c04ae178f4daf2f846777b434382d1aae5747e0aaa2d4fee1ec52c8d9d",
+      "source_revision_unavailable_reason": "The source paper workspace is not a Git work tree.",
+      "license": "MIT",
+      "extracted_on": "2026-07-25",
+      "modification_status": "modified",
+      "modifications": [
+        "Bound the actual destination call target to the EVM destinationApp identifier in the signed envelope."
+      ]
+    },
+    {
+      "destination_path": "contracts/src/HyperlaneAdapter.sol",
+      "destination_sha256": "ba60001aa0e3ead47613a308478911feb3228432f928b06752251eff7ea48e19",
+      "source_path": "experiments/contracts/evm/src/HyperlaneAdapter.sol",
+      "source_sha256": "2590752a8dae46791e26e4fef74162c8143edecaa4c61d265680782ef6491e69",
+      "source_revision_unavailable_reason": "The source paper workspace is not a Git work tree.",
+      "license": "MIT",
+      "extracted_on": "2026-07-25",
+      "modification_status": "modified",
+      "modifications": [
+        "Replaced immutable owner authorization with two-step administrator and replaceable runner roles.",
+        "Added persistent outbound pause enforcement while retaining mailbox, domain, and peer authentication.",
+        "Separated new source dispatch from drain-compatible in-flight forwarding.",
+        "Bound quotes and dispatches to the configured remote domain and peer.",
+        "Added carrier-only baseline quote, source, and in-flight forwarding entry points."
+      ]
+    },
+    {
+      "destination_path": "contracts/src/LayerZeroAdapter.sol",
+      "destination_sha256": "5b3c56dffb98efbd417eb0b5d5cf85e973c9cfa750fcbb755c77b485f9eacaf4",
+      "source_path": "experiments/contracts/evm/src/LayerZeroAdapter.sol",
+      "source_sha256": "0cf9532b6d43d291fdd1adb572374a7e0c43b54f4b5c88934f1e99ce797bbf05",
+      "source_revision_unavailable_reason": "The source paper workspace is not a Git work tree.",
+      "license": "MIT",
+      "extracted_on": "2026-07-25",
+      "modification_status": "modified",
+      "modifications": [
+        "Replaced immutable owner authorization with two-step administrator and replaceable runner roles.",
+        "Added persistent outbound pause enforcement while retaining endpoint, EID, and peer authentication.",
+        "Separated new source dispatch from drain-compatible in-flight forwarding.",
+        "Bound quotes and sends to the configured EID and peer and refunds to the active runner.",
+        "Added carrier-only baseline quote, source, and in-flight forwarding entry points."
+      ]
+    }
+  ]
+}

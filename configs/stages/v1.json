@@ -1,0 +1,110 @@
+{
+  "schema_version": "xir-lab-stage-template-set-v1",
+  "template_set_id": "fixed-three-chain-stages-v1",
+  "templates": [
+    {
+      "template_id": "hh-baseline-v1",
+      "template_version": 1,
+      "condition": "HH",
+      "arm": "baseline",
+      "ordered_chain_ids": [11155420, 421614, 84532],
+      "carrier_sequence": ["hyperlane", "hyperlane"],
+      "physical_transaction_templates": [
+        {"transaction_template_id": "hh-baseline-source-v1", "ordinal": 0, "chain_id": 11155420, "accounting_bucket": "source", "funding_attribution": "experiment", "logical_labels": ["source_application_preparation", "carrier_one_dispatch"]},
+        {"transaction_template_id": "hh-baseline-intermediate-v1", "ordinal": 1, "chain_id": 421614, "accounting_bucket": "intermediate", "funding_attribution": "external", "logical_labels": ["carrier_one_receive", "intermediate_baseline_control", "carrier_two_forward"]},
+        {"transaction_template_id": "hh-baseline-destination-v1", "ordinal": 2, "chain_id": 84532, "accounting_bucket": "destination", "funding_attribution": "external", "logical_labels": ["carrier_two_receive", "destination_application_effect"]}
+      ]
+    },
+    {
+      "template_id": "hh-xir-v1",
+      "template_version": 1,
+      "condition": "HH",
+      "arm": "xir",
+      "ordered_chain_ids": [11155420, 421614, 84532],
+      "carrier_sequence": ["hyperlane", "hyperlane"],
+      "physical_transaction_templates": [
+        {"transaction_template_id": "hh-xir-source-v1", "ordinal": 0, "chain_id": 11155420, "accounting_bucket": "source", "funding_attribution": "experiment", "logical_labels": ["source_application_preparation", "xir_record_encode", "carrier_one_dispatch"]},
+        {"transaction_template_id": "hh-xir-intermediate-v1", "ordinal": 1, "chain_id": 421614, "accounting_bucket": "intermediate", "funding_attribution": "external", "logical_labels": ["carrier_one_receive", "xir_intermediate_verification", "carrier_two_forward"]},
+        {"transaction_template_id": "hh-xir-destination-v1", "ordinal": 2, "chain_id": 84532, "accounting_bucket": "destination", "funding_attribution": "external", "logical_labels": ["carrier_two_receive", "xir_destination_verification", "destination_application_effect"]}
+      ]
+    },
+    {
+      "template_id": "hl-baseline-v1",
+      "template_version": 1,
+      "condition": "HL",
+      "arm": "baseline",
+      "ordered_chain_ids": [11155420, 421614, 84532],
+      "carrier_sequence": ["hyperlane", "layerzero-v2"],
+      "physical_transaction_templates": [
+        {"transaction_template_id": "hl-baseline-source-v1", "ordinal": 0, "chain_id": 11155420, "accounting_bucket": "source", "funding_attribution": "experiment", "logical_labels": ["source_application_preparation", "carrier_one_dispatch"]},
+        {"transaction_template_id": "hl-baseline-intermediate-v1", "ordinal": 1, "chain_id": 421614, "accounting_bucket": "intermediate", "funding_attribution": "external", "logical_labels": ["carrier_one_receive", "intermediate_baseline_control", "carrier_two_forward"]},
+        {"transaction_template_id": "hl-baseline-destination-v1", "ordinal": 2, "chain_id": 84532, "accounting_bucket": "destination", "funding_attribution": "external", "logical_labels": ["carrier_two_receive", "destination_application_effect"]}
+      ]
+    },
+    {
+      "template_id": "hl-xir-v1",
+      "template_version": 1,
+      "condition": "HL",
+      "arm": "xir",
+      "ordered_chain_ids": [11155420, 421614, 84532],
+      "carrier_sequence": ["hyperlane", "layerzero-v2"],
+      "physical_transaction_templates": [
+        {"transaction_template_id": "hl-xir-source-v1", "ordinal": 0, "chain_id": 11155420, "accounting_bucket": "source", "funding_attribution": "experiment", "logical_labels": ["source_application_preparation", "xir_record_encode", "carrier_one_dispatch"]},
+        {"transaction_template_id": "hl-xir-intermediate-v1", "ordinal": 1, "chain_id": 421614, "accounting_bucket": "intermediate", "funding_attribution": "external", "logical_labels": ["carrier_one_receive", "xir_intermediate_verification", "carrier_two_forward"]},
+        {"transaction_template_id": "hl-xir-destination-v1", "ordinal": 2, "chain_id": 84532, "accounting_bucket": "destination", "funding_attribution": "external", "logical_labels": ["carrier_two_receive", "xir_destination_verification", "destination_application_effect"]}
+      ]
+    },
+    {
+      "template_id": "lh-baseline-v1",
+      "template_version": 1,
+      "condition": "LH",
+      "arm": "baseline",
+      "ordered_chain_ids": [11155420, 421614, 84532],
+      "carrier_sequence": ["layerzero-v2", "hyperlane"],
+      "physical_transaction_templates": [
+        {"transaction_template_id": "lh-baseline-source-v1", "ordinal": 0, "chain_id": 11155420, "accounting_bucket": "source", "funding_attribution": "experiment", "logical_labels": ["source_application_preparation", "carrier_one_dispatch"]},
+        {"transaction_template_id": "lh-baseline-intermediate-v1", "ordinal": 1, "chain_id": 421614, "accounting_bucket": "intermediate", "funding_attribution": "external", "logical_labels": ["carrier_one_receive", "intermediate_baseline_control", "carrier_two_forward"]},
+        {"transaction_template_id": "lh-baseline-destination-v1", "ordinal": 2, "chain_id": 84532, "accounting_bucket": "destination", "funding_attribution": "external", "logical_labels": ["carrier_two_receive", "destination_application_effect"]}
+      ]
+    },
+    {
+      "template_id": "lh-xir-v1",
+      "template_version": 1,
+      "condition": "LH",
+      "arm": "xir",
+      "ordered_chain_ids": [11155420, 421614, 84532],
+      "carrier_sequence": ["layerzero-v2", "hyperlane"],
+      "physical_transaction_templates": [
+        {"transaction_template_id": "lh-xir-source-v1", "ordinal": 0, "chain_id": 11155420, "accounting_bucket": "source", "funding_attribution": "experiment", "logical_labels": ["source_application_preparation", "xir_record_encode", "carrier_one_dispatch"]},
+        {"transaction_template_id": "lh-xir-intermediate-v1", "ordinal": 1, "chain_id": 421614, "accounting_bucket": "intermediate", "funding_attribution": "external", "logical_labels": ["carrier_one_receive", "xir_intermediate_verification", "carrier_two_forward"]},
+        {"transaction_template_id": "lh-xir-destination-v1", "ordinal": 2, "chain_id": 84532, "accounting_bucket": "destination", "funding_attribution": "external", "logical_labels": ["carrier_two_receive", "xir_destination_verification", "destination_application_effect"]}
+      ]
+    },
+    {
+      "template_id": "ll-baseline-v1",
+      "template_version": 1,
+      "condition": "LL",
+      "arm": "baseline",
+      "ordered_chain_ids": [11155420, 421614, 84532],
+      "carrier_sequence": ["layerzero-v2", "layerzero-v2"],
+      "physical_transaction_templates": [
+        {"transaction_template_id": "ll-baseline-source-v1", "ordinal": 0, "chain_id": 11155420, "accounting_bucket": "source", "funding_attribution": "experiment", "logical_labels": ["source_application_preparation", "carrier_one_dispatch"]},
+        {"transaction_template_id": "ll-baseline-intermediate-v1", "ordinal": 1, "chain_id": 421614, "accounting_bucket": "intermediate", "funding_attribution": "external", "logical_labels": ["carrier_one_receive", "intermediate_baseline_control", "carrier_two_forward"]},
+        {"transaction_template_id": "ll-baseline-destination-v1", "ordinal": 2, "chain_id": 84532, "accounting_bucket": "destination", "funding_attribution": "external", "logical_labels": ["carrier_two_receive", "destination_application_effect"]}
+      ]
+    },
+    {
+      "template_id": "ll-xir-v1",
+      "template_version": 1,
+      "condition": "LL",
+      "arm": "xir",
+      "ordered_chain_ids": [11155420, 421614, 84532],
+      "carrier_sequence": ["layerzero-v2", "layerzero-v2"],
+      "physical_transaction_templates": [
+        {"transaction_template_id": "ll-xir-source-v1", "ordinal": 0, "chain_id": 11155420, "accounting_bucket": "source", "funding_attribution": "experiment", "logical_labels": ["source_application_preparation", "xir_record_encode", "carrier_one_dispatch"]},
+        {"transaction_template_id": "ll-xir-intermediate-v1", "ordinal": 1, "chain_id": 421614, "accounting_bucket": "intermediate", "funding_attribution": "external", "logical_labels": ["carrier_one_receive", "xir_intermediate_verification", "carrier_two_forward"]},
+        {"transaction_template_id": "ll-xir-destination-v1", "ordinal": 2, "chain_id": 84532, "accounting_bucket": "destination", "funding_attribution": "external", "logical_labels": ["carrier_two_receive", "xir_destination_verification", "destination_application_effect"]}
+      ]
+    }
+  ]
+}

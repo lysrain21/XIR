@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xir.example/schemas/stage-template-set-v1.schema.json",
+  "title": "XIR stage template set v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "template_set_id", "templates"],
+  "properties": {
+    "schema_version": {"const": "xir-lab-stage-template-set-v1"},
+    "template_set_id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]+$"},
+    "templates": {
+      "type": "array",
+      "minItems": 8,
+      "maxItems": 8,
+      "items": {"$ref": "#/$defs/template"}
+    }
+  },
+  "$defs": {
+    "template": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "template_id",
+        "template_version",
+        "condition",
+        "arm",
+        "ordered_chain_ids",
+        "carrier_sequence",
+        "physical_transaction_templates"
+      ],
+      "properties": {
+        "template_id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]+$"},
+        "template_version": {"const": 1},
+        "condition": {"enum": ["HH", "HL", "LH", "LL"]},
+        "arm": {"enum": ["baseline", "xir"]},
+        "ordered_chain_ids": {
+          "const": [11155420, 421614, 84532]
+        },
+        "carrier_sequence": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {"enum": ["hyperlane", "layerzero-v2"]}
+        },
+        "physical_transaction_templates": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": {"$ref": "#/$defs/physicalTransactionTemplate"}
+        }
+      }
+    },
+    "physicalTransactionTemplate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "transaction_template_id",
+        "ordinal",
+        "chain_id",
+        "accounting_bucket",
+        "funding_attribution",
+        "logical_labels"
+      ],
+      "properties": {
+        "transaction_template_id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9._-]+$"
+        },
+        "ordinal": {"type": "integer", "minimum": 0, "maximum": 2},
+        "chain_id": {"enum": [11155420, 421614, 84532]},
+        "accounting_bucket": {"enum": ["source", "intermediate", "destination"]},
+        "funding_attribution": {"enum": ["experiment", "external"]},
+        "logical_labels": {
+          "type": "array",
+          "minItems": 2,
+          "uniqueItems": true,
+          "items": {"type": "string", "pattern": "^[a-z][a-z0-9_]+$"}
+        }
+      }
+    }
+  }
+}

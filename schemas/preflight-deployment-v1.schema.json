@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xir.example/schemas/preflight-deployment-v1.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "operation_type",
+    "operation_id",
+    "approval_id",
+    "network_identity_sha256",
+    "creations"
+  ],
+  "properties": {
+    "schema_version": {"const": "xir-lab-preflight-deployment-v1"},
+    "operation_type": {"const": "deployment"},
+    "operation_id": {"type": "string", "minLength": 1},
+    "approval_id": {"type": "string", "minLength": 1},
+    "network_identity_sha256": {"$ref": "#/$defs/digest"},
+    "creations": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/creation"}
+    }
+  },
+  "$defs": {
+    "digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "address": {"type": "string", "pattern": "^0x[0-9a-fA-F]{40}$"},
+    "network": {
+      "enum": ["op-sepolia", "arbitrum-sepolia", "base-sepolia"]
+    },
+    "creation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "creation_id",
+        "network_id",
+        "creation_bytecode_sha256",
+        "constructor_args_sha256",
+        "deployer_address",
+        "deployer_nonce",
+        "factory_address",
+        "predicted_address"
+      ],
+      "properties": {
+        "creation_id": {"type": "string", "minLength": 1},
+        "network_id": {"$ref": "#/$defs/network"},
+        "creation_bytecode_sha256": {"$ref": "#/$defs/digest"},
+        "constructor_args_sha256": {"$ref": "#/$defs/digest"},
+        "deployer_address": {"$ref": "#/$defs/address"},
+        "deployer_nonce": {"type": "integer", "minimum": 0},
+        "factory_address": {
+          "oneOf": [{"$ref": "#/$defs/address"}, {"type": "null"}]
+        },
+        "predicted_address": {
+          "oneOf": [{"$ref": "#/$defs/address"}, {"type": "null"}]
+        }
+      }
+    }
+  }
+}

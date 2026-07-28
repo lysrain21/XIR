@@ -1,0 +1,169 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xir.example/schemas/run-manifest-v1.schema.json",
+  "title": "XIR Testnet Lab run manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "manifest_id",
+    "run_id",
+    "profile_id",
+    "config_sha256",
+    "toolchain_lock_sha256",
+    "dependency_lock_sha256",
+    "schema_digests",
+    "code_provenance",
+    "deployment_sha256",
+    "approval",
+    "ordered_networks",
+    "conditions",
+    "generated_at",
+    "semantic_output_digests"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "xir-lab-run-manifest-v1"
+    },
+    "manifest_id": {
+      "$ref": "#/$defs/stableId"
+    },
+    "run_id": {
+      "$ref": "#/$defs/stableId"
+    },
+    "profile_id": {
+      "$ref": "#/$defs/stableId"
+    },
+    "config_sha256": {
+      "$ref": "#/$defs/digest"
+    },
+    "toolchain_lock_sha256": {
+      "$ref": "#/$defs/digest"
+    },
+    "dependency_lock_sha256": {
+      "$ref": "#/$defs/digest"
+    },
+    "schema_digests": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "$ref": "#/$defs/digest"
+      }
+    },
+    "code_provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "git_revision": {
+          "type": "string",
+          "minLength": 1
+        },
+        "revision_unavailable_reason": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "git_revision"
+          ],
+          "not": {
+            "required": [
+              "revision_unavailable_reason"
+            ]
+          }
+        },
+        {
+          "required": [
+            "revision_unavailable_reason"
+          ],
+          "not": {
+            "required": [
+              "git_revision"
+            ]
+          }
+        }
+      ]
+    },
+    "deployment_sha256": {
+      "$ref": "#/$defs/digest"
+    },
+    "approval": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "approval_id",
+        "payload_sha256",
+        "issuer_id",
+        "issuer_sequence",
+        "signature_verified",
+        "revocation_record_sha256"
+      ],
+      "properties": {
+        "approval_id": {
+          "$ref": "#/$defs/stableId"
+        },
+        "payload_sha256": {
+          "$ref": "#/$defs/digest"
+        },
+        "issuer_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "issuer_sequence": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "signature_verified": {
+          "type": "boolean"
+        },
+        "revocation_record_sha256": {
+          "$ref": "#/$defs/digest"
+        }
+      }
+    },
+    "ordered_networks": {
+      "const": [
+        "op-sepolia",
+        "arbitrum-sepolia",
+        "base-sepolia"
+      ]
+    },
+    "conditions": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "HH",
+          "HL",
+          "LH",
+          "LL"
+        ]
+      },
+      "minItems": 4,
+      "maxItems": 4,
+      "uniqueItems": true
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "semantic_output_digests": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/digest"
+      }
+    }
+  },
+  "$defs": {
+    "stableId": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+      "maxLength": 96
+    },
+    "digest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  }
+}

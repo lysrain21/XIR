@@ -1,0 +1,18 @@
+{
+  "schema_version": "xir-lab-toolchain-lock-v1",
+  "python": {
+    "implementation": "cpython",
+    "version": "3.13.14"
+  },
+  "solidity": {
+    "compiler": "solc",
+    "version": "0.8.28",
+    "evm_version": "cancun"
+  },
+  "foundry": {
+    "channel": "stable",
+    "version": "1.5.1-stable",
+    "commit": "b0a9dd9ceda36f63e2326ce530c10e6916f4b8a2"
+  },
+  "python_lock": "uv.lock"
+}

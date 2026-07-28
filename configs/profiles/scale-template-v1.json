@@ -1,0 +1,39 @@
+{
+  "schema_version": "xir-lab-execution-profile-v1",
+  "profile_id": "scale-template-v1",
+  "profile_version": 1,
+  "profile_mode": "template",
+  "profile_kind": "scale",
+  "approval_operation_type": "scale",
+  "fixed_seed": "1d84803e24327d3789b66b3eaa8c57447a5ac5cb384f61bf256d044632efea92",
+  "conditions": ["HH", "HL", "LH", "LL"],
+  "counts": {
+    "pair_slots_per_condition": 1250,
+    "planned_pair_slots": 5000,
+    "designated_attempt_kind": "primary",
+    "planned_designated_attempts": 10000,
+    "warmups_per_condition_arm": 0,
+    "planned_warmup_attempts": 0,
+    "planned_total_non_retry_attempts": 10000,
+    "retry_attempts_in_designated_count": false
+  },
+  "live_limits": {
+    "max_retries_per_lineage": null,
+    "max_batch_attempts": null,
+    "max_duration_seconds": null,
+    "max_in_flight_attempts": null,
+    "chain_budget_wei": {
+      "11155420": null,
+      "421614": null,
+      "84532": null
+    },
+    "stop_policy": null,
+    "allow_partial_conditions": null
+  },
+  "derived_from": {
+    "kind": "primary",
+    "run_id": null,
+    "freeze_sha256": null,
+    "reconciled": null
+  }
+}

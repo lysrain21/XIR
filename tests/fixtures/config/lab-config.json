@@ -1,0 +1,241 @@
+{
+  "schema_version": "xir-lab-config-v1",
+  "config_id": "fixture-lab-config",
+  "networks": [
+    {
+      "network_id": "op-sepolia",
+      "chain_id": 11155420,
+      "route_role": "source",
+      "read_rpc_ref": "rpc.op.read",
+      "write_rpc_ref": "rpc.op.write",
+      "checkpoint": {
+        "kind": "network-checkpoint",
+        "block_number": 100,
+        "block_hash": "0x1111111111111111111111111111111111111111111111111111111111111111"
+      }
+    },
+    {
+      "network_id": "arbitrum-sepolia",
+      "chain_id": 421614,
+      "route_role": "intermediate",
+      "read_rpc_ref": "rpc.arbitrum.read",
+      "write_rpc_ref": "rpc.arbitrum.write",
+      "checkpoint": {
+        "kind": "network-checkpoint",
+        "block_number": 200,
+        "block_hash": "0x2222222222222222222222222222222222222222222222222222222222222222"
+      }
+    },
+    {
+      "network_id": "base-sepolia",
+      "chain_id": 84532,
+      "route_role": "destination",
+      "read_rpc_ref": "rpc.base.read",
+      "write_rpc_ref": "rpc.base.write",
+      "checkpoint": {
+        "kind": "network-checkpoint",
+        "block_number": 300,
+        "block_hash": "0x3333333333333333333333333333333333333333333333333333333333333333"
+      }
+    }
+  ],
+  "deployment": {
+    "deployment_id": "fixture-deployment",
+    "deployment_version": 1,
+    "compiler_version": "0.8.28",
+    "contracts": [
+      {
+        "contract_id": "gateway-op",
+        "network_id": "op-sepolia",
+        "kind": "gateway",
+        "address": "0x1111111111111111111111111111111111111111",
+        "runtime_code_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+        "administrator": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "runner": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      },
+      {
+        "contract_id": "gateway-arbitrum",
+        "network_id": "arbitrum-sepolia",
+        "kind": "gateway",
+        "address": "0x2222222222222222222222222222222222222222",
+        "runtime_code_sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+        "administrator": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "runner": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      },
+      {
+        "contract_id": "gateway-base",
+        "network_id": "base-sepolia",
+        "kind": "gateway",
+        "address": "0x3333333333333333333333333333333333333333",
+        "runtime_code_sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+        "administrator": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "runner": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      }
+    ],
+    "carrier_endpoints": [
+      {
+        "endpoint_id": "hyperlane-op-arbitrum",
+        "protocol": "hyperlane",
+        "local_network": "op-sepolia",
+        "remote_network": "arbitrum-sepolia",
+        "endpoint_address": "0x4444444444444444444444444444444444444444",
+        "remote_selector": 421614,
+        "peer_address": "0x5555555555555555555555555555555555555555",
+        "security_config_sha256": "4444444444444444444444444444444444444444444444444444444444444444"
+      },
+      {
+        "endpoint_id": "layerzero-op-arbitrum",
+        "protocol": "layerzero-v2",
+        "local_network": "op-sepolia",
+        "remote_network": "arbitrum-sepolia",
+        "endpoint_address": "0x6666666666666666666666666666666666666666",
+        "remote_selector": 40231,
+        "peer_address": "0x7777777777777777777777777777777777777777",
+        "security_config_sha256": "5555555555555555555555555555555555555555555555555555555555555555"
+      },
+      {
+        "endpoint_id": "hyperlane-arbitrum-base",
+        "protocol": "hyperlane",
+        "local_network": "arbitrum-sepolia",
+        "remote_network": "base-sepolia",
+        "endpoint_address": "0x8888888888888888888888888888888888888888",
+        "remote_selector": 84532,
+        "peer_address": "0x9999999999999999999999999999999999999999",
+        "security_config_sha256": "6666666666666666666666666666666666666666666666666666666666666666"
+      },
+      {
+        "endpoint_id": "layerzero-arbitrum-base",
+        "protocol": "layerzero-v2",
+        "local_network": "arbitrum-sepolia",
+        "remote_network": "base-sepolia",
+        "endpoint_address": "0x1212121212121212121212121212121212121212",
+        "remote_selector": 40245,
+        "peer_address": "0x1313131313131313131313131313131313131313",
+        "security_config_sha256": "7777777777777777777777777777777777777777777777777777777777777777"
+      }
+    ]
+  },
+  "payload_effect": {
+    "payload_id": "fixture-payload",
+    "payload_hex": "7869722d6c6162",
+    "payload_sha256": "665017815782ff9a82161309d610483f666cade153a6b4229bf17c26d3c76eee",
+    "destination_effect_id": "store-payload-hash",
+    "effect_definition_sha256": "d049974e45a5cd8195f64638604fedcc2ff2425c9178cce8f67326e5e788f949"
+  },
+  "signers": [
+    {
+      "signer_id": "fixture-deployer",
+      "role": "deployer",
+      "kind": "external-evm-signer",
+      "reference": "signer.deployer",
+      "public_identity": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    {
+      "signer_id": "fixture-runner",
+      "role": "runner",
+      "kind": "external-evm-signer",
+      "reference": "signer.runner",
+      "public_identity": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+    },
+    {
+      "signer_id": "fixture-approval-authority",
+      "role": "approval-authority",
+      "kind": "ed25519-approval-authority",
+      "reference": "signer.approval-authority",
+      "public_identity": "ed25519:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+    }
+  ],
+  "approval_requirements": [
+    {
+      "operation_type": "deployment",
+      "approval_schema": "approval.deployment.v1",
+      "expected_pre_state_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+      "authorized_transition_sha256": "2111111111111111111111111111111111111111111111111111111111111111"
+    },
+    {
+      "operation_type": "configuration",
+      "approval_schema": "approval.configuration.v1",
+      "expected_pre_state_sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+      "authorized_transition_sha256": "3222222222222222222222222222222222222222222222222222222222222222"
+    },
+    {
+      "operation_type": "pilot",
+      "approval_schema": "approval.pilot.v1",
+      "expected_pre_state_sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+      "authorized_transition_sha256": "4333333333333333333333333333333333333333333333333333333333333333"
+    },
+    {
+      "operation_type": "primary",
+      "approval_schema": "approval.primary.v1",
+      "expected_pre_state_sha256": "4444444444444444444444444444444444444444444444444444444444444444",
+      "authorized_transition_sha256": "5444444444444444444444444444444444444444444444444444444444444444"
+    },
+    {
+      "operation_type": "scale",
+      "approval_schema": "approval.scale.v1",
+      "expected_pre_state_sha256": "5555555555555555555555555555555555555555555555555555555555555555",
+      "authorized_transition_sha256": "6555555555555555555555555555555555555555555555555555555555555555"
+    },
+    {
+      "operation_type": "closeout",
+      "approval_schema": "approval.closeout.v1",
+      "expected_pre_state_sha256": "6666666666666666666666666666666666666666666666666666666666666666",
+      "authorized_transition_sha256": "7666666666666666666666666666666666666666666666666666666666666666"
+    }
+  ],
+  "budgets": [
+    {
+      "chain_id": 11155420,
+      "max_transaction_wei": 100,
+      "max_batch_wei": 1000,
+      "max_run_wei": 10000,
+      "minimum_runner_balance_wei": 500
+    },
+    {
+      "chain_id": 421614,
+      "max_transaction_wei": 200,
+      "max_batch_wei": 2000,
+      "max_run_wei": 20000,
+      "minimum_runner_balance_wei": 1000
+    },
+    {
+      "chain_id": 84532,
+      "max_transaction_wei": 300,
+      "max_batch_wei": 3000,
+      "max_run_wei": 30000,
+      "minimum_runner_balance_wei": 1500
+    }
+  ],
+  "stop_policy": {
+    "consecutive_failures": 3,
+    "rolling_window": 10,
+    "rolling_failure_rate": 0.3,
+    "max_quote_age_seconds": 60,
+    "max_quote_movement_bps": 1000,
+    "timeout_count": 3,
+    "collector_backlog": 10,
+    "collector_heartbeat_seconds": 30,
+    "disk_floor_bytes": 1073741824,
+    "nonce_gap_action": "halt",
+    "rpc_disagreement_action": "halt",
+    "reorganization_action": "halt",
+    "allow_partial_conditions": false
+  },
+  "finality_policies": [
+    {
+      "chain_id": 11155420,
+      "kind": "confirmations",
+      "confirmation_count": 10
+    },
+    {
+      "chain_id": 421614,
+      "kind": "l2-safe",
+      "confirmation_count": null
+    },
+    {
+      "chain_id": 84532,
+      "kind": "l2-safe",
+      "confirmation_count": null
+    }
+  ]
+}

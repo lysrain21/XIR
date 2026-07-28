@@ -1,0 +1,288 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xir.example/schemas/evidence-record-bundle-v1.schema.json",
+  "title": "XIR evidence record bundle v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "runs",
+    "conditions",
+    "arms",
+    "pair_slots",
+    "repetitions",
+    "attempts",
+    "stages",
+    "messages",
+    "transaction_intents",
+    "transactions",
+    "observations",
+    "freeze_scopes"
+  ],
+  "properties": {
+    "schema_version": {"const": "xir-lab-evidence-record-bundle-v1"},
+    "runs": {"type": "array", "items": {"$ref": "#/$defs/run"}},
+    "conditions": {"type": "array", "items": {"$ref": "#/$defs/condition"}},
+    "arms": {"type": "array", "items": {"$ref": "#/$defs/arm"}},
+    "pair_slots": {"type": "array", "items": {"$ref": "#/$defs/pairSlot"}},
+    "repetitions": {"type": "array", "items": {"$ref": "#/$defs/repetition"}},
+    "attempts": {"type": "array", "items": {"$ref": "#/$defs/attempt"}},
+    "stages": {"type": "array", "items": {"$ref": "#/$defs/stage"}},
+    "messages": {"type": "array", "items": {"$ref": "#/$defs/message"}},
+    "transaction_intents": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/transactionIntent"}
+    },
+    "transactions": {"type": "array", "items": {"$ref": "#/$defs/transaction"}},
+    "observations": {"type": "array", "items": {"$ref": "#/$defs/observation"}},
+    "freeze_scopes": {"type": "array", "items": {"$ref": "#/$defs/freezeScope"}}
+  },
+  "$defs": {
+    "stableId": {
+      "type": "string",
+      "pattern": "^(run|condition|arm|pair|repetition|attempt|stage|message|intent|transaction|observation|freeze)_[0-9a-f]{24}$"
+    },
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "run": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["run_id", "profile_id", "plan_sha256"],
+      "properties": {
+        "run_id": {"$ref": "#/$defs/stableId"},
+        "profile_id": {"type": "string", "minLength": 1},
+        "plan_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "condition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["condition_id", "run_id", "carrier_sequence"],
+      "properties": {
+        "condition_id": {"$ref": "#/$defs/stableId"},
+        "run_id": {"$ref": "#/$defs/stableId"},
+        "carrier_sequence": {"enum": ["HH", "HL", "LH", "LL"]}
+      }
+    },
+    "arm": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["arm_id", "condition_id", "arm"],
+      "properties": {
+        "arm_id": {"$ref": "#/$defs/stableId"},
+        "condition_id": {"$ref": "#/$defs/stableId"},
+        "arm": {"enum": ["baseline", "xir"]}
+      }
+    },
+    "pairSlot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["pair_slot_id", "condition_id", "slot_index"],
+      "properties": {
+        "pair_slot_id": {"$ref": "#/$defs/stableId"},
+        "condition_id": {"$ref": "#/$defs/stableId"},
+        "slot_index": {"type": "integer", "minimum": 0}
+      }
+    },
+    "repetition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repetition_id", "pair_slot_id", "repetition_index"],
+      "properties": {
+        "repetition_id": {"$ref": "#/$defs/stableId"},
+        "pair_slot_id": {"$ref": "#/$defs/stableId"},
+        "repetition_index": {"type": "integer", "minimum": 0}
+      }
+    },
+    "attempt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "attempt_id",
+        "condition_id",
+        "arm_id",
+        "pair_slot_id",
+        "repetition_id",
+        "attempt_kind",
+        "prior_attempt_id",
+        "original_attempt_kind",
+        "state"
+      ],
+      "properties": {
+        "attempt_id": {"$ref": "#/$defs/stableId"},
+        "condition_id": {"$ref": "#/$defs/stableId"},
+        "arm_id": {"$ref": "#/$defs/stableId"},
+        "pair_slot_id": {
+          "oneOf": [{"$ref": "#/$defs/stableId"}, {"type": "null"}]
+        },
+        "repetition_id": {
+          "oneOf": [{"$ref": "#/$defs/stableId"}, {"type": "null"}]
+        },
+        "attempt_kind": {"enum": ["pilot", "warmup", "primary", "retry"]},
+        "prior_attempt_id": {
+          "oneOf": [{"$ref": "#/$defs/stableId"}, {"type": "null"}]
+        },
+        "original_attempt_kind": {
+          "oneOf": [
+            {"enum": ["pilot", "warmup", "primary"]},
+            {"type": "null"}
+          ]
+        },
+        "state": {
+          "enum": [
+            "planned",
+            "not_submitted",
+            "running",
+            "delivered",
+            "submission_failed",
+            "carrier_failed",
+            "xir_rejected",
+            "destination_failed",
+            "timed_out",
+            "observer_failed",
+            "incomplete_evidence"
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"attempt_kind": {"const": "retry"}}},
+          "then": {
+            "properties": {
+              "prior_attempt_id": {"$ref": "#/$defs/stableId"},
+              "original_attempt_kind": {"enum": ["pilot", "warmup", "primary"]}
+            }
+          },
+          "else": {
+            "properties": {
+              "prior_attempt_id": {"type": "null"},
+              "original_attempt_kind": {"type": "null"}
+            }
+          }
+        },
+        {
+          "if": {"properties": {"attempt_kind": {"const": "warmup"}}},
+          "then": {
+            "properties": {
+              "pair_slot_id": {"type": "null"},
+              "repetition_id": {"type": "null"}
+            }
+          },
+          "else": {
+            "properties": {
+              "pair_slot_id": {"$ref": "#/$defs/stableId"},
+              "repetition_id": {"$ref": "#/$defs/stableId"}
+            }
+          }
+        }
+      ]
+    },
+    "stage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["stage_id", "attempt_id", "stage_name", "ordinal"],
+      "properties": {
+        "stage_id": {"$ref": "#/$defs/stableId"},
+        "attempt_id": {"$ref": "#/$defs/stableId"},
+        "stage_name": {"type": "string", "minLength": 1},
+        "ordinal": {"type": "integer", "minimum": 0}
+      }
+    },
+    "message": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["message_id", "stage_id", "protocol", "protocol_message_id"],
+      "properties": {
+        "message_id": {"$ref": "#/$defs/stableId"},
+        "stage_id": {"$ref": "#/$defs/stableId"},
+        "protocol": {"enum": ["hyperlane", "layerzero-v2", "xir"]},
+        "protocol_message_id": {"type": ["string", "null"], "minLength": 1}
+      }
+    },
+    "transactionIntent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["intent_id", "stage_id", "chain_id", "operation_id"],
+      "properties": {
+        "intent_id": {"$ref": "#/$defs/stableId"},
+        "stage_id": {"$ref": "#/$defs/stableId"},
+        "chain_id": {"enum": [11155420, 421614, 84532]},
+        "operation_id": {"type": "string", "minLength": 1}
+      }
+    },
+    "transaction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "transaction_id",
+        "intent_id",
+        "chain_id",
+        "nonce",
+        "transaction_hash",
+        "replaces_transaction_id"
+      ],
+      "properties": {
+        "transaction_id": {"$ref": "#/$defs/stableId"},
+        "intent_id": {"$ref": "#/$defs/stableId"},
+        "chain_id": {"enum": [11155420, 421614, 84532]},
+        "nonce": {"type": "integer", "minimum": 0},
+        "transaction_hash": {
+          "oneOf": [
+            {"type": "string", "pattern": "^0x[0-9a-f]{64}$"},
+            {"type": "null"}
+          ]
+        },
+        "replaces_transaction_id": {
+          "oneOf": [{"$ref": "#/$defs/stableId"}, {"type": "null"}]
+        }
+      }
+    },
+    "observation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "observation_id",
+        "subject_kind",
+        "subject_id",
+        "observed_at",
+        "raw_sha256",
+        "supersedes_observation_id"
+      ],
+      "properties": {
+        "observation_id": {"$ref": "#/$defs/stableId"},
+        "subject_kind": {
+          "enum": ["attempt", "stage", "message", "transaction"]
+        },
+        "subject_id": {"$ref": "#/$defs/stableId"},
+        "observed_at": {"type": "string", "format": "date-time"},
+        "raw_sha256": {"$ref": "#/$defs/sha256"},
+        "supersedes_observation_id": {
+          "oneOf": [{"$ref": "#/$defs/stableId"}, {"type": "null"}]
+        }
+      }
+    },
+    "freezeScope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "freeze_scope_id",
+        "run_id",
+        "attempt_ids",
+        "prior_freeze_sha256",
+        "scope_sha256"
+      ],
+      "properties": {
+        "freeze_scope_id": {"$ref": "#/$defs/stableId"},
+        "run_id": {"$ref": "#/$defs/stableId"},
+        "attempt_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/stableId"}
+        },
+        "prior_freeze_sha256": {
+          "oneOf": [{"$ref": "#/$defs/sha256"}, {"type": "null"}]
+        },
+        "scope_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    }
+  }
+}

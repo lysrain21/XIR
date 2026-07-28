@@ -1,0 +1,25 @@
+{
+  "schema_version": "xir-lab-local-eight-path-fixture-v1",
+  "network_chain_ids": [11155420, 421614, 84532],
+  "payload_sha256": "6c6a8d121263bc0eb14271224ad763b34c20c07ad898fb85edd4975d6d77b20e",
+  "paths": [
+    {"condition": "HH", "arm": "baseline", "carrier_order": ["hyperlane", "hyperlane"], "physical_transactions": 3, "accounting_buckets": ["source", "intermediate", "destination"], "logical_label_count": 7, "xir_work_count": 0},
+    {"condition": "HH", "arm": "xir", "carrier_order": ["hyperlane", "hyperlane"], "physical_transactions": 3, "accounting_buckets": ["source", "intermediate", "destination"], "logical_label_count": 10, "xir_work_count": 3},
+    {"condition": "HL", "arm": "baseline", "carrier_order": ["hyperlane", "layerzero-v2"], "physical_transactions": 3, "accounting_buckets": ["source", "intermediate", "destination"], "logical_label_count": 7, "xir_work_count": 0},
+    {"condition": "HL", "arm": "xir", "carrier_order": ["hyperlane", "layerzero-v2"], "physical_transactions": 3, "accounting_buckets": ["source", "intermediate", "destination"], "logical_label_count": 10, "xir_work_count": 3},
+    {"condition": "LH", "arm": "baseline", "carrier_order": ["layerzero-v2", "hyperlane"], "physical_transactions": 3, "accounting_buckets": ["source", "intermediate", "destination"], "logical_label_count": 7, "xir_work_count": 0},
+    {"condition": "LH", "arm": "xir", "carrier_order": ["layerzero-v2", "hyperlane"], "physical_transactions": 3, "accounting_buckets": ["source", "intermediate", "destination"], "logical_label_count": 10, "xir_work_count": 3},
+    {"condition": "LL", "arm": "baseline", "carrier_order": ["layerzero-v2", "layerzero-v2"], "physical_transactions": 3, "accounting_buckets": ["source", "intermediate", "destination"], "logical_label_count": 7, "xir_work_count": 0},
+    {"condition": "LL", "arm": "xir", "carrier_order": ["layerzero-v2", "layerzero-v2"], "physical_transactions": 3, "accounting_buckets": ["source", "intermediate", "destination"], "logical_label_count": 10, "xir_work_count": 3}
+  ],
+  "negative_cases": [
+    "unavailable_leg",
+    "wrong_chain",
+    "wrong_peer",
+    "reordered_protocol",
+    "duplicate_delivery",
+    "delayed_delivery",
+    "carrier_batch_attribution_unavailable",
+    "xir_rejection"
+  ]
+}

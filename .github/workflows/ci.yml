@@ -1,0 +1,27 @@
+name: ci
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  zero-write:
+    runs-on: ubuntu-latest
+    env:
+      XIR_LIVE_WRITES_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.8.15"
+      - uses: foundry-rs/foundry-toolchain@v1
+      - run: uv sync --frozen
+      - run: uv run ruff check .
+      - run: uv run mypy src/xir_lab
+      - run: uv run pytest -q
+      - run: forge test --root contracts
+      - run: uv run python -m xir_lab plan
+      - name: Reject tracked secrets and private spool
+        run: |
+          ! git ls-files | grep -E '(^|/)(private-spool|keystore)(/|$)'
+          uv run pytest tests/unit/test_publication.py -q

@@ -1,0 +1,526 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xir.example/schemas/lab-config-v1.schema.json",
+  "title": "XIR Testnet Lab configuration",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "config_id",
+    "networks",
+    "deployment",
+    "payload_effect",
+    "signers",
+    "approval_requirements",
+    "budgets",
+    "stop_policy",
+    "finality_policies"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "xir-lab-config-v1"
+    },
+    "config_id": {
+      "$ref": "#/$defs/stableId"
+    },
+    "networks": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": {
+        "$ref": "#/$defs/network"
+      }
+    },
+    "deployment": {
+      "$ref": "#/$defs/deployment"
+    },
+    "payload_effect": {
+      "$ref": "#/$defs/payloadEffect"
+    },
+    "signers": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": {
+        "$ref": "#/$defs/signerReference"
+      }
+    },
+    "approval_requirements": {
+      "type": "array",
+      "minItems": 6,
+      "maxItems": 6,
+      "items": {
+        "$ref": "#/$defs/approvalRequirement"
+      }
+    },
+    "budgets": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": {
+        "$ref": "#/$defs/chainBudget"
+      }
+    },
+    "stop_policy": {
+      "$ref": "#/$defs/stopPolicy"
+    },
+    "finality_policies": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": {
+        "$ref": "#/$defs/finalityPolicy"
+      }
+    }
+  },
+  "$defs": {
+    "stableId": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+      "maxLength": 96
+    },
+    "digest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "evmAddress": {
+      "type": "string",
+      "pattern": "^0x[0-9a-fA-F]{40}$"
+    },
+    "publicReference": {
+      "type": "string",
+      "pattern": "^[A-Za-z][A-Za-z0-9_.:-]{0,127}$"
+    },
+    "network": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "network_id",
+        "chain_id",
+        "route_role",
+        "read_rpc_ref",
+        "write_rpc_ref",
+        "checkpoint"
+      ],
+      "properties": {
+        "network_id": {
+          "enum": [
+            "op-sepolia",
+            "arbitrum-sepolia",
+            "base-sepolia"
+          ]
+        },
+        "chain_id": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "route_role": {
+          "enum": [
+            "source",
+            "intermediate",
+            "destination"
+          ]
+        },
+        "read_rpc_ref": {
+          "$ref": "#/$defs/publicReference"
+        },
+        "write_rpc_ref": {
+          "$ref": "#/$defs/publicReference"
+        },
+        "checkpoint": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "block_number",
+            "block_hash"
+          ],
+          "properties": {
+            "kind": {
+              "enum": [
+                "network-checkpoint",
+                "genesis"
+              ]
+            },
+            "block_number": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "block_hash": {
+              "type": "string",
+              "pattern": "^0x[0-9a-fA-F]{64}$"
+            }
+          }
+        }
+      }
+    },
+    "contractIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "contract_id",
+        "network_id",
+        "kind",
+        "address",
+        "runtime_code_sha256",
+        "administrator",
+        "runner"
+      ],
+      "properties": {
+        "contract_id": {
+          "$ref": "#/$defs/stableId"
+        },
+        "network_id": {
+          "enum": [
+            "op-sepolia",
+            "arbitrum-sepolia",
+            "base-sepolia"
+          ]
+        },
+        "kind": {
+          "enum": [
+            "gateway",
+            "registry",
+            "hyperlane-adapter",
+            "layerzero-adapter",
+            "baseline-forwarder",
+            "baseline-receiver",
+            "xir-receiver"
+          ]
+        },
+        "address": {
+          "$ref": "#/$defs/evmAddress"
+        },
+        "runtime_code_sha256": {
+          "$ref": "#/$defs/digest"
+        },
+        "administrator": {
+          "$ref": "#/$defs/evmAddress"
+        },
+        "runner": {
+          "$ref": "#/$defs/evmAddress"
+        }
+      }
+    },
+    "carrierEndpoint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "endpoint_id",
+        "protocol",
+        "local_network",
+        "remote_network",
+        "endpoint_address",
+        "remote_selector",
+        "peer_address",
+        "security_config_sha256"
+      ],
+      "properties": {
+        "endpoint_id": {
+          "$ref": "#/$defs/stableId"
+        },
+        "protocol": {
+          "enum": [
+            "hyperlane",
+            "layerzero-v2"
+          ]
+        },
+        "local_network": {
+          "enum": [
+            "op-sepolia",
+            "arbitrum-sepolia"
+          ]
+        },
+        "remote_network": {
+          "enum": [
+            "arbitrum-sepolia",
+            "base-sepolia"
+          ]
+        },
+        "endpoint_address": {
+          "$ref": "#/$defs/evmAddress"
+        },
+        "remote_selector": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "peer_address": {
+          "$ref": "#/$defs/evmAddress"
+        },
+        "security_config_sha256": {
+          "$ref": "#/$defs/digest"
+        }
+      }
+    },
+    "deployment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "deployment_id",
+        "deployment_version",
+        "compiler_version",
+        "contracts",
+        "carrier_endpoints"
+      ],
+      "properties": {
+        "deployment_id": {
+          "$ref": "#/$defs/stableId"
+        },
+        "deployment_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "compiler_version": {
+          "const": "0.8.28"
+        },
+        "contracts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/contractIdentity"
+          }
+        },
+        "carrier_endpoints": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "items": {
+            "$ref": "#/$defs/carrierEndpoint"
+          }
+        }
+      }
+    },
+    "payloadEffect": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "payload_id",
+        "payload_hex",
+        "payload_sha256",
+        "destination_effect_id",
+        "effect_definition_sha256"
+      ],
+      "properties": {
+        "payload_id": {
+          "$ref": "#/$defs/stableId"
+        },
+        "payload_hex": {
+          "type": "string",
+          "pattern": "^(?:[0-9a-fA-F]{2})*$"
+        },
+        "payload_sha256": {
+          "$ref": "#/$defs/digest"
+        },
+        "destination_effect_id": {
+          "$ref": "#/$defs/stableId"
+        },
+        "effect_definition_sha256": {
+          "$ref": "#/$defs/digest"
+        }
+      }
+    },
+    "signerReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "signer_id",
+        "role",
+        "kind",
+        "reference",
+        "public_identity"
+      ],
+      "properties": {
+        "signer_id": {
+          "$ref": "#/$defs/stableId"
+        },
+        "role": {
+          "enum": [
+            "deployer",
+            "runner",
+            "approval-authority"
+          ]
+        },
+        "kind": {
+          "enum": [
+            "external-evm-signer",
+            "encrypted-keystore-ref",
+            "ed25519-approval-authority"
+          ]
+        },
+        "reference": {
+          "$ref": "#/$defs/publicReference"
+        },
+        "public_identity": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        }
+      }
+    },
+    "approvalRequirement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "operation_type",
+        "approval_schema",
+        "expected_pre_state_sha256",
+        "authorized_transition_sha256"
+      ],
+      "properties": {
+        "operation_type": {
+          "enum": [
+            "deployment",
+            "configuration",
+            "pilot",
+            "primary",
+            "scale",
+            "closeout"
+          ]
+        },
+        "approval_schema": {
+          "$ref": "#/$defs/publicReference"
+        },
+        "expected_pre_state_sha256": {
+          "$ref": "#/$defs/digest"
+        },
+        "authorized_transition_sha256": {
+          "$ref": "#/$defs/digest"
+        }
+      }
+    },
+    "chainBudget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "chain_id",
+        "max_transaction_wei",
+        "max_batch_wei",
+        "max_run_wei",
+        "minimum_runner_balance_wei"
+      ],
+      "properties": {
+        "chain_id": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_transaction_wei": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "max_batch_wei": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "max_run_wei": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "minimum_runner_balance_wei": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "stopPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "consecutive_failures",
+        "rolling_window",
+        "rolling_failure_rate",
+        "max_quote_age_seconds",
+        "max_quote_movement_bps",
+        "timeout_count",
+        "collector_backlog",
+        "collector_heartbeat_seconds",
+        "disk_floor_bytes",
+        "nonce_gap_action",
+        "rpc_disagreement_action",
+        "reorganization_action",
+        "allow_partial_conditions"
+      ],
+      "properties": {
+        "consecutive_failures": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "rolling_window": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "rolling_failure_rate": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "max_quote_age_seconds": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_quote_movement_bps": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10000
+        },
+        "timeout_count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "collector_backlog": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "collector_heartbeat_seconds": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "disk_floor_bytes": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "nonce_gap_action": {
+          "const": "halt"
+        },
+        "rpc_disagreement_action": {
+          "const": "halt"
+        },
+        "reorganization_action": {
+          "const": "halt"
+        },
+        "allow_partial_conditions": {
+          "type": "boolean",
+          "default": false
+        }
+      }
+    },
+    "finalityPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "chain_id",
+        "kind",
+        "confirmation_count"
+      ],
+      "properties": {
+        "chain_id": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "kind": {
+          "enum": [
+            "confirmations",
+            "l2-safe",
+            "l2-finalized",
+            "l1-settlement"
+          ]
+        },
+        "confirmation_count": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        }
+      }
+    }
+  }
+}

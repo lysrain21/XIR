@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+message: "If you use this research prototype or its evidence, please cite it."
+title: "XIR Testnet Lab"
+type: software
+authors:
+  - name: "XIR Research Authors"
+version: 0.1.0
+date-released: 2026-07-25
+license: MIT
+abstract: >-
+  A reproducible research prototype for matched baseline and XIR execution
+  over Hyperlane and LayerZero V2 on a fixed three-chain public-testnet route.
+keywords:
+  - cross-chain
+  - interoperability
+  - reproducible experiments
+  - Hyperlane
+  - LayerZero

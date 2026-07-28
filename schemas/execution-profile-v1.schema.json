@@ -1,0 +1,145 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xir.example/schemas/execution-profile-v1.schema.json",
+  "title": "XIR execution profile v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "profile_id",
+    "profile_version",
+    "profile_mode",
+    "profile_kind",
+    "approval_operation_type",
+    "fixed_seed",
+    "conditions",
+    "counts",
+    "live_limits",
+    "derived_from"
+  ],
+  "properties": {
+    "schema_version": {"const": "xir-lab-execution-profile-v1"},
+    "profile_id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]+$"},
+    "profile_version": {"type": "integer", "minimum": 1},
+    "profile_mode": {"enum": ["template", "live"]},
+    "profile_kind": {"enum": ["pilot", "primary", "scale"]},
+    "approval_operation_type": {"enum": ["pilot", "primary", "scale"]},
+    "fixed_seed": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "conditions": {"const": ["HH", "HL", "LH", "LL"]},
+    "counts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "pair_slots_per_condition",
+        "planned_pair_slots",
+        "designated_attempt_kind",
+        "planned_designated_attempts",
+        "warmups_per_condition_arm",
+        "planned_warmup_attempts",
+        "planned_total_non_retry_attempts"
+        ,
+        "retry_attempts_in_designated_count"
+      ],
+      "properties": {
+        "pair_slots_per_condition": {"type": "integer", "minimum": 0},
+        "planned_pair_slots": {"type": "integer", "minimum": 0},
+        "designated_attempt_kind": {"enum": ["pilot", "primary"]},
+        "planned_designated_attempts": {"type": "integer", "minimum": 0},
+        "warmups_per_condition_arm": {"type": "integer", "minimum": 0},
+        "planned_warmup_attempts": {"type": "integer", "minimum": 0},
+        "planned_total_non_retry_attempts": {"type": "integer", "minimum": 0}
+        ,
+        "retry_attempts_in_designated_count": {"const": false}
+      }
+    },
+    "live_limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "max_retries_per_lineage",
+        "max_batch_attempts",
+        "max_duration_seconds",
+        "max_in_flight_attempts",
+        "chain_budget_wei",
+        "stop_policy",
+        "allow_partial_conditions"
+      ],
+      "properties": {
+        "max_retries_per_lineage": {
+          "type": ["integer", "null"],
+          "minimum": 0
+        },
+        "max_batch_attempts": {
+          "type": ["integer", "null"],
+          "minimum": 1
+        },
+        "max_duration_seconds": {
+          "type": ["integer", "null"],
+          "minimum": 1
+        },
+        "max_in_flight_attempts": {
+          "type": ["integer", "null"],
+          "minimum": 1
+        },
+        "chain_budget_wei": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["11155420", "421614", "84532"],
+          "properties": {
+            "11155420": {"type": ["integer", "null"], "minimum": 0},
+            "421614": {"type": ["integer", "null"], "minimum": 0},
+            "84532": {"type": ["integer", "null"], "minimum": 0}
+          }
+        },
+        "stop_policy": {
+          "oneOf": [
+            {"type": "null"},
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "consecutive_failures",
+                "rolling_window",
+                "rolling_failure_rate",
+                "timeout_count",
+                "collector_backlog",
+                "collector_heartbeat_seconds",
+                "disk_floor_bytes"
+              ],
+              "properties": {
+                "consecutive_failures": {"type": "integer", "minimum": 1},
+                "rolling_window": {"type": "integer", "minimum": 1},
+                "rolling_failure_rate": {
+                  "type": "number",
+                  "exclusiveMinimum": 0,
+                  "maximum": 1
+                },
+                "timeout_count": {"type": "integer", "minimum": 1},
+                "collector_backlog": {"type": "integer", "minimum": 1},
+                "collector_heartbeat_seconds": {"type": "integer", "minimum": 1},
+                "disk_floor_bytes": {"type": "integer", "minimum": 1}
+              }
+            }
+          ]
+        },
+        "allow_partial_conditions": {"type": ["boolean", "null"]}
+      }
+    },
+    "derived_from": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "run_id", "freeze_sha256", "reconciled"],
+      "properties": {
+        "kind": {"enum": ["none", "pilot", "primary"]},
+        "run_id": {"type": ["string", "null"], "minLength": 1},
+        "freeze_sha256": {
+          "oneOf": [
+            {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+            {"type": "null"}
+          ]
+        },
+        "reconciled": {"type": ["boolean", "null"]}
+      }
+    }
+  }
+}
