@@ -12,7 +12,7 @@ contract MockBaselineCarrier is IBaselineCarrier {
     uint256 public forwardCount;
     bytes32 public lastPayloadHash;
 
-    function quoteBaseline(bytes calldata, bytes calldata)
+    function quoteBaseline(bytes32, bytes calldata, bytes calldata)
         external
         pure
         returns (uint256)
@@ -20,7 +20,7 @@ contract MockBaselineCarrier is IBaselineCarrier {
         return 1;
     }
 
-    function sendBaselineSource(bytes calldata message, bytes calldata)
+    function sendBaselineSource(bytes32, bytes calldata message, bytes calldata)
         external
         payable
         returns (bytes32)
@@ -30,7 +30,7 @@ contract MockBaselineCarrier is IBaselineCarrier {
         return keccak256(abi.encode("source", sourceCount, message));
     }
 
-    function forwardBaseline(bytes calldata message, bytes calldata)
+    function forwardBaseline(bytes32, bytes calldata message, bytes calldata)
         external
         payable
         returns (bytes32)
@@ -109,6 +109,7 @@ contract BaselineRouteControlTest {
         BaselineInbound secondInbound = new BaselineInbound();
         BaselineRunner runner = new BaselineRunner();
         BaselineRouteControl route = new BaselineRouteControl(
+            keccak256(abi.encode("route", first, second)),
             first,
             second,
             firstPort,

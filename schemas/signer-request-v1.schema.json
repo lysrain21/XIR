@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xir.example/schemas/signer-request-v1.schema.json",
+  "title": "XIR external signer request",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "operation_id",
+    "role",
+    "network_id",
+    "chain_id",
+    "signer_id",
+    "intent_id",
+    "nonce",
+    "destination",
+    "value_wei",
+    "calldata_hex",
+    "calldata_sha256",
+    "calldata_length",
+    "config_sha256",
+    "code_sha256",
+    "gas_limit",
+    "max_fee_per_gas_wei",
+    "max_priority_fee_per_gas_wei",
+    "fee_limit_wei",
+    "unsigned_transaction_sha256"
+  ],
+  "properties": {
+    "schema_version": {"const": "xir-lab-signer-request-v1"},
+    "operation_id": {"type": "string", "pattern": "^signop_[0-9a-f]{64}$"},
+    "role": {"enum": ["deployer", "runner"]},
+    "network_id": {
+      "enum": ["op-sepolia", "arbitrum-sepolia", "base-sepolia"]
+    },
+    "chain_id": {"enum": [11155420, 421614, 84532]},
+    "signer_id": {"type": "string", "pattern": "^[a-z][a-z0-9-]{0,95}$"},
+    "intent_id": {"type": "string", "minLength": 1, "maxLength": 128},
+    "nonce": {"type": "integer", "minimum": 0},
+    "destination": {"type": "string", "pattern": "^0x[0-9a-fA-F]{40}$"},
+    "value_wei": {"type": "integer", "minimum": 0},
+    "calldata_hex": {"type": "string", "pattern": "^(?:[0-9a-fA-F]{2})*$"},
+    "calldata_sha256": {"$ref": "#/$defs/digest"},
+    "calldata_length": {"type": "integer", "minimum": 0},
+    "config_sha256": {"$ref": "#/$defs/digest"},
+    "code_sha256": {"$ref": "#/$defs/digest"},
+    "gas_limit": {"type": "integer", "minimum": 21000},
+    "max_fee_per_gas_wei": {"type": "integer", "minimum": 0},
+    "max_priority_fee_per_gas_wei": {"type": "integer", "minimum": 0},
+    "fee_limit_wei": {"type": "integer", "minimum": 0},
+    "unsigned_transaction_sha256": {"$ref": "#/$defs/digest"}
+  },
+  "$defs": {
+    "digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

@@ -15,7 +15,8 @@ contract DryRun is LabScriptBase {
         _requireCode("hyperlane-adapter", address(hyperlane));
         _requireCode("layerzero-v2-adapter", address(layerZero));
         bytes memory payload = abi.encodePacked(vm.envBytes32("XIR_DRY_RUN_PAYLOAD_HASH"));
-        hyperlaneFee = hyperlane.quoteBaseline(payload, bytes(""));
-        layerZeroFee = layerZero.quoteBaseline(payload, bytes(""));
+        bytes32 routeId = vm.envBytes32("XIR_DRY_RUN_ROUTE_ID");
+        hyperlaneFee = hyperlane.quoteBaseline(routeId, payload, bytes(""));
+        layerZeroFee = layerZero.quoteBaseline(routeId, payload, bytes(""));
     }
 }

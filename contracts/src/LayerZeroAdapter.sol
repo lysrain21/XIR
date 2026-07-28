@@ -3,6 +3,7 @@ pragma solidity ^0.8.28;
 
 import {IXIRCarrierAdapter} from "./IXIRCarrierAdapter.sol";
 import {IBaselineCarrier} from "./IBaselineCarrier.sol";
+import {IBaselineCarrierReceiver} from "./IBaselineCarrier.sol";
 import {OutboundControl} from "./OutboundControl.sol";
 
 struct MessagingParams {
@@ -44,6 +45,8 @@ contract LayerZeroAdapter is IXIRCarrierAdapter, IBaselineCarrier, OutboundContr
     error InvalidBundle();
     error InvalidPeer();
     error UnverifiedPriorEvidence(uint256 index);
+    error UnknownMessageKind();
+    error UnknownBaselineRoute();
 
     struct Origin {
         uint32 srcEid;
@@ -73,6 +76,10 @@ contract LayerZeroAdapter is IXIRCarrierAdapter, IBaselineCarrier, OutboundContr
     uint32 public immutable remoteEid;
     bytes32 public remotePeer;
     mapping(bytes32 => bool) public acceptedEvidence;
+    mapping(bytes32 => address) public baselineReceivers;
+
+    uint8 private constant KIND_XIR = 1;
+    uint8 private constant KIND_BASELINE = 2;
 
     event LayerZeroEvidence(
         bytes32 indexed guid,
@@ -92,6 +99,7 @@ contract LayerZeroAdapter is IXIRCarrierAdapter, IBaselineCarrier, OutboundContr
     event RemotePeerSet(bytes32 indexed remotePeer);
     event VerifiedEvidenceForwarded(bytes32 indexed guid, uint64 indexed nonce, uint256 nativeFee);
     event BaselineDispatched(bytes32 indexed guid, uint64 indexed nonce, uint256 nativeFee);
+    event BaselineReceiverSet(bytes32 indexed routeId, address indexed receiver);
 
     constructor(
         address endpoint_,
@@ -113,6 +121,12 @@ contract LayerZeroAdapter is IXIRCarrierAdapter, IBaselineCarrier, OutboundContr
         emit RemotePeerSet(remotePeer_);
     }
 
+    function setBaselineReceiver(bytes32 routeId, address receiver) external onlyAdministrator {
+        if (routeId == bytes32(0) || receiver == address(0)) revert InvalidPeer();
+        baselineReceivers[routeId] = receiver;
+        emit BaselineReceiverSet(routeId, receiver);
+    }
+
     function quoteForward(ForwardRequest calldata request)
         external
         view
@@ -122,12 +136,14 @@ contract LayerZeroAdapter is IXIRCarrierAdapter, IBaselineCarrier, OutboundContr
         return ILayerZeroEndpointV2(endpoint).quote(_params(request), address(this));
     }
 
-    function quoteBaseline(bytes calldata message, bytes calldata options)
+    function quoteBaseline(bytes32 routeId, bytes calldata message, bytes calldata options)
         external
         view
         returns (uint256)
     {
-        return ILayerZeroEndpointV2(endpoint).quote(_rawParams(message, options), address(this))
+        return ILayerZeroEndpointV2(endpoint).quote(
+            _rawParams(routeId, message, options), address(this)
+        )
             .nativeFee;
     }
 
@@ -174,33 +190,41 @@ contract LayerZeroAdapter is IXIRCarrierAdapter, IBaselineCarrier, OutboundContr
         emit VerifiedEvidenceForwarded(receipt.guid, receipt.nonce, receipt.fee.nativeFee);
     }
 
-    function sendBaselineSource(bytes calldata message, bytes calldata options)
+    function sendBaselineSource(
+        bytes32 routeId,
+        bytes calldata message,
+        bytes calldata options
+    )
         external
         payable
         onlyRunner
         whenSourceStartAllowed
         returns (bytes32)
     {
-        return _sendBaseline(message, options);
+        return _sendBaseline(routeId, message, options);
     }
 
-    function forwardBaseline(bytes calldata message, bytes calldata options)
+    function forwardBaseline(
+        bytes32 routeId,
+        bytes calldata message,
+        bytes calldata options
+    )
         external
         payable
         onlyRunner
         whenOutboundActive
         returns (bytes32)
     {
-        return _sendBaseline(message, options);
+        return _sendBaseline(routeId, message, options);
     }
 
-    function _sendBaseline(bytes calldata message, bytes calldata options)
+    function _sendBaseline(bytes32 routeId, bytes calldata message, bytes calldata options)
         private
         returns (bytes32)
     {
         MessagingReceipt memory receipt =
             ILayerZeroEndpointV2(endpoint).send{value: msg.value}(
-                _rawParams(message, options), runner
+                _rawParams(routeId, message, options), runner
             );
         emit BaselineDispatched(receipt.guid, receipt.nonce, receipt.fee.nativeFee);
         return receipt.guid;
@@ -217,7 +241,16 @@ contract LayerZeroAdapter is IXIRCarrierAdapter, IBaselineCarrier, OutboundContr
         if (remotePeer == bytes32(0) || origin.srcEid != remoteEid || origin.sender != remotePeer) {
             revert OnlyPeer();
         }
-        DeliveryBundle memory bundle = abi.decode(message, (DeliveryBundle));
+        (uint8 kind, bytes memory body) = abi.decode(message, (uint8, bytes));
+        if (kind == KIND_BASELINE) {
+            (bytes32 routeId, bytes memory payload) = abi.decode(body, (bytes32, bytes));
+            address receiver = baselineReceivers[routeId];
+            if (receiver == address(0)) revert UnknownBaselineRoute();
+            IBaselineCarrierReceiver(receiver).baselineCarrierReceive(guid, payload);
+            return;
+        }
+        if (kind != KIND_XIR) revert UnknownMessageKind();
+        DeliveryBundle memory bundle = abi.decode(body, (DeliveryBundle));
         if (
             bundle.priorProfiles.length != bundle.priorEvidence.length
                 || bundle.priorProfiles.length != bundle.priorTransitions.length
@@ -269,20 +302,23 @@ contract LayerZeroAdapter is IXIRCarrierAdapter, IBaselineCarrier, OutboundContr
             dstEid: remoteEid,
             receiver: remotePeer,
             message: abi.encode(
-                DeliveryBundle({
-                    profileHash: request.currentProfileHash,
-                    transitionHash: request.currentTransitionHash,
-                    priorProfiles: request.profileHashes,
-                    priorEvidence: request.evidenceHashes,
-                    priorTransitions: request.transitionHashes
-                })
+                KIND_XIR,
+                abi.encode(
+                    DeliveryBundle({
+                        profileHash: request.currentProfileHash,
+                        transitionHash: request.currentTransitionHash,
+                        priorProfiles: request.profileHashes,
+                        priorEvidence: request.evidenceHashes,
+                        priorTransitions: request.transitionHashes
+                    })
+                )
             ),
             options: request.options,
             payInLzToken: false
         });
     }
 
-    function _rawParams(bytes calldata message, bytes calldata options)
+    function _rawParams(bytes32 routeId, bytes calldata message, bytes calldata options)
         private
         view
         returns (MessagingParams memory)
@@ -291,7 +327,7 @@ contract LayerZeroAdapter is IXIRCarrierAdapter, IBaselineCarrier, OutboundContr
         return MessagingParams({
             dstEid: remoteEid,
             receiver: remotePeer,
-            message: message,
+            message: abi.encode(KIND_BASELINE, abi.encode(routeId, message)),
             options: options,
             payInLzToken: false
         });

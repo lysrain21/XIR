@@ -2,6 +2,15 @@
 pragma solidity ^0.8.28;
 
 import {HyperlaneAdapter, IHyperlaneMailbox} from "../src/HyperlaneAdapter.sol";
+import {IBaselineCarrierReceiver} from "../src/IBaselineCarrier.sol";
+
+contract HyperlaneBaselineReceiver is IBaselineCarrierReceiver {
+    bytes32 public lastPayloadHash;
+
+    function baselineCarrierReceive(bytes32, bytes calldata payload) external {
+        lastPayloadHash = keccak256(payload);
+    }
+}
 
 contract MockMailbox is IHyperlaneMailbox {
     uint256 public dispatchCount;
@@ -58,6 +67,14 @@ contract ControlActor {
 
     function setRunner(HyperlaneAdapter adapter, address runner) external {
         adapter.setRunner(runner);
+    }
+
+    function setBaselineReceiver(
+        HyperlaneAdapter adapter,
+        bytes32 routeId,
+        address receiver
+    ) external {
+        adapter.setBaselineReceiver(routeId, receiver);
     }
 
     function proposeAdministrator(HyperlaneAdapter adapter, address pending) external {
@@ -132,7 +149,8 @@ contract OutboundControlTest {
         bytes32 profile = keccak256("profile");
         bytes32 transition = keccak256("transition");
         bytes32 evidence = keccak256("evidence");
-        bytes memory body = abi.encode(profile, transition, evidence);
+        bytes memory body =
+            abi.encode(uint8(1), abi.encode(profile, transition, evidence));
         try adapter.handle(REMOTE_DOMAIN, REMOTE_ADAPTER, body) {
             revert("non-mailbox inbound succeeded");
         } catch {}
@@ -141,6 +159,20 @@ contract OutboundControlTest {
         } catch {}
         mailbox.deliver(adapter, REMOTE_DOMAIN, REMOTE_ADAPTER, body);
         require(adapter.verify(profile, evidence, transition), "authenticated evidence missing");
+    }
+
+    function testAuthenticatedBaselineEnvelopeUsesConfiguredRoute() public {
+        bytes32 routeId = keccak256("route");
+        bytes memory payload = bytes("baseline-payload");
+        HyperlaneBaselineReceiver receiver = new HyperlaneBaselineReceiver();
+        administrator.setBaselineReceiver(adapter, routeId, address(receiver));
+        mailbox.deliver(
+            adapter,
+            REMOTE_DOMAIN,
+            REMOTE_ADAPTER,
+            abi.encode(uint8(2), abi.encode(routeId, payload))
+        );
+        require(receiver.lastPayloadHash() == keccak256(payload), "baseline payload changed");
     }
 
     function testDrainBlocksNewSourceButAllowsInFlightForward() public {

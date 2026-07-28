@@ -113,25 +113,15 @@ class ApprovalVerifier:
         *,
         now: datetime | None = None,
     ) -> VerifiedApproval:
+        verified = self.verify(document, now=now)
         payload = self._validate_document(document, "approval-envelope-v1.schema.json")
         payload_sha256 = cast(str, document["payload_sha256"])
-        self._verify_signature(
-            payload=payload,
-            payload_sha256=payload_sha256,
-            signature_hex=cast(str, document["signature"]),
-            domain=APPROVAL_DOMAIN,
-        )
-        issued_at = _parse_time(cast(str, payload["issued_at"]))
         valid_from = _parse_time(cast(str, payload["valid_from"]))
         valid_until = _parse_time(cast(str, payload["valid_until"]))
         current = (now or datetime.now(UTC)).astimezone(UTC)
-        if not issued_at <= valid_from < valid_until:
-            raise ApprovalError("approval time ordering is invalid")
-        if not valid_from <= current < valid_until:
-            raise ApprovalError("approval is not currently valid")
-        approval_id = cast(str, payload["approval_id"])
+        approval_id = verified.approval_id
         issuer_id = cast(str, payload["issuer_id"])
-        sequence = cast(int, payload["issuer_sequence"])
+        sequence = verified.issuer_sequence
         with self.store.write() as connection:
             revoked = connection.execute(
                 "SELECT 1 FROM approval_revocations WHERE approval_id = ?",
@@ -175,6 +165,71 @@ class ApprovalVerifier:
                 )
             except Exception as exc:
                 raise ApprovalError("approval replay rejected") from exc
+        return VerifiedApproval(
+            approval_id=approval_id,
+            operation_type=verified.operation_type,
+            operation_id=verified.operation_id,
+            payload_sha256=payload_sha256,
+            issuer_sequence=sequence,
+        )
+
+    def verify(
+        self,
+        document: dict[str, Any],
+        *,
+        now: datetime | None = None,
+    ) -> VerifiedApproval:
+        """Verify an approval and its ledger state without consuming it."""
+
+        payload = self._validate_document(document, "approval-envelope-v1.schema.json")
+        payload_sha256 = cast(str, document["payload_sha256"])
+        self._verify_signature(
+            payload=payload,
+            payload_sha256=payload_sha256,
+            signature_hex=cast(str, document["signature"]),
+            domain=APPROVAL_DOMAIN,
+        )
+        issued_at = _parse_time(cast(str, payload["issued_at"]))
+        valid_from = _parse_time(cast(str, payload["valid_from"]))
+        valid_until = _parse_time(cast(str, payload["valid_until"]))
+        current = (now or datetime.now(UTC)).astimezone(UTC)
+        if not issued_at <= valid_from < valid_until:
+            raise ApprovalError("approval time ordering is invalid")
+        if not valid_from <= current < valid_until:
+            raise ApprovalError("approval is not currently valid")
+        approval_id = cast(str, payload["approval_id"])
+        issuer_id = cast(str, payload["issuer_id"])
+        sequence = cast(int, payload["issuer_sequence"])
+        try:
+            with self.store.connect(read_only=True) as connection:
+                revoked = connection.execute(
+                    "SELECT 1 FROM approval_revocations WHERE approval_id = ?",
+                    (approval_id,),
+                ).fetchone()
+                consumed = connection.execute(
+                    "SELECT 1 FROM approval_consumptions WHERE approval_id = ?",
+                    (approval_id,),
+                ).fetchone()
+                maximum = connection.execute(
+                    """
+                    SELECT max(issuer_sequence) FROM (
+                        SELECT issuer_sequence FROM approval_consumptions
+                        WHERE issuer_id = ?
+                        UNION ALL
+                        SELECT issuer_sequence FROM approval_revocations
+                        WHERE issuer_id = ?
+                    )
+                    """,
+                    (issuer_id, issuer_id),
+                ).fetchone()[0]
+        except Exception as exc:
+            raise ApprovalError("approval ledger is unavailable") from exc
+        if revoked is not None:
+            raise ApprovalError("approval has been revoked")
+        if consumed is not None:
+            raise ApprovalError("approval has already been consumed")
+        if maximum is not None and sequence <= int(maximum):
+            raise ApprovalError("issuer sequence is not monotonic")
         return VerifiedApproval(
             approval_id=approval_id,
             operation_type=cast(str, payload["operation_type"]),

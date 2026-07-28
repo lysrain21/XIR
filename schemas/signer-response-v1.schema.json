@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xir.example/schemas/signer-response-v1.schema.json",
+  "title": "XIR external signer response",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "operation_id",
+    "signer_id",
+    "role",
+    "address",
+    "request_sha256",
+    "transaction_hash",
+    "signed_bytes_hex"
+  ],
+  "properties": {
+    "schema_version": {"const": "xir-lab-signer-response-v1"},
+    "operation_id": {"type": "string", "pattern": "^signop_[0-9a-f]{64}$"},
+    "signer_id": {"type": "string", "pattern": "^[a-z][a-z0-9-]{0,95}$"},
+    "role": {"enum": ["deployer", "runner"]},
+    "address": {"type": "string", "pattern": "^0x[0-9a-fA-F]{40}$"},
+    "request_sha256": {"$ref": "#/$defs/digest"},
+    "transaction_hash": {"type": "string", "pattern": "^0x[0-9a-fA-F]{64}$"},
+    "signed_bytes_hex": {"type": "string", "pattern": "^[0-9a-fA-F]+$"}
+  },
+  "$defs": {
+    "digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

@@ -43,15 +43,19 @@ keystore/
 keystores/
 secrets/
 credentials/
+custody/
+*.password
+*.passwd
+*.signed-tx
 
 # Live state, private signing recovery, and mutable evidence
-.xir-lab/
-runs/
-live/
-private/
-private-spool/
-recovery-spool/
-signed-transactions/
+/.xir-lab/
+/runs/
+/live/
+/private/
+/private-spool/
+/recovery-spool/
+/signed-transactions/
 *.sqlite
 *.sqlite3
 *.sqlite-*

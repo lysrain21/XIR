@@ -3,6 +3,7 @@ pragma solidity ^0.8.28;
 
 import {IXIRCarrierAdapter} from "./IXIRCarrierAdapter.sol";
 import {IBaselineCarrier} from "./IBaselineCarrier.sol";
+import {IBaselineCarrierReceiver} from "./IBaselineCarrier.sol";
 import {OutboundControl} from "./OutboundControl.sol";
 
 interface IHyperlaneMailbox {
@@ -23,11 +24,17 @@ contract HyperlaneAdapter is IXIRCarrierAdapter, IBaselineCarrier, OutboundContr
     error InvalidEvidence();
     error InvalidPeer();
     error UnsupportedOptions();
+    error UnknownMessageKind();
+    error UnknownBaselineRoute();
 
     address public immutable mailbox;
     uint32 public immutable remoteDomain;
     bytes32 public remoteAdapter;
     mapping(bytes32 => bool) public acceptedEvidence;
+    mapping(bytes32 => address) public baselineReceivers;
+
+    uint8 private constant KIND_XIR = 1;
+    uint8 private constant KIND_BASELINE = 2;
 
     event HyperlaneEvidence(
         bytes32 indexed evidenceHash,
@@ -43,6 +50,7 @@ contract HyperlaneAdapter is IXIRCarrierAdapter, IBaselineCarrier, OutboundContr
         bytes32 indexed recipient,
         uint256 fee
     );
+    event BaselineReceiverSet(bytes32 indexed routeId, address indexed receiver);
 
     constructor(
         address mailbox_,
@@ -63,17 +71,29 @@ contract HyperlaneAdapter is IXIRCarrierAdapter, IBaselineCarrier, OutboundContr
         emit RemoteAdapterSet(remoteAdapter_);
     }
 
-    function quote(bytes calldata body) external view returns (uint256) {
-        return IHyperlaneMailbox(mailbox).quoteDispatch(remoteDomain, remoteAdapter, body);
+    function setBaselineReceiver(bytes32 routeId, address receiver) external onlyAdministrator {
+        if (routeId == bytes32(0) || receiver == address(0)) revert InvalidPeer();
+        baselineReceivers[routeId] = receiver;
+        emit BaselineReceiverSet(routeId, receiver);
     }
 
-    function quoteBaseline(bytes calldata message, bytes calldata options)
+    function quote(bytes calldata body) external view returns (uint256) {
+        return IHyperlaneMailbox(mailbox).quoteDispatch(
+            remoteDomain, remoteAdapter, abi.encode(KIND_XIR, body)
+        );
+    }
+
+    function quoteBaseline(bytes32 routeId, bytes calldata message, bytes calldata options)
         external
         view
         returns (uint256)
     {
         if (options.length != 0) revert UnsupportedOptions();
-        return IHyperlaneMailbox(mailbox).quoteDispatch(remoteDomain, remoteAdapter, message);
+        return IHyperlaneMailbox(mailbox).quoteDispatch(
+            remoteDomain,
+            remoteAdapter,
+            abi.encode(KIND_BASELINE, abi.encode(routeId, message))
+        );
     }
 
     function sendSource(bytes calldata body)
@@ -83,7 +103,7 @@ contract HyperlaneAdapter is IXIRCarrierAdapter, IBaselineCarrier, OutboundContr
         whenSourceStartAllowed
         returns (bytes32)
     {
-        return _dispatch(body);
+        return _dispatch(abi.encode(KIND_XIR, body));
     }
 
     function forwardInFlight(bytes calldata body)
@@ -93,10 +113,14 @@ contract HyperlaneAdapter is IXIRCarrierAdapter, IBaselineCarrier, OutboundContr
         whenOutboundActive
         returns (bytes32)
     {
-        return _dispatch(body);
+        return _dispatch(abi.encode(KIND_XIR, body));
     }
 
-    function sendBaselineSource(bytes calldata message, bytes calldata options)
+    function sendBaselineSource(
+        bytes32 routeId,
+        bytes calldata message,
+        bytes calldata options
+    )
         external
         payable
         onlyRunner
@@ -104,10 +128,14 @@ contract HyperlaneAdapter is IXIRCarrierAdapter, IBaselineCarrier, OutboundContr
         returns (bytes32)
     {
         if (options.length != 0) revert UnsupportedOptions();
-        return _dispatch(message);
+        return _dispatch(abi.encode(KIND_BASELINE, abi.encode(routeId, message)));
     }
 
-    function forwardBaseline(bytes calldata message, bytes calldata options)
+    function forwardBaseline(
+        bytes32 routeId,
+        bytes calldata message,
+        bytes calldata options
+    )
         external
         payable
         onlyRunner
@@ -115,10 +143,10 @@ contract HyperlaneAdapter is IXIRCarrierAdapter, IBaselineCarrier, OutboundContr
         returns (bytes32)
     {
         if (options.length != 0) revert UnsupportedOptions();
-        return _dispatch(message);
+        return _dispatch(abi.encode(KIND_BASELINE, abi.encode(routeId, message)));
     }
 
-    function _dispatch(bytes calldata body) private returns (bytes32) {
+    function _dispatch(bytes memory body) private returns (bytes32) {
         bytes32 messageId =
             IHyperlaneMailbox(mailbox).dispatch{value: msg.value}(remoteDomain, remoteAdapter, body);
         emit HyperlaneDispatched(messageId, remoteDomain, remoteAdapter, msg.value);
@@ -130,8 +158,18 @@ contract HyperlaneAdapter is IXIRCarrierAdapter, IBaselineCarrier, OutboundContr
         if (remoteAdapter == bytes32(0) || origin != remoteDomain || sender != remoteAdapter) {
             revert OnlyRemote();
         }
+        (uint8 kind, bytes memory message) = abi.decode(body, (uint8, bytes));
+        if (kind == KIND_BASELINE) {
+            (bytes32 routeId, bytes memory payload) = abi.decode(message, (bytes32, bytes));
+            address receiver = baselineReceivers[routeId];
+            if (receiver == address(0)) revert UnknownBaselineRoute();
+            bytes32 messageId = keccak256(abi.encode(origin, sender, body));
+            IBaselineCarrierReceiver(receiver).baselineCarrierReceive(messageId, payload);
+            return;
+        }
+        if (kind != KIND_XIR) revert UnknownMessageKind();
         (bytes32 profileHash, bytes32 transitionHash, bytes32 evidenceHash) =
-            abi.decode(body, (bytes32, bytes32, bytes32));
+            abi.decode(message, (bytes32, bytes32, bytes32));
         if (evidenceHash == bytes32(0)) revert InvalidEvidence();
         acceptedEvidence[keccak256(abi.encode(profileHash, evidenceHash, transitionHash))] = true;
         emit HyperlaneEvidence(evidenceHash, profileHash, transitionHash, origin, sender);

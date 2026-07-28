@@ -15,6 +15,8 @@ import rfc8785
 
 from xir_lab.faults import CrashInjector, NoCrashInjector
 
+ZERO_SHA256 = "0" * 64
+
 
 class SignerError(RuntimeError):
     """Raised when signer identity or private spool guarantees fail."""
@@ -40,6 +42,14 @@ class SignerRequest:
     calldata_sha256: str
     calldata_length: int
     fee_limit_wei: int
+    role: str = "runner"
+    config_sha256: str = ZERO_SHA256
+    code_sha256: str = ZERO_SHA256
+    gas_limit: int = 0
+    max_fee_per_gas_wei: int = 0
+    max_priority_fee_per_gas_wei: int = 0
+    calldata_hex: str = ""
+    unsigned_transaction_sha256: str = ZERO_SHA256
 
 
 @dataclass(frozen=True)
@@ -82,6 +92,18 @@ def signer_operation_id(request: SignerRequest) -> str:
                 "calldata_sha256": request.calldata_sha256,
                 "calldata_length": request.calldata_length,
                 "fee_limit_wei": request.fee_limit_wei,
+                "role": request.role,
+                "config_sha256": request.config_sha256,
+                "code_sha256": request.code_sha256,
+                "gas_limit": request.gas_limit,
+                "max_fee_per_gas_wei": request.max_fee_per_gas_wei,
+                "max_priority_fee_per_gas_wei": (
+                    request.max_priority_fee_per_gas_wei
+                ),
+                "calldata_hex": request.calldata_hex,
+                "unsigned_transaction_sha256": (
+                    request.unsigned_transaction_sha256
+                ),
             },
         }
     )

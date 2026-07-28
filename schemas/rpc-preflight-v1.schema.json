@@ -1,0 +1,129 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xir.example/schemas/rpc-preflight-v1.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "observed_at",
+    "maximum_block_age_seconds",
+    "observations",
+    "outcome",
+    "effects"
+  ],
+  "properties": {
+    "schema_version": {"const": "xir-lab-rpc-preflight-v1"},
+    "observed_at": {"type": "string", "format": "date-time"},
+    "maximum_block_age_seconds": {"type": "integer", "minimum": 1},
+    "observations": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": {"$ref": "#/$defs/network"}
+    },
+    "outcome": {"enum": ["pass", "blocked"]},
+    "effects": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "signing_operations",
+        "funding_operations",
+        "deployments",
+        "broadcasts"
+      ],
+      "properties": {
+        "signing_operations": {"const": 0},
+        "funding_operations": {"const": 0},
+        "deployments": {"const": 0},
+        "broadcasts": {"const": 0}
+      }
+    }
+  },
+  "$defs": {
+    "nullableQuantity": {
+      "type": ["integer", "null"],
+      "minimum": 0
+    },
+    "nullableString": {"type": ["string", "null"]},
+    "account": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "role",
+        "address",
+        "balance_wei",
+        "confirmed_nonce",
+        "pending_nonce",
+        "minimum_balance_wei",
+        "status",
+        "reason_code"
+      ],
+      "properties": {
+        "role": {"enum": ["deployer", "runner"]},
+        "address": {"type": "string", "pattern": "^0x[0-9a-fA-F]{40}$"},
+        "balance_wei": {"$ref": "#/$defs/nullableQuantity"},
+        "confirmed_nonce": {"$ref": "#/$defs/nullableQuantity"},
+        "pending_nonce": {"$ref": "#/$defs/nullableQuantity"},
+        "minimum_balance_wei": {"type": "integer", "minimum": 0},
+        "status": {"enum": ["pass", "fail", "unknown"]},
+        "reason_code": {"type": "string", "minLength": 1}
+      }
+    },
+    "network": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "network_id",
+        "chain_id",
+        "expected_chain_id",
+        "latest_block_number",
+        "latest_block_hash",
+        "latest_block_timestamp",
+        "checkpoint_block_number",
+        "checkpoint_hash",
+        "write_checkpoint_hash",
+        "base_fee_per_gas_wei",
+        "gas_price_wei",
+        "max_priority_fee_per_gas_wei",
+        "archive_capable",
+        "read_write_agree",
+        "block_age_seconds",
+        "accounts",
+        "status",
+        "reason_codes"
+      ],
+      "properties": {
+        "network_id": {
+          "enum": ["op-sepolia", "arbitrum-sepolia", "base-sepolia"]
+        },
+        "chain_id": {"$ref": "#/$defs/nullableQuantity"},
+        "expected_chain_id": {"type": "integer", "minimum": 1},
+        "latest_block_number": {"$ref": "#/$defs/nullableQuantity"},
+        "latest_block_hash": {"$ref": "#/$defs/nullableString"},
+        "latest_block_timestamp": {"$ref": "#/$defs/nullableQuantity"},
+        "checkpoint_block_number": {"type": "integer", "minimum": 0},
+        "checkpoint_hash": {"$ref": "#/$defs/nullableString"},
+        "write_checkpoint_hash": {"$ref": "#/$defs/nullableString"},
+        "base_fee_per_gas_wei": {"$ref": "#/$defs/nullableQuantity"},
+        "gas_price_wei": {"$ref": "#/$defs/nullableQuantity"},
+        "max_priority_fee_per_gas_wei": {"$ref": "#/$defs/nullableQuantity"},
+        "archive_capable": {"type": ["boolean", "null"]},
+        "read_write_agree": {"type": ["boolean", "null"]},
+        "block_age_seconds": {"type": ["integer", "null"]},
+        "accounts": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 2,
+          "items": {"$ref": "#/$defs/account"}
+        },
+        "status": {"enum": ["pass", "fail"]},
+        "reason_codes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        }
+      }
+    }
+  }
+}

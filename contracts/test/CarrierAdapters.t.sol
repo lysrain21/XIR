@@ -8,6 +8,17 @@ import {
     MessagingParams,
     MessagingReceipt
 } from "../src/LayerZeroAdapter.sol";
+import {IBaselineCarrierReceiver} from "../src/IBaselineCarrier.sol";
+
+contract BaselineCarrierReceiver is IBaselineCarrierReceiver {
+    bytes32 public lastMessageId;
+    bytes32 public lastPayloadHash;
+
+    function baselineCarrierReceive(bytes32 messageId, bytes calldata payload) external {
+        lastMessageId = messageId;
+        lastPayloadHash = keccak256(payload);
+    }
+}
 
 contract MockLayerZeroEndpoint is ILayerZeroEndpointV2 {
     address public delegate;
@@ -103,13 +114,16 @@ contract CarrierAdaptersTest {
         bytes32 guid = keccak256("guid");
         bytes32[] memory empty = new bytes32[](0);
         bytes memory message = abi.encode(
-            LayerZeroAdapter.DeliveryBundle({
-                profileHash: profile,
-                transitionHash: transition,
-                priorProfiles: empty,
-                priorEvidence: empty,
-                priorTransitions: empty
-            })
+            uint8(1),
+            abi.encode(
+                LayerZeroAdapter.DeliveryBundle({
+                    profileHash: profile,
+                    transitionHash: transition,
+                    priorProfiles: empty,
+                    priorEvidence: empty,
+                    priorTransitions: empty
+                })
+            )
         );
         LayerZeroAdapter.Origin memory origin =
             LayerZeroAdapter.Origin({srcEid: REMOTE_EID, sender: REMOTE_PEER, nonce: 1});
@@ -123,6 +137,32 @@ contract CarrierAdaptersTest {
         origin.sender = REMOTE_PEER;
         endpoint.deliver(adapter, origin, guid, message);
         require(adapter.verify(profile, guid, transition), "authenticated GUID missing");
+    }
+
+    function testAuthenticatedBaselineEnvelopeRoutesOnlyToConfiguredReceiver() public {
+        bytes32 routeId = keccak256("route");
+        bytes32 guid = keccak256("baseline-guid");
+        bytes memory payload = bytes("baseline-payload");
+        BaselineCarrierReceiver receiver = new BaselineCarrierReceiver();
+        adapter.setBaselineReceiver(routeId, address(receiver));
+        LayerZeroAdapter.Origin memory origin =
+            LayerZeroAdapter.Origin({srcEid: REMOTE_EID, sender: REMOTE_PEER, nonce: 2});
+        endpoint.deliver(
+            adapter,
+            origin,
+            guid,
+            abi.encode(uint8(2), abi.encode(routeId, payload))
+        );
+        require(receiver.lastMessageId() == guid, "baseline GUID missing");
+        require(receiver.lastPayloadHash() == keccak256(payload), "baseline payload changed");
+        try endpoint.deliver(
+            adapter,
+            origin,
+            keccak256("unknown"),
+            abi.encode(uint8(2), abi.encode(keccak256("unknown-route"), payload))
+        ) {
+            revert("unknown route delivered");
+        } catch {}
     }
 
     function _request() private pure returns (LayerZeroAdapter.ForwardRequest memory request) {

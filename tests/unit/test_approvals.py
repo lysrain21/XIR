@@ -137,7 +137,7 @@ def test_valid_approval_is_verified_and_consumed_once(tmp_path: Path) -> None:
         document, now=datetime(2026, 7, 25, 12, tzinfo=UTC)
     )
     assert verified.operation_type == "pilot"
-    with pytest.raises(ApprovalError, match="sequence|replay"):
+    with pytest.raises(ApprovalError, match="consumed|sequence|replay"):
         verifier.verify_and_consume(
             document, now=datetime(2026, 7, 25, 12, tzinfo=UTC)
         )

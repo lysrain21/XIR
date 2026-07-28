@@ -9,6 +9,7 @@ from xir_lab.publication import (
     LocalPublicationPackager,
     PublicationError,
     validate_claim_template,
+    validate_publishable_file,
 )
 
 
@@ -81,7 +82,7 @@ def test_local_packages_are_deterministic_licensed_and_never_uploaded(
     [
         ("private-spool/signed.bin", b"signed bytes"),
         ("results/request.log", b'private_key="11' + b"11" * 31 + b'"'),
-        ("results/rpc.log", b"https://user:password@example.invalid"),
+        ("results/rpc.log", b"https://" + b"user:password@" + b"example.invalid"),
     ],
 )
 def test_secret_spool_and_authenticated_endpoint_block_packaging(
@@ -100,3 +101,34 @@ def test_secret_spool_and_authenticated_endpoint_block_packaging(
             research_data_files=(),
             destination=tmp_path / "blocked",
         )
+
+
+@pytest.mark.parametrize(
+    "relative",
+    (
+        "custody/deployer.json",
+        "keystores/runner.json",
+        "runs/live.sqlite",
+        "private/password.txt",
+        "results/tx.signed-tx",
+        ".env.live",
+    ),
+)
+def test_staged_private_paths_are_rejected(
+    tmp_path: Path,
+    relative: str,
+) -> None:
+    path = tmp_path / relative
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("redacted fixture")
+    with pytest.raises(PublicationError, match="private path"):
+        validate_publishable_file(tmp_path, path)
+
+
+def test_docs_live_directory_is_publishable(tmp_path: Path) -> None:
+    path = tmp_path / "docs" / "live" / "runbook.md"
+    path.parent.mkdir(parents=True)
+    path.write_text("public documentation")
+    relative, data = validate_publishable_file(tmp_path, path)
+    assert relative == "docs/live/runbook.md"
+    assert data == b"public documentation"

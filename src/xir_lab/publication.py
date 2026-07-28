@@ -39,6 +39,65 @@ _SECRET_PATTERNS = (
     re.compile(rb"bearer\s+[A-Za-z0-9._~-]{16,}", re.IGNORECASE),
     re.compile(rb"https?://[^/\s:@]+:[^/\s@]+@"),
 )
+_PRIVATE_PARTS = frozenset(
+    {
+        "credentials",
+        "custody",
+        "keystore",
+        "keystores",
+        "private-spool",
+        "recovery-spool",
+        "secrets",
+        "signed-transactions",
+    }
+)
+_PRIVATE_ROOTS = frozenset({".xir-lab", "live", "private", "runs"})
+_PRIVATE_SUFFIXES = frozenset(
+    {
+        ".bin",
+        ".db",
+        ".key",
+        ".keystore",
+        ".p12",
+        ".pem",
+        ".pfx",
+        ".sqlite",
+        ".sqlite3",
+    }
+)
+_PRIVATE_NAMES = frozenset({".env", "password", "password.txt", "passwd"})
+
+
+def validate_publishable_file(
+    repository_root: Path,
+    path: Path,
+) -> tuple[str, bytes]:
+    """Validate one tracked/release file without exposing matched secret text."""
+
+    resolved_root = repository_root.resolve()
+    resolved = path.resolve()
+    try:
+        relative = resolved.relative_to(resolved_root)
+    except ValueError as exc:
+        raise PublicationError("package file escapes repository root") from exc
+    lowered_parts = tuple(part.lower() for part in relative.parts)
+    name = relative.name.lower()
+    if (
+        any(part in _PRIVATE_PARTS for part in lowered_parts)
+        or (lowered_parts and lowered_parts[0] in _PRIVATE_ROOTS)
+        or relative.suffix.lower() in _PRIVATE_SUFFIXES
+        or name in _PRIVATE_NAMES
+        or name.endswith((".password", ".passwd", ".signed-tx"))
+        or (name.startswith(".env.") and name != ".env.example")
+    ):
+        raise PublicationError(f"private path blocks publication: {relative}")
+    data = resolved.read_bytes()
+    for pattern in _SECRET_PATTERNS:
+        if pattern.search(data):
+            raise PublicationError(
+                f"secret-bearing content blocks publication: {relative}"
+            )
+    return relative.as_posix(), data
 
 
 def validate_claim_template(document: dict[str, Any]) -> None:
@@ -126,24 +185,7 @@ class LocalPublicationPackager:
         resolved_root = root.resolve()
         entries: list[tuple[str, bytes]] = []
         for path in sorted(files, key=lambda item: item.as_posix()):
-            resolved = path.resolve()
-            try:
-                relative = resolved.relative_to(resolved_root)
-            except ValueError as exc:
-                raise PublicationError("package file escapes repository root") from exc
-            if (
-                "private-spool" in relative.parts
-                or "keystore" in relative.parts
-                or relative.suffix == ".bin"
-            ):
-                raise PublicationError("private or reusable signed material in package")
-            data = resolved.read_bytes()
-            for pattern in _SECRET_PATTERNS:
-                if pattern.search(data):
-                    raise PublicationError(
-                        f"secret-bearing content blocks publication: {relative}"
-                    )
-            entries.append((relative.as_posix(), data))
+            entries.append(validate_publishable_file(resolved_root, path))
         raw = io.BytesIO()
         with gzip.GzipFile(fileobj=raw, mode="wb", mtime=0, filename="") as zipped:
             with tarfile.open(fileobj=zipped, mode="w") as archive:
