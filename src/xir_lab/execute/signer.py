@@ -37,7 +37,7 @@ class SignerRequest:
     signer_id: str
     intent_id: str
     nonce: int
-    destination: str
+    destination: str | None
     value_wei: int
     calldata_sha256: str
     calldata_length: int

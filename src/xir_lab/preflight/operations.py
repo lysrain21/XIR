@@ -101,11 +101,10 @@ def _validate_semantics(
         raise OperationPreflightError(f"{scope} contains a zero address")
     if scope == "deployment":
         for item in records:
-            factory = item["factory_address"]
             predicted = item["predicted_address"]
-            if (factory is None) != (predicted is None):
+            if predicted is None:
                 raise OperationPreflightError(
-                    "factory and deterministic predicted address must appear together"
+                    "every direct or factory creation must bind a predicted address"
                 )
     if scope == "experiment":
         routes = cast(list[dict[str, Any]], document["carrier_routes"])

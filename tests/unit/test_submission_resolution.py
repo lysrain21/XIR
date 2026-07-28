@@ -211,6 +211,8 @@ def _setup(
         "ff" * 32,
         7,
         NOW,
+        "fa" * 32,
+        NOW + timedelta(minutes=5),
     )
     preparation = IntentPreparation(
         transaction_id="transaction-0",
@@ -224,6 +226,8 @@ def _setup(
         network_identity_sha256="ee" * 32,
         quote_sha256="ff" * 32,
         quote_valid_until=NOW + timedelta(minutes=5),
+        simulation_sha256="fa" * 32,
+        simulation_valid_until=NOW + timedelta(minutes=5),
         payload_sha256="12" * 32,
         requested_wei=80,
         request=request,

@@ -7,7 +7,14 @@ from typing import Any
 
 import pytest
 
-from xir_lab.config.profiles import ProfileError, load_execution_profile
+from xir_lab.config.profiles import (
+    LiveLimits,
+    ProfileError,
+    freeze_execution_profile,
+    load_execution_profile,
+    materialize_live_pilot,
+)
+from xir_lab.evidence.store import EvidenceStore
 
 ROOT = Path(__file__).resolve().parents[2]
 PILOT = ROOT / "configs" / "profiles" / "pilot-template-v1.json"
@@ -56,6 +63,45 @@ def test_pilot_template_has_exact_non_executable_counts() -> None:
     assert profile.executable is False
     assert profile.counts.planned_pair_slots == 20
     assert profile.counts.planned_designated_attempts == 40
+
+
+def test_pilot_template_materializes_and_freezes_exact_bounded_live_profile(
+    tmp_path: Path,
+) -> None:
+    template = load_execution_profile(PILOT)
+    profile = materialize_live_pilot(
+        template,
+        profile_id="pilot-live-fixture",
+        limits=LiveLimits(
+            max_retries_per_lineage=1,
+            max_batch_attempts=4,
+            max_duration_seconds=3600,
+            max_in_flight_attempts=2,
+            chain_budget_wei={
+                "11155420": 100,
+                "421614": 200,
+                "84532": 300,
+            },
+            stop_policy={
+                "consecutive_failures": 2,
+                "rolling_window": 10,
+                "rolling_failure_rate": 0.3,
+                "timeout_count": 2,
+                "collector_backlog": 100,
+                "collector_heartbeat_seconds": 30,
+                "disk_floor_bytes": 1_000_000,
+            },
+            allow_partial_conditions=False,
+        ),
+    )
+    store = EvidenceStore(tmp_path / "evidence.sqlite", tmp_path / "raw")
+    store.initialize()
+    document, digest = freeze_execution_profile(profile, store=store)
+    assert document["counts"]["planned_pair_slots"] == 20
+    assert document["counts"]["planned_designated_attempts"] == 40
+    assert document["counts"]["planned_warmup_attempts"] == 0
+    assert document["live_limits"]["allow_partial_conditions"] is False
+    assert store.read_raw(digest)
 
 
 def test_primary_template_has_exact_counts_and_warmups() -> None:

@@ -86,6 +86,10 @@ CREATE TABLE intents (
         quote_sha256 IS NULL OR length(quote_sha256) = 64
     ),
     quote_valid_until TEXT,
+    simulation_sha256 TEXT CHECK(
+        simulation_sha256 IS NULL OR length(simulation_sha256) = 64
+    ),
+    simulation_valid_until TEXT,
     reservation_id TEXT,
     reservation_stage_key TEXT,
     requested_wei INTEGER CHECK(requested_wei IS NULL OR requested_wei >= 0),

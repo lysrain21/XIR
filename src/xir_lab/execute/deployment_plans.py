@@ -13,6 +13,9 @@ import rlp  # type: ignore[import-untyped]
 from eth_abi import encode  # type: ignore[attr-defined]
 from eth_utils import keccak, to_checksum_address  # type: ignore[attr-defined]
 
+from xir_lab.execute.signer import SignerRequest
+from xir_lab.execute.signer_socket import unsigned_transaction_digest
+
 
 class DeploymentPlanError(ValueError):
     """Raised when creation inputs or dry-run results are incomplete."""
@@ -169,15 +172,15 @@ def build_deployment_plan(
         data = bytecode + arguments
         nonce = starting_nonce + index
         unsigned: dict[str, Any] = {
-            "type": 2,
-            "chain_id": chain_id,
+            "chainId": chain_id,
             "nonce": nonce,
             "to": None,
-            "value_wei": spec.value_wei,
-            "gas_limit": spec.gas_limit,
-            "max_fee_per_gas_wei": max_fee_per_gas_wei,
-            "max_priority_fee_per_gas_wei": max_priority_fee_per_gas_wei,
-            "data_sha256": hashlib.sha256(data).hexdigest(),
+            "value": spec.value_wei,
+            "data": "0x" + data.hex(),
+            "gas": spec.gas_limit,
+            "maxFeePerGas": max_fee_per_gas_wei,
+            "maxPriorityFeePerGas": max_priority_fee_per_gas_wei,
+            "type": 2,
         }
         creations.append(
             PlannedCreation(
@@ -246,6 +249,60 @@ def dry_run_deployment_plan(
             )
         results.append(result)
     return tuple(results)
+
+
+def deployment_signer_requests(
+    plan: DeploymentPlan,
+    *,
+    network_id: str,
+    signer_id: str,
+    config_sha256: str,
+    code_sha256: str,
+) -> tuple[SignerRequest, ...]:
+    expected_networks = {
+        11_155_420: "op-sepolia",
+        421_614: "arbitrum-sepolia",
+        84_532: "base-sepolia",
+    }
+    if expected_networks.get(plan.chain_id) != network_id:
+        raise DeploymentPlanError("deployment signer request changed network identity")
+    for value, label in (
+        (config_sha256, "configuration digest"),
+        (code_sha256, "code digest"),
+    ):
+        if len(value) != 64:
+            raise DeploymentPlanError(f"{label} is invalid")
+    requests: list[SignerRequest] = []
+    for creation in plan.creations:
+        calldata = bytes.fromhex(creation.data_hex)
+        request = SignerRequest(
+            network_id=network_id,
+            chain_id=plan.chain_id,
+            signer_id=signer_id,
+            intent_id=f"{plan.plan_id}:{creation.contract_id}",
+            nonce=creation.nonce,
+            destination=None,
+            value_wei=creation.value_wei,
+            calldata_sha256=hashlib.sha256(calldata).hexdigest(),
+            calldata_length=len(calldata),
+            fee_limit_wei=(
+                creation.gas_limit * creation.max_fee_per_gas_wei
+            ),
+            role="deployer",
+            config_sha256=config_sha256,
+            code_sha256=code_sha256,
+            gas_limit=creation.gas_limit,
+            max_fee_per_gas_wei=creation.max_fee_per_gas_wei,
+            max_priority_fee_per_gas_wei=(
+                creation.max_priority_fee_per_gas_wei
+            ),
+            calldata_hex=creation.data_hex,
+            unsigned_transaction_sha256=creation.unsigned_transaction_sha256,
+        )
+        if unsigned_transaction_digest(request) != creation.unsigned_transaction_sha256:
+            raise DeploymentPlanError("deployment signer transaction digest changed")
+        requests.append(request)
+    return tuple(requests)
 
 
 def build_three_chain_deployment_plan(

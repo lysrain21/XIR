@@ -186,6 +186,8 @@ def _setup(
         quote_sha256="ef" * 32,
         observed_nonce=7,
         checked_at=NOW,
+        simulation_sha256="fa" * 32,
+        simulation_valid_until=NOW + timedelta(minutes=5),
     )
     signer = FixtureSigner()
     rpc = broadcaster or FixtureBroadcaster()
@@ -218,6 +220,8 @@ def _prepare(coordinator: SubmissionCoordinator, request: SignerRequest) -> str:
             network_identity_sha256="de" * 32,
             quote_sha256="ef" * 32,
             quote_valid_until=NOW + timedelta(minutes=5),
+            simulation_sha256="fa" * 32,
+            simulation_valid_until=NOW + timedelta(minutes=5),
             payload_sha256="12" * 32,
             requested_wei=80,
             request=request,
@@ -314,6 +318,15 @@ def test_sign_and_every_repeat_broadcast_revalidate_all_bound_gates(
             transaction_id="transaction-0",
             request=request,
             gates=changed_identity,
+        )
+    changed_simulation = GateEvidence(
+        **{**gates.__dict__, "simulation_sha256": "01" * 32}
+    )
+    with pytest.raises(SubmissionError, match="gate changed"):
+        coordinator.sign_prepared(
+            transaction_id="transaction-0",
+            request=request,
+            gates=changed_simulation,
         )
     assert signer.calls == []
 

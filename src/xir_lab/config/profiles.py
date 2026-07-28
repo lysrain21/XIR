@@ -2,12 +2,16 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Any, Literal, cast
 
 import jsonschema
+import rfc8785
+
+from xir_lab.evidence.store import EvidenceStore
 
 ProfileMode = Literal["template", "live"]
 ProfileKind = Literal["pilot", "primary", "scale"]
@@ -203,3 +207,64 @@ def load_execution_profile(path: Path) -> ExecutionProfile:
     _validate_counts(profile)
     _validate_mode(profile)
     return profile
+
+
+def materialize_live_pilot(
+    template: ExecutionProfile,
+    *,
+    profile_id: str,
+    limits: LiveLimits,
+) -> ExecutionProfile:
+    """Resolve only a pilot template into the exact bounded live identity."""
+
+    if (
+        template.profile_mode != "template"
+        or template.profile_kind != "pilot"
+        or not profile_id
+    ):
+        raise ProfileError("only the pilot template can become a live pilot")
+    profile = replace(
+        template,
+        profile_id=profile_id,
+        profile_mode="live",
+        live_limits=limits,
+    )
+    _validate_counts(profile)
+    _validate_mode(profile)
+    if profile.live_limits.allow_partial_conditions is not False:
+        raise ProfileError("live pilot must keep allow_partial_conditions false")
+    return profile
+
+
+def freeze_execution_profile(
+    profile: ExecutionProfile,
+    *,
+    store: EvidenceStore | None = None,
+) -> tuple[dict[str, Any], str]:
+    if not profile.executable:
+        raise ProfileError("template profile cannot be frozen for execution")
+    document: dict[str, Any] = {
+        "schema_version": "xir-lab-execution-profile-v1",
+        "profile_id": profile.profile_id,
+        "profile_version": profile.profile_version,
+        "profile_mode": profile.profile_mode,
+        "profile_kind": profile.profile_kind,
+        "approval_operation_type": profile.approval_operation_type,
+        "fixed_seed": profile.fixed_seed,
+        "conditions": list(profile.conditions),
+        "counts": profile.counts.__dict__,
+        "live_limits": profile.live_limits.__dict__,
+        "derived_from": profile.derived_from.__dict__,
+    }
+    _validate_schema(document)
+    raw = rfc8785.dumps(document)
+    digest = hashlib.sha256(raw).hexdigest()
+    if store is not None:
+        stored = store.put_raw(
+            raw,
+            media_type="application/json",
+            metadata={"kind": "execution-profile", "public_facts_only": True},
+        )
+        if stored != digest:
+            raise ProfileError("execution profile changed during storage")
+    return document, digest

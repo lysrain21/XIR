@@ -6,7 +6,7 @@ import hashlib
 import json
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable, Literal, cast
+from typing import Any, Callable, Literal, Protocol, cast
 
 import rfc8785
 
@@ -83,6 +83,11 @@ class LiveDispatchResult:
     outcome: str
     reason_code: str
     implementation_status: str
+
+
+class LiveStateChangeBackend(Protocol):
+    def execute(self, context: LiveCommandContext) -> LiveDispatchResult:
+        """Execute one already correlated and exactly confirmed operation."""
 
 
 def _sha256_file(path: Path) -> str:
@@ -443,6 +448,7 @@ def dispatch_live(
     context: LiveCommandContext,
     *,
     confirmation_id: str | None,
+    state_change_backend: LiveStateChangeBackend | None = None,
 ) -> LiveDispatchResult:
     """Dispatch a validated live command without bypassing exact confirmation."""
 
@@ -455,4 +461,6 @@ def dispatch_live(
             )
         if confirmation_id != context.confirmation_id:
             raise LiveCommandError("confirmation ID is stale or does not match operation inputs")
+        if state_change_backend is not None:
+            return state_change_backend.execute(context)
     return DISPATCHERS[context.command](context)

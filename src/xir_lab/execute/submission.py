@@ -34,6 +34,8 @@ class IntentPreparation:
     network_identity_sha256: str
     quote_sha256: str
     quote_valid_until: datetime
+    simulation_sha256: str
+    simulation_valid_until: datetime
     payload_sha256: str
     requested_wei: int
     request: SignerRequest
@@ -51,6 +53,8 @@ class GateEvidence:
     quote_sha256: str
     observed_nonce: int
     checked_at: datetime
+    simulation_sha256: str
+    simulation_valid_until: datetime
 
 
 @dataclass(frozen=True)
@@ -118,10 +122,12 @@ class SubmissionCoordinator:
             (preparation.signer_identity_sha256, "signer identity digest"),
             (preparation.network_identity_sha256, "network identity digest"),
             (preparation.quote_sha256, "quote digest"),
+            (preparation.simulation_sha256, "simulation digest"),
             (preparation.payload_sha256, "payload digest"),
         ):
             _digest(value, label)
         valid_until = _utc(preparation.quote_valid_until)
+        simulation_valid_until = _utc(preparation.simulation_valid_until)
         operation_id = signer_operation_id(request)
         created_at = _time(now)
         with self.store.write() as connection:
@@ -226,9 +232,10 @@ class SubmissionCoordinator:
                     state, payload_sha256, approval_id, approval_payload_sha256,
                     signer_id, signer_identity_sha256, network_identity_sha256,
                     quote_sha256, quote_valid_until, reservation_id,
+                    simulation_sha256, simulation_valid_until,
                     reservation_stage_key, requested_wei, created_at
                 ) VALUES (
-                    ?, ?, ?, ?, ?, 'prepared', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+                    ?, ?, ?, ?, ?, 'prepared', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
                 )
                 """,
                 (
@@ -246,6 +253,8 @@ class SubmissionCoordinator:
                     preparation.quote_sha256,
                     valid_until.isoformat(),
                     preparation.reservation_id,
+                    preparation.simulation_sha256,
+                    simulation_valid_until.isoformat(),
                     preparation.reservation_stage_key,
                     preparation.requested_wei,
                     created_at,
@@ -528,6 +537,7 @@ class SubmissionCoordinator:
             row["signer_identity_sha256"],
             row["network_identity_sha256"],
             row["quote_sha256"],
+            row["simulation_sha256"],
             int(row["nonce"]),
         )
         observed = (
@@ -537,6 +547,7 @@ class SubmissionCoordinator:
             gates.signer_identity_sha256,
             gates.network_identity_sha256,
             gates.quote_sha256,
+            gates.simulation_sha256,
             gates.observed_nonce,
         )
         if expected != observed:
@@ -572,6 +583,11 @@ class SubmissionCoordinator:
             raise SubmissionError("transaction reservation is no longer valid")
         if checked_at >= datetime.fromisoformat(str(row["quote_valid_until"])):
             raise SubmissionError("quote is stale")
+        if (
+            checked_at >= datetime.fromisoformat(str(row["simulation_valid_until"]))
+            or checked_at >= _utc(gates.simulation_valid_until)
+        ):
+            raise SubmissionError("simulation is stale")
 
     def recover_spool(self) -> RecoveryReport:
         with self.store.connect(read_only=True) as connection:

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
@@ -20,6 +21,12 @@ from xir_lab.execute.approvals import (
     PinnedApprovalKey,
     canonical_payload_digest,
     signature_message,
+)
+from xir_lab.execute.live_commands import (
+    LiveCommandPaths,
+    LiveDispatchResult,
+    dispatch_live,
+    load_live_context,
 )
 from xir_lab.live import LIVE_DISABLE_ENV, LIVE_FEATURE_ENV, LIVE_FEATURE_VERSION
 
@@ -390,3 +397,47 @@ def test_revoked_and_consumed_approvals_fail_before_dispatch(
     assert run(args) == 2
     consumed = json.loads(capsys.readouterr().out)
     assert "consumed" in consumed["reason_code"]
+
+
+@pytest.mark.parametrize("command", ("deploy", "configure", "pilot-run", "closeout"))
+def test_every_state_backend_is_unreachable_until_exact_confirmation(
+    tmp_path: Path,
+    command: str,
+) -> None:
+    _, _, _, _, paths = _fixture(tmp_path)
+    context = load_live_context(
+        "pilot-run",
+        LiveCommandPaths(
+            config=paths["config"],
+            profile=paths["profile"],
+            run_dir=paths["run_dir"],
+            preflight=paths["preflight"],
+            approval=paths["approval"],
+        ),
+    )
+
+    class Backend:
+        def __init__(self) -> None:
+            self.calls = 0
+
+        def execute(self, context) -> LiveDispatchResult:
+            self.calls += 1
+            return LiveDispatchResult("started", "fixture", "mock-backend")
+
+    backend = Backend()
+    first = dispatch_live(
+        replace(context, command=command),
+        confirmation_id=None,
+        state_change_backend=backend,
+    )
+    assert first.outcome == "confirmation_required"
+    assert backend.calls == 0
+    if command != "pilot-run":
+        return
+    confirmed = dispatch_live(
+        context,
+        confirmation_id=context.confirmation_id,
+        state_change_backend=backend,
+    )
+    assert confirmed.outcome == "started"
+    assert backend.calls == 1

@@ -39,7 +39,7 @@ def _deployment() -> dict[str, Any]:
             "deployer_address": ADMIN,
             "deployer_nonce": index,
             "factory_address": None,
-            "predicted_address": None,
+            "predicted_address": f"0x{index + 10:040x}",
         }
         for index, network in enumerate(NETWORKS)
     ]
@@ -204,12 +204,12 @@ def test_operation_schema_cannot_authorize_another_lifecycle_phase(
         )
 
 
-def test_fixed_route_coverage_and_deterministic_factory_fields_are_semantic(
+def test_fixed_route_coverage_and_predicted_creation_address_are_semantic(
     tmp_path: Path,
 ) -> None:
     deployment = _deployment()
-    deployment["creations"][0]["factory_address"] = ADMIN
-    with pytest.raises(OperationPreflightError, match="appear together"):
+    deployment["creations"][0]["predicted_address"] = None
+    with pytest.raises(OperationPreflightError, match="predicted address"):
         load_operation_preflight(
             _write(tmp_path, "factory", deployment),
             scope="deployment",

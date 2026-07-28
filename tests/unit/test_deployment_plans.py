@@ -12,6 +12,7 @@ from xir_lab.execute.deployment_plans import (
     PlannedCreation,
     build_deployment_plan,
     build_three_chain_deployment_plan,
+    deployment_signer_requests,
     dry_run_deployment_plan,
 )
 
@@ -78,6 +79,18 @@ def test_plan_binds_bytecode_constructor_nonce_predicted_addresses_and_fees() ->
     assert all(item.data_hex for item in first.creations)
     assert all(len(item.unsigned_transaction_sha256) == 64 for item in first.creations)
     assert len(first.plan_sha256) == 64
+    requests = deployment_signer_requests(
+        first,
+        network_id="op-sepolia",
+        signer_id="deployer",
+        config_sha256="33" * 32,
+        code_sha256="44" * 32,
+    )
+    assert [item.destination for item in requests] == [None, None]
+    assert [item.role for item in requests] == ["deployer", "deployer"]
+    assert [item.unsigned_transaction_sha256 for item in requests] == [
+        item.unsigned_transaction_sha256 for item in first.creations
+    ]
 
 
 class FixtureSimulator:
