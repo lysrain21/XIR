@@ -3,7 +3,7 @@ set -euo pipefail
 
 repository_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 topology_path="${XIR_LOCAL_TOPOLOGY_PATH:-${repository_root}/configs/local/topology-v1.json}"
-profile_path="${repository_root}/configs/profiles/local-scale-v1.json"
+profile_path="${repository_root}/configs/profiles/local-paper-scale-v2.json"
 artifact_path="${repository_root}/contracts/out/LocalScaleWorkload.sol/LocalScaleWorkload.json"
 : "${XIR_LOCAL_RUNTIME_ROOT:?set XIR_LOCAL_RUNTIME_ROOT to a dedicated absolute path}"
 runtime_root="$(realpath -m -- "${XIR_LOCAL_RUNTIME_ROOT}")"

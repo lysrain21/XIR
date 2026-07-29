@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import shutil
 import subprocess
 import time
 from pathlib import Path
@@ -40,6 +41,7 @@ def main() -> int:
     parser.add_argument("--outage-evidence", type=Path, required=True)
     parser.add_argument("--batch-size", type=int, required=True)
     parser.add_argument("--samples", type=int, default=5)
+    parser.add_argument("--runtime-root", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     arguments = parser.parse_args()
 
@@ -78,10 +80,23 @@ def main() -> int:
 
     inspections = json.loads(docker("inspect", *names))
     configured_memory = sum(int(item["HostConfig"]["Memory"]) for item in inspections)
+    per_validator_memory_limits = {
+        item["Name"].removeprefix("/"): int(item["HostConfig"]["Memory"])
+        for item in inspections
+    }
+    if min(per_validator_memory_limits.values()) < 1024**3:
+        raise RuntimeError("every validator requires at least 1 GiB")
     configured_cpu = sum(
         int(item["HostConfig"]["NanoCpus"]) / 1_000_000_000 * 100
         for item in inspections
     )
+    runtime_usage = shutil.disk_usage(arguments.runtime_root)
+    rehearsal_database = arguments.runtime_root / "evidence" / "rehearsal.sqlite"
+    rehearsal_database_bytes = rehearsal_database.stat().st_size
+    projected_scale_evidence_bytes = rehearsal_database_bytes * 40
+    frozen_reserve_bytes = 6 * 1024**3
+    if runtime_usage.free < projected_scale_evidence_bytes + frozen_reserve_bytes:
+        raise RuntimeError("projected scale evidence violates filesystem reserve")
     document = {
         "schema_version": "xir-lab-local-measured-limits-v1",
         "measurement_scope": "five post-rehearsal container snapshots",
@@ -96,6 +111,14 @@ def main() -> int:
         "peak_memory_bytes": max(aggregate_memory_samples),
         "configured_cpu_ceiling_percent": configured_cpu,
         "configured_memory_ceiling_bytes": configured_memory,
+        "per_validator_memory_limit_bytes": per_validator_memory_limits,
+        "minimum_validator_memory_limit_bytes": min(
+            per_validator_memory_limits.values()
+        ),
+        "rehearsal_database_bytes": rehearsal_database_bytes,
+        "projected_scale_evidence_bytes": projected_scale_evidence_bytes,
+        "runtime_filesystem_available_bytes": runtime_usage.free,
+        "frozen_filesystem_reserve_bytes": frozen_reserve_bytes,
         "cpu_samples_percent": aggregate_cpu_samples,
         "memory_samples_bytes": aggregate_memory_samples,
         "restart_outcomes": [

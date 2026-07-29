@@ -1,0 +1,249 @@
+{
+  "eligible": true,
+  "networks": [
+    {
+      "after_recovery": {
+        "checkpoint_agreement": true,
+        "checkpoint_block": 2700,
+        "checkpoint_hashes": {
+          "v1": "0x14c775d25d588782e3f03aec73aa8d032bd34ca56e4cf99052435631229ac32c",
+          "v2": "0x14c775d25d588782e3f03aec73aa8d032bd34ca56e4cf99052435631229ac32c",
+          "v3": "0x14c775d25d588782e3f03aec73aa8d032bd34ca56e4cf99052435631229ac32c",
+          "v4": "0x14c775d25d588782e3f03aec73aa8d032bd34ca56e4cf99052435631229ac32c"
+        },
+        "heads": {
+          "v1": 2700,
+          "v2": 2700,
+          "v3": 2700,
+          "v4": 2700
+        },
+        "observed_at": "2026-07-29T16:28:11.351341+00:00",
+        "peer_counts": {
+          "v1": 3,
+          "v2": 3,
+          "v3": 3,
+          "v4": 3
+        }
+      },
+      "before": {
+        "checkpoint_agreement": true,
+        "checkpoint_block": 2690,
+        "checkpoint_hashes": {
+          "v1": "0x1236cb17a7743636fbef07ce73d70bbe34b8e20a99decf87891f1eef02054b18",
+          "v2": "0x1236cb17a7743636fbef07ce73d70bbe34b8e20a99decf87891f1eef02054b18",
+          "v3": "0x1236cb17a7743636fbef07ce73d70bbe34b8e20a99decf87891f1eef02054b18",
+          "v4": "0x1236cb17a7743636fbef07ce73d70bbe34b8e20a99decf87891f1eef02054b18"
+        },
+        "heads": {
+          "v1": 2690,
+          "v2": 2690,
+          "v3": 2690,
+          "v4": 2690
+        },
+        "observed_at": "2026-07-29T16:27:49.043564+00:00",
+        "peer_counts": {
+          "v1": 3,
+          "v2": 3,
+          "v3": 3,
+          "v4": 3
+        }
+      },
+      "chain_id": 3133701,
+      "container": "xir-local-scale-local-source-v4-1",
+      "during_outage": {
+        "checkpoint_agreement": true,
+        "checkpoint_block": 2692,
+        "checkpoint_hashes": {
+          "v1": "0xa24fb909eb278577d260a11102044e17236d45e8050814a62c3e82fbe6ef84c0",
+          "v2": "0xa24fb909eb278577d260a11102044e17236d45e8050814a62c3e82fbe6ef84c0",
+          "v3": "0xa24fb909eb278577d260a11102044e17236d45e8050814a62c3e82fbe6ef84c0"
+        },
+        "heads": {
+          "v1": 2692,
+          "v2": 2692,
+          "v3": 2692
+        },
+        "observed_at": "2026-07-29T16:27:55.684436+00:00",
+        "peer_counts": {
+          "v1": 2,
+          "v2": 2,
+          "v3": 2
+        }
+      },
+      "effects": {
+        "public_broadcasts": 0,
+        "public_network_calls": 0,
+        "validators_restarted": 1,
+        "validators_stopped": 1
+      },
+      "eligible": true,
+      "environment": "controlled-local-qbft",
+      "network_id": "local-source",
+      "schema_version": "xir-lab-local-outage-recovery-v1",
+      "stopped_validator": "v4"
+    },
+    {
+      "after_recovery": {
+        "checkpoint_agreement": true,
+        "checkpoint_block": 6399,
+        "checkpoint_hashes": {
+          "v1": "0xad8695dabf8d2a63c879ff2939f8a5aa0652580139b9a465c9de027e32c6f5c5",
+          "v2": "0xad8695dabf8d2a63c879ff2939f8a5aa0652580139b9a465c9de027e32c6f5c5",
+          "v3": "0xad8695dabf8d2a63c879ff2939f8a5aa0652580139b9a465c9de027e32c6f5c5",
+          "v4": "0xad8695dabf8d2a63c879ff2939f8a5aa0652580139b9a465c9de027e32c6f5c5"
+        },
+        "heads": {
+          "v1": 6399,
+          "v2": 6399,
+          "v3": 6399,
+          "v4": 6399
+        },
+        "observed_at": "2026-07-29T17:29:26.728974+00:00",
+        "peer_counts": {
+          "v1": 3,
+          "v2": 3,
+          "v3": 3,
+          "v4": 3
+        }
+      },
+      "before": {
+        "checkpoint_agreement": true,
+        "checkpoint_block": 6387,
+        "checkpoint_hashes": {
+          "v1": "0x62700d56ffa5fb04c52115783e62ee3e0e7c8087ab951c32739deca5bf9d0e69",
+          "v2": "0x62700d56ffa5fb04c52115783e62ee3e0e7c8087ab951c32739deca5bf9d0e69",
+          "v3": "0x62700d56ffa5fb04c52115783e62ee3e0e7c8087ab951c32739deca5bf9d0e69",
+          "v4": "0x62700d56ffa5fb04c52115783e62ee3e0e7c8087ab951c32739deca5bf9d0e69"
+        },
+        "heads": {
+          "v1": 6387,
+          "v2": 6387,
+          "v3": 6387,
+          "v4": 6387
+        },
+        "observed_at": "2026-07-29T17:28:58.988723+00:00",
+        "peer_counts": {
+          "v1": 3,
+          "v2": 3,
+          "v3": 3,
+          "v4": 3
+        }
+      },
+      "chain_id": 3133702,
+      "container": "xir-local-scale-local-intermediate-v4-1",
+      "during_outage": {
+        "checkpoint_agreement": true,
+        "checkpoint_block": 6390,
+        "checkpoint_hashes": {
+          "v1": "0x6b75fc053acfadaac9a5e784e0a804097524eb7bee2f3dc7d1b21286f42cbd85",
+          "v2": "0x6b75fc053acfadaac9a5e784e0a804097524eb7bee2f3dc7d1b21286f42cbd85",
+          "v3": "0x6b75fc053acfadaac9a5e784e0a804097524eb7bee2f3dc7d1b21286f42cbd85"
+        },
+        "heads": {
+          "v1": 6390,
+          "v2": 6390,
+          "v3": 6390
+        },
+        "observed_at": "2026-07-29T17:29:05.586630+00:00",
+        "peer_counts": {
+          "v1": 2,
+          "v2": 2,
+          "v3": 2
+        }
+      },
+      "effects": {
+        "public_broadcasts": 0,
+        "public_network_calls": 0,
+        "validators_restarted": 1,
+        "validators_stopped": 1
+      },
+      "eligible": true,
+      "environment": "controlled-local-qbft",
+      "network_id": "local-intermediate",
+      "schema_version": "xir-lab-local-outage-recovery-v1",
+      "stopped_validator": "v4"
+    },
+    {
+      "after_recovery": {
+        "checkpoint_agreement": true,
+        "checkpoint_block": 6423,
+        "checkpoint_hashes": {
+          "v1": "0x7acb6fa92441db039da95325df948bff1a33f5d3f5e86e4916f26897d29f8ad5",
+          "v2": "0x7acb6fa92441db039da95325df948bff1a33f5d3f5e86e4916f26897d29f8ad5",
+          "v3": "0x7acb6fa92441db039da95325df948bff1a33f5d3f5e86e4916f26897d29f8ad5",
+          "v4": "0x7acb6fa92441db039da95325df948bff1a33f5d3f5e86e4916f26897d29f8ad5"
+        },
+        "heads": {
+          "v1": 6423,
+          "v2": 6423,
+          "v3": 6423,
+          "v4": 6423
+        },
+        "observed_at": "2026-07-29T17:29:50.661419+00:00",
+        "peer_counts": {
+          "v1": 3,
+          "v2": 3,
+          "v3": 3,
+          "v4": 3
+        }
+      },
+      "before": {
+        "checkpoint_agreement": true,
+        "checkpoint_block": 6411,
+        "checkpoint_hashes": {
+          "v1": "0xe310353625d2247968b64edb32797fffd14cb9d86fa0a4d182896fff06fb0e04",
+          "v2": "0xe310353625d2247968b64edb32797fffd14cb9d86fa0a4d182896fff06fb0e04",
+          "v3": "0xe310353625d2247968b64edb32797fffd14cb9d86fa0a4d182896fff06fb0e04",
+          "v4": "0xe310353625d2247968b64edb32797fffd14cb9d86fa0a4d182896fff06fb0e04"
+        },
+        "heads": {
+          "v1": 6411,
+          "v2": 6411,
+          "v3": 6411,
+          "v4": 6411
+        },
+        "observed_at": "2026-07-29T17:29:26.981310+00:00",
+        "peer_counts": {
+          "v1": 3,
+          "v2": 3,
+          "v3": 3,
+          "v4": 3
+        }
+      },
+      "chain_id": 3133703,
+      "container": "xir-local-scale-local-destination-v4-1",
+      "during_outage": {
+        "checkpoint_agreement": true,
+        "checkpoint_block": 6414,
+        "checkpoint_hashes": {
+          "v1": "0xfe75615593a1514f39e26755f4ecf01cbd3e134f7bdb1cdad1611ecc37e7dfee",
+          "v2": "0xfe75615593a1514f39e26755f4ecf01cbd3e134f7bdb1cdad1611ecc37e7dfee",
+          "v3": "0xfe75615593a1514f39e26755f4ecf01cbd3e134f7bdb1cdad1611ecc37e7dfee"
+        },
+        "heads": {
+          "v1": 6414,
+          "v2": 6414,
+          "v3": 6414
+        },
+        "observed_at": "2026-07-29T17:29:33.439111+00:00",
+        "peer_counts": {
+          "v1": 2,
+          "v2": 2,
+          "v3": 2
+        }
+      },
+      "effects": {
+        "public_broadcasts": 0,
+        "public_network_calls": 0,
+        "validators_restarted": 1,
+        "validators_stopped": 1
+      },
+      "eligible": true,
+      "environment": "controlled-local-qbft",
+      "network_id": "local-destination",
+      "schema_version": "xir-lab-local-outage-recovery-v1",
+      "stopped_validator": "v4"
+    }
+  ],
+  "schema_version": "xir-lab-three-chain-outage-recovery-v1"
+}

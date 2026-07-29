@@ -1,0 +1,46 @@
+{
+  "command": "local-run",
+  "details": {
+    "summary": {
+      "application_effects": 40000,
+      "artifact_sha256": "8e3b493211a2b84581333a1dadd9bd2b226ae1df128d25bc0b2e0231bbebc91e",
+      "attempts": 40000,
+      "calldata_bytes": 31200000,
+      "completed_at": "2026-07-29T17:27:29.070278+00:00",
+      "deployment_sha256": "50008bb51955b355512faa9a6d844ec12b61875c7c47d938d948db13f91bd501",
+      "elapsed_seconds": 3496.535838365555,
+      "environment": "controlled-local-qbft",
+      "evidence_path": "/vePFS-Mindverse/user/intern/lucian/xir/runtime/four-route-scale-run-001/evidence/scale.sqlite",
+      "evidence_sha256": "e970281772d58bc0125b43fb4362ae555a4f1344f723bba9c47cf69f59851183",
+      "gas_used": 7663835200,
+      "identity_manifest_sha256": "c3e28e7a5700fca2a433f7b4f3ff1e8de15ac82814af05df6886b47ad4ff62f3",
+      "phase": "scale",
+      "physical_transactions": 120000,
+      "profile_sha256": "3392015a6fd18f89f0a88f38133bd9078ceb82d96f3495d0f9210cdf662076fe",
+      "route_counts": {
+        "HH": 10000,
+        "HL": 10000,
+        "LH": 10000,
+        "LL": 10000
+      },
+      "rpc_requests": 242400,
+      "schema_version": "xir-lab-local-paper-phase-summary-v2",
+      "started_at": "2026-07-29T16:29:12.534439+00:00",
+      "topology_sha256": "c18fcd7dab48a055063aff254d6ed82a827a6aef9942f18be93a5cafea737a3b",
+      "xir_transitions": 20000
+    }
+  },
+  "effects": {
+    "containers_started": 0,
+    "local_files_created": 1,
+    "local_private_keys_created": 0,
+    "public_broadcasts": 0,
+    "public_network_calls": 0,
+    "public_signatures": 0
+  },
+  "environment": "controlled-local-qbft",
+  "outcome": "complete",
+  "reason_code": "local_scale_reconciled",
+  "schema_version": "xir-lab-local-command-status-v1",
+  "tool_version": "0.1.0"
+}

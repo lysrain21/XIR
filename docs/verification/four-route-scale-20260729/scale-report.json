@@ -1,0 +1,46 @@
+{
+  "claim_exclusions": [
+    "public_carrier_capacity",
+    "public_network_latency",
+    "rollup_or_l1_data_fees",
+    "production_cost",
+    "production_reliability",
+    "full_vendor_implementation_performance",
+    "full_run_rpc_request_total"
+  ],
+  "counts": {
+    "application_effects": 40000,
+    "physical_transactions": 120000,
+    "planned_attempts": 40000,
+    "retries": 0,
+    "route_attempts": {
+      "HH": 10000,
+      "HL": 10000,
+      "LH": 10000,
+      "LL": 10000
+    },
+    "terminal_attempts": 40000,
+    "xir_transitions": 20000
+  },
+  "environment": "controlled-local-qbft",
+  "identity_manifest_sha256": "c3e28e7a5700fca2a433f7b4f3ff1e8de15ac82814af05df6886b47ad4ff62f3",
+  "metrics": {
+    "calldata_bytes": 31200000,
+    "completion_invocation_rpc_requests": 242400,
+    "controlled_latency_ms": 3496535,
+    "gas_used": 7663835200,
+    "peak_cpu_percent": 152.0,
+    "peak_memory_bytes": 9593841251,
+    "restart_outcomes": [],
+    "storage_bytes": 118066871
+  },
+  "offline_rebuild_digests": [
+    "6a06b6a1f9f0aa1ef61a2e596622c418a362d21b291f99f32ee5b0bc64e3a4f2",
+    "6a06b6a1f9f0aa1ef61a2e596622c418a362d21b291f99f32ee5b0bc64e3a4f2"
+  ],
+  "plan_sha256": "99cfdfd760d1a7a1189d584be40c193567c9b6ca3b5d9d9935ebd679f5b75948",
+  "reconciled": true,
+  "schema_version": "xir-lab-local-paper-scale-report-v2",
+  "topology_sha256": "c18fcd7dab48a055063aff254d6ed82a827a6aef9942f18be93a5cafea737a3b",
+  "workload_model": "controlled-protocol-distinct-adapters"
+}

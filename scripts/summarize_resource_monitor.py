@@ -24,6 +24,15 @@ def main() -> int:
         )
     if not rows or any(item["container_count"] != 12 for item in rows):
         raise RuntimeError("resource evidence requires twelve-container samples")
+    names_in_samples = sorted(
+        {
+            str(container["name"])
+            for row in rows
+            for container in row.get("containers", [])
+        }
+    )
+    if len(names_in_samples) != 12:
+        raise RuntimeError("resource evidence lacks per-validator samples")
 
     names = subprocess.run(
         (
@@ -56,6 +65,38 @@ def main() -> int:
         for name, count in sorted(restart_counts.items())
         if count > 0
     ]
+    per_validator: dict[str, dict[str, Any]] = {}
+    for name in names_in_samples:
+        samples = [
+            container
+            for row in rows
+            for container in row["containers"]
+            if container["name"] == name
+        ]
+        per_validator[name] = {
+            "sample_count": len(samples),
+            "peak_cpu_percent": max(item["cpu_percent"] for item in samples),
+            "peak_memory_bytes": max(item["memory_bytes"] for item in samples),
+            "memory_limit_bytes": samples[0]["memory_limit_bytes"],
+            "network_rx_bytes_delta": (
+                samples[-1]["network_rx_bytes"] - samples[0]["network_rx_bytes"]
+            ),
+            "network_tx_bytes_delta": (
+                samples[-1]["network_tx_bytes"] - samples[0]["network_tx_bytes"]
+            ),
+            "block_read_bytes_delta": (
+                samples[-1]["block_read_bytes"] - samples[0]["block_read_bytes"]
+            ),
+            "block_write_bytes_delta": (
+                samples[-1]["block_write_bytes"] - samples[0]["block_write_bytes"]
+            ),
+            "max_sampled_restart_count": max(
+                item["restart_count"] for item in samples
+            ),
+            "unhealthy_sample_count": sum(
+                item["health"] != "healthy" for item in samples
+            ),
+        }
     document = {
         "schema_version": "xir-lab-local-scale-resources-v1",
         "sample_count": len(rows),
@@ -63,13 +104,22 @@ def main() -> int:
         "sampled_through": rows[-1]["observed_at"],
         "peak_cpu_percent": max(item["aggregate_cpu_percent"] for item in rows),
         "peak_memory_bytes": max(item["aggregate_memory_bytes"] for item in rows),
+        "peak_host_load_average_1m": max(
+            item["host"]["load_average_1m"] for item in rows
+        ),
+        "minimum_host_memory_available_bytes": min(
+            item["host"]["memory_available_bytes"] for item in rows
+        ),
+        "minimum_runtime_filesystem_available_bytes": min(
+            item.get("runtime_filesystem", {}).get(
+                "available_bytes", 2**63 - 1
+            )
+            for item in rows
+        ),
+        "per_validator": per_validator,
         "validator_restart_counts": restart_counts,
         "restart_outcomes": restart_outcomes,
-        "coverage_note": (
-            "Samples cover both main scale execution segments; the final "
-            "100-transaction recovery tail is represented by final health "
-            "and restart evidence but was not resource-sampled."
-        ),
+        "coverage_note": "Samples cover the full designated scale command interval.",
     }
     arguments.output.write_text(
         json.dumps(document, indent=2, sort_keys=True) + "\n",

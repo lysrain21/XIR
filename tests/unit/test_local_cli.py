@@ -9,7 +9,7 @@ from xir_lab.cli import run
 
 ROOT = Path(__file__).resolve().parents[2]
 TOPOLOGY = ROOT / "configs" / "local" / "topology-v1.json"
-PROFILE = ROOT / "configs" / "profiles" / "local-scale-v1.json"
+PROFILE = ROOT / "configs" / "profiles" / "local-paper-scale-v2.json"
 
 
 def test_local_init_render_and_current_host_gate(
@@ -95,4 +95,4 @@ def test_local_plan_rejects_bad_digest_and_accepts_progression(
     ) == 0
     result = json.loads(capsys.readouterr().out)
     assert result["outcome"] == "eligible"
-    assert result["details"]["plan"]["counts"]["physical_transactions"] == 30000
+    assert result["details"]["plan"]["counts"]["physical_transactions"] == 120000

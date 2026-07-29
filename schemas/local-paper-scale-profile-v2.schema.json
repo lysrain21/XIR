@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xir.example/schemas/local-paper-scale-profile-v2.schema.json",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "profile_id",
+    "environment",
+    "fixed_seed",
+    "routes",
+    "counts",
+    "payload",
+    "physical_stages",
+    "progression"
+  ],
+  "properties": {
+    "schema_version": {"const": "xir-lab-local-paper-scale-profile-v2"},
+    "profile_id": {"const": "local-paper-scale-v2"},
+    "environment": {"const": "controlled-local-qbft"},
+    "fixed_seed": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "routes": {
+      "const": {
+        "HH": {
+          "first_carrier": "hyperlane",
+          "second_carrier": "hyperlane",
+          "execution_class": "homogeneous-native",
+          "xir": false
+        },
+        "HL": {
+          "first_carrier": "hyperlane",
+          "second_carrier": "layerzero-v2",
+          "execution_class": "heterogeneous-xir",
+          "xir": true
+        },
+        "LH": {
+          "first_carrier": "layerzero-v2",
+          "second_carrier": "hyperlane",
+          "execution_class": "heterogeneous-xir",
+          "xir": true
+        },
+        "LL": {
+          "first_carrier": "layerzero-v2",
+          "second_carrier": "layerzero-v2",
+          "execution_class": "homogeneous-native",
+          "xir": false
+        }
+      }
+    },
+    "counts": {
+      "const": {
+        "attempts_per_route": 10000,
+        "planned_designated_attempts": 40000,
+        "planned_warmup_attempts": 0,
+        "retry_attempts_in_designated_count": false,
+        "physical_transactions_per_attempt": 3,
+        "planned_physical_transactions": 120000
+      }
+    },
+    "payload": {
+      "const": {
+        "minimum_bytes": 32,
+        "size_step_bytes": 32,
+        "size_bucket_count": 4
+      }
+    },
+    "physical_stages": {
+      "const": ["source", "intermediate", "destination"]
+    },
+    "progression": {
+      "const": {
+        "smoke_attempts_per_route": 10,
+        "smoke_attempts": 40,
+        "rehearsal_attempts_per_route": 250,
+        "rehearsal_attempts": 1000,
+        "scale_attempts_per_route": 10000,
+        "scale_attempts": 40000,
+        "requires_reconciled_smoke": true,
+        "requires_reconciled_rehearsal": true
+      }
+    }
+  },
+  "additionalProperties": false
+}

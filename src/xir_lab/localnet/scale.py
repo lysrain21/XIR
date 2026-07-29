@@ -1,4 +1,4 @@
-"""Exact local-scale profile and progression planning."""
+"""Exact four-route paper-scale profile and progression planning."""
 
 from __future__ import annotations
 
@@ -12,8 +12,33 @@ import rfc8785
 
 from xir_lab.localnet.topology import LocalTopologyError
 
-CONDITIONS = ("HH", "HL", "LH", "LL")
-ARMS = ("baseline", "xir")
+ROUTES = ("HH", "HL", "LH", "LL")
+ROUTE_SEMANTICS = {
+    "HH": {
+        "first_carrier": "hyperlane",
+        "second_carrier": "hyperlane",
+        "execution_class": "homogeneous-native",
+        "xir": False,
+    },
+    "HL": {
+        "first_carrier": "hyperlane",
+        "second_carrier": "layerzero-v2",
+        "execution_class": "heterogeneous-xir",
+        "xir": True,
+    },
+    "LH": {
+        "first_carrier": "layerzero-v2",
+        "second_carrier": "hyperlane",
+        "execution_class": "heterogeneous-xir",
+        "xir": True,
+    },
+    "LL": {
+        "first_carrier": "layerzero-v2",
+        "second_carrier": "layerzero-v2",
+        "execution_class": "homogeneous-native",
+        "xir": False,
+    },
+}
 
 
 def _schema(name: str) -> dict[str, Any]:
@@ -54,7 +79,7 @@ def build_local_scale_plan(
 
     _, profile_sha256 = _load(
         profile_path,
-        "local-scale-profile-v1.schema.json",
+        "local-paper-scale-profile-v2.schema.json",
     )
     progression = {
         "smoke_freeze_sha256": smoke_freeze_sha256,
@@ -71,24 +96,21 @@ def build_local_scale_plan(
         "profile_sha256": profile_sha256,
         "topology_sha256": topology_sha256,
         "counts": {
-            "pair_slots": 5000,
-            "designated_attempts": 10000,
-            "source_transactions": 10000,
-            "intermediate_transactions": 10000,
-            "destination_transactions": 10000,
-            "physical_transactions": 30000,
+            "designated_attempts": 40000,
+            "source_transactions": 40000,
+            "intermediate_transactions": 40000,
+            "destination_transactions": 40000,
+            "physical_transactions": 120000,
+            "xir_transitions": 20000,
         },
-        "condition_arm_counts": {
-            f"{condition}/{arm}": 1250
-            for condition in CONDITIONS
-            for arm in ARMS
-        },
+        "route_counts": {route: 10000 for route in ROUTES},
+        "route_semantics": ROUTE_SEMANTICS,
         "progression": progression,
         "eligible": not reason_codes,
         "reason_codes": reason_codes,
     }
     document = {
-        "schema_version": "xir-lab-local-scale-plan-v1",
+        "schema_version": "xir-lab-local-paper-scale-plan-v2",
         "plan_sha256": hashlib.sha256(
             rfc8785.dumps(payload)  # type: ignore[arg-type]
         ).hexdigest(),
@@ -96,7 +118,7 @@ def build_local_scale_plan(
     }
     errors = list(
         jsonschema.Draft202012Validator(
-            _schema("local-scale-plan-v1.schema.json")
+            _schema("local-paper-scale-plan-v2.schema.json")
         ).iter_errors(document)
     )
     if errors:
@@ -135,7 +157,7 @@ def validate_local_scale_execution_gate(
     plan = _unwrap(_load_document(plan_path, "local scale plan"), "plan")
     plan_errors = list(
         jsonschema.Draft202012Validator(
-            _schema("local-scale-plan-v1.schema.json")
+            _schema("local-paper-scale-plan-v2.schema.json")
         ).iter_errors(plan)
     )
     if plan_errors:
@@ -149,7 +171,7 @@ def validate_local_scale_execution_gate(
         raise LocalTopologyError("local scale plan digest mismatch")
     _, profile_sha256 = _load(
         profile_path,
-        "local-scale-profile-v1.schema.json",
+        "local-paper-scale-profile-v2.schema.json",
     )
     if (
         plan["topology_sha256"] != topology_sha256

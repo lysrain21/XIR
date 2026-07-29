@@ -14,13 +14,13 @@ from xir_lab.localnet.workload import build_local_attempts
 
 ROOT = Path(__file__).resolve().parents[2]
 TOPOLOGY = ROOT / "configs" / "local" / "topology-v1.json"
-PROFILE = ROOT / "configs" / "profiles" / "local-scale-v1.json"
+PROFILE = ROOT / "configs" / "profiles" / "local-paper-scale-v2.json"
 DIGEST = "ab" * 32
 
 
 @pytest.mark.parametrize(
     ("phase", "expected"),
-    (("smoke", 40), ("rehearsal", 1000), ("scale", 10000)),
+    (("smoke", 40), ("rehearsal", 1000), ("scale", 40000)),
 )
 def test_local_workload_schedule_is_exact_and_balanced(
     phase: str,
@@ -29,18 +29,26 @@ def test_local_workload_schedule_is_exact_and_balanced(
     attempts = build_local_attempts(profile_path=PROFILE, phase=phase)  # type: ignore[arg-type]
     assert len(attempts) == expected
     assert len({item.attempt_id for item in attempts}) == expected
-    assert len({item.pair_id for item in attempts}) == expected // 2
     assert {
-        (condition, arm): sum(
-            item.condition == condition and item.arm == arm for item in attempts
+        route: sum(
+            item.route == route for item in attempts
         )
-        for condition in ("HH", "HL", "LH", "LL")
-        for arm in ("baseline", "xir")
+        for route in ("HH", "HL", "LH", "LL")
     } == {
-        (condition, arm): expected // 8
-        for condition in ("HH", "HL", "LH", "LL")
-        for arm in ("baseline", "xir")
+        route: expected // 4
+        for route in ("HH", "HL", "LH", "LL")
     }
+    assert all(item.xir == (item.route in {"HL", "LH"}) for item in attempts)
+    assert all(
+        item.execution_class
+        == ("heterogeneous-xir" if item.xir else "homogeneous-native")
+        for item in attempts
+    )
+    payload_distributions = {
+        route: sorted(item.payload_bytes for item in attempts if item.route == route)
+        for route in ("HH", "HL", "LH", "LL")
+    }
+    assert len({tuple(values) for values in payload_distributions.values()}) == 1
 
 
 def test_local_scale_plan_has_exact_balanced_counts_and_progression_gate() -> None:
@@ -51,14 +59,19 @@ def test_local_scale_plan_has_exact_balanced_counts_and_progression_gate() -> No
     )
     assert planned["eligible"] is False
     assert planned["counts"] == {
-        "pair_slots": 5000,
-        "designated_attempts": 10000,
-        "source_transactions": 10000,
-        "intermediate_transactions": 10000,
-        "destination_transactions": 10000,
-        "physical_transactions": 30000,
+        "designated_attempts": 40000,
+        "source_transactions": 40000,
+        "intermediate_transactions": 40000,
+        "destination_transactions": 40000,
+        "physical_transactions": 120000,
+        "xir_transitions": 20000,
     }
-    assert set(planned["condition_arm_counts"].values()) == {1250}
+    assert planned["route_counts"] == {
+        "HH": 10000,
+        "HL": 10000,
+        "LH": 10000,
+        "LL": 10000,
+    }
     assert set(planned["reason_codes"]) == {
         "smoke_freeze_sha256",
         "rehearsal_freeze_sha256",
@@ -91,15 +104,18 @@ def test_local_report_requires_complete_reconciliation_and_claim_exclusions() ->
         topology_sha256=DIGEST,
         identity_manifest_sha256=DIGEST,
         plan_sha256=DIGEST,
-        terminal_attempts=10000,
-        physical_transactions=30000,
+        terminal_attempts=40000,
+        physical_transactions=120000,
         retries=0,
         metrics=metrics,
         offline_rebuild_digests=(DIGEST, DIGEST),
     )
     validate_local_scale_report(document)
 
-    incomplete = {**document, "counts": {**document["counts"], "terminal_attempts": 9999}}
+    incomplete = {
+        **document,
+        "counts": {**document["counts"], "terminal_attempts": 39999},
+    }
     with pytest.raises(LocalTopologyError, match="incomplete terminal"):
         validate_local_scale_report(incomplete)
 

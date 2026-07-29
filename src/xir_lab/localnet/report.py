@@ -22,6 +22,7 @@ CLAIM_EXCLUSIONS = (
     "rollup_or_l1_data_fees",
     "production_cost",
     "production_reliability",
+    "full_vendor_implementation_performance",
     "full_run_rpc_request_total",
 )
 
@@ -40,15 +41,24 @@ def build_local_scale_report(
     """Build and validate a local-only report from reconciled measurements."""
 
     document = {
-        "schema_version": "xir-lab-local-scale-report-v1",
+        "schema_version": "xir-lab-local-paper-scale-report-v2",
         "environment": "controlled-local-qbft",
+        "workload_model": "controlled-protocol-distinct-adapters",
         "topology_sha256": topology_sha256,
         "identity_manifest_sha256": identity_manifest_sha256,
         "plan_sha256": plan_sha256,
         "counts": {
-            "planned_attempts": 10_000,
+            "planned_attempts": 40_000,
             "terminal_attempts": terminal_attempts,
             "physical_transactions": physical_transactions,
+            "xir_transitions": 20_000,
+            "application_effects": 40_000,
+            "route_attempts": {
+                "HH": 10_000,
+                "HL": 10_000,
+                "LH": 10_000,
+                "LL": 10_000,
+            },
             "retries": retries,
         },
         "metrics": metrics,
@@ -61,7 +71,11 @@ def build_local_scale_report(
 
 
 def _schema() -> dict[str, Any]:
-    path = Path(__file__).resolve().parents[3] / "schemas" / "local-scale-report-v1.schema.json"
+    path = (
+        Path(__file__).resolve().parents[3]
+        / "schemas"
+        / "local-paper-scale-report-v2.schema.json"
+    )
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
@@ -76,12 +90,12 @@ def validate_local_scale_report(document: dict[str, Any]) -> None:
         first = errors[0]
         location = ".".join(str(item) for item in first.path) or "<root>"
         raise LocalTopologyError(
-            f"local-scale-report-v1 violation at {location}: {first.message}"
+            f"local-paper-scale-report-v2 violation at {location}: {first.message}"
         )
     counts = cast(dict[str, int], document["counts"])
     if counts["terminal_attempts"] != counts["planned_attempts"]:
         raise LocalTopologyError("local scale report has incomplete terminal attempts")
-    if counts["physical_transactions"] != 30_000:
+    if counts["physical_transactions"] != 120_000:
         raise LocalTopologyError("local scale report physical transaction count must be exact")
     digests = cast(list[str], document["offline_rebuild_digests"])
     if digests[0] != digests[1]:
@@ -131,8 +145,12 @@ def build_local_scale_report_from_evidence(
     if (
         command.get("outcome") != "complete"
         or summary.get("phase") != "scale"
-        or summary.get("attempts") != 10_000
-        or summary.get("physical_transactions") != 30_000
+        or summary.get("attempts") != 40_000
+        or summary.get("physical_transactions") != 120_000
+        or summary.get("xir_transitions") != 20_000
+        or summary.get("application_effects") != 40_000
+        or summary.get("route_counts")
+        != {"HH": 10_000, "HL": 10_000, "LH": 10_000, "LL": 10_000}
     ):
         raise LocalTopologyError("local scale command is not exactly reconciled")
     if (

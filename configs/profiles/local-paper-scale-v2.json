@@ -1,0 +1,56 @@
+{
+  "schema_version": "xir-lab-local-paper-scale-profile-v2",
+  "profile_id": "local-paper-scale-v2",
+  "environment": "controlled-local-qbft",
+  "fixed_seed": "4bb7c6b4ce8aa82f2131282b02027c09f8b9b665367867f6235c4e92f0146b5a",
+  "routes": {
+    "HH": {
+      "first_carrier": "hyperlane",
+      "second_carrier": "hyperlane",
+      "execution_class": "homogeneous-native",
+      "xir": false
+    },
+    "HL": {
+      "first_carrier": "hyperlane",
+      "second_carrier": "layerzero-v2",
+      "execution_class": "heterogeneous-xir",
+      "xir": true
+    },
+    "LH": {
+      "first_carrier": "layerzero-v2",
+      "second_carrier": "hyperlane",
+      "execution_class": "heterogeneous-xir",
+      "xir": true
+    },
+    "LL": {
+      "first_carrier": "layerzero-v2",
+      "second_carrier": "layerzero-v2",
+      "execution_class": "homogeneous-native",
+      "xir": false
+    }
+  },
+  "counts": {
+    "attempts_per_route": 10000,
+    "planned_designated_attempts": 40000,
+    "planned_warmup_attempts": 0,
+    "retry_attempts_in_designated_count": false,
+    "physical_transactions_per_attempt": 3,
+    "planned_physical_transactions": 120000
+  },
+  "payload": {
+    "minimum_bytes": 32,
+    "size_step_bytes": 32,
+    "size_bucket_count": 4
+  },
+  "physical_stages": ["source", "intermediate", "destination"],
+  "progression": {
+    "smoke_attempts_per_route": 10,
+    "smoke_attempts": 40,
+    "rehearsal_attempts_per_route": 250,
+    "rehearsal_attempts": 1000,
+    "scale_attempts_per_route": 10000,
+    "scale_attempts": 40000,
+    "requires_reconciled_smoke": true,
+    "requires_reconciled_rehearsal": true
+  }
+}

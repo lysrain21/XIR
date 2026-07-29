@@ -1,0 +1,136 @@
+{
+  "checks": {
+    "all_finalized": true,
+    "application_effect_count": true,
+    "attempt_identity_count": true,
+    "envelope_links": true,
+    "nonce_uniqueness": true,
+    "payload_balance": true,
+    "receipts_complete": true,
+    "route_attempt_balance": true,
+    "route_event_count": true,
+    "route_semantics": true,
+    "route_sequence_coverage": true,
+    "route_stage_balance": true,
+    "signed_spool_empty": true,
+    "sqlite_integrity": true,
+    "stage_balance": true,
+    "three_stage_dependencies": true,
+    "transaction_hash_uniqueness": true,
+    "xir_transition_count": true
+  },
+  "counts": {
+    "application_effects": 40000,
+    "calldata_bytes": 31200000,
+    "distinct_attempts": 40000,
+    "distinct_transaction_hashes": 120000,
+    "gas_used": 7663835200,
+    "physical_transactions": 120000,
+    "retry_generations": 0,
+    "route_events": 120000,
+    "signed_spool_files": 0,
+    "xir_transitions": 20000
+  },
+  "eligible": true,
+  "envelope_link_error_attempts": 0,
+  "evidence_sha256": "e970281772d58bc0125b43fb4362ae555a4f1344f723bba9c47cf69f59851183",
+  "observed_from_epoch_seconds": 1785342552.5344393,
+  "observed_through_epoch_seconds": 1785346049.0702777,
+  "payload_distributions": {
+    "HH": [
+      {
+        "attempts": 2500,
+        "payload_bytes": 32
+      },
+      {
+        "attempts": 2500,
+        "payload_bytes": 64
+      },
+      {
+        "attempts": 2500,
+        "payload_bytes": 96
+      },
+      {
+        "attempts": 2500,
+        "payload_bytes": 128
+      }
+    ],
+    "HL": [
+      {
+        "attempts": 2500,
+        "payload_bytes": 32
+      },
+      {
+        "attempts": 2500,
+        "payload_bytes": 64
+      },
+      {
+        "attempts": 2500,
+        "payload_bytes": 96
+      },
+      {
+        "attempts": 2500,
+        "payload_bytes": 128
+      }
+    ],
+    "LH": [
+      {
+        "attempts": 2500,
+        "payload_bytes": 32
+      },
+      {
+        "attempts": 2500,
+        "payload_bytes": 64
+      },
+      {
+        "attempts": 2500,
+        "payload_bytes": 96
+      },
+      {
+        "attempts": 2500,
+        "payload_bytes": 128
+      }
+    ],
+    "LL": [
+      {
+        "attempts": 2500,
+        "payload_bytes": 32
+      },
+      {
+        "attempts": 2500,
+        "payload_bytes": 64
+      },
+      {
+        "attempts": 2500,
+        "payload_bytes": 96
+      },
+      {
+        "attempts": 2500,
+        "payload_bytes": 128
+      }
+    ]
+  },
+  "route_attempts": {
+    "HH": 10000,
+    "HL": 10000,
+    "LH": 10000,
+    "LL": 10000
+  },
+  "route_stage_rows": {
+    "HH": 30000,
+    "HL": 30000,
+    "LH": 30000,
+    "LL": 30000
+  },
+  "schema_version": "xir-lab-local-paper-scale-reconciliation-v2",
+  "semantic_error_rows": 0,
+  "stage_dependency_error_attempts": 0,
+  "stages": {
+    "0": 40000,
+    "1": 40000,
+    "2": 40000
+  },
+  "states": {
+    "finalized": 120000
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "command": "local-report-validate",
+  "details": {
+    "report_path": "/vePFS-Mindverse/user/intern/lucian/xir/runtime/four-route-scale-run-001/scale-report.json"
+  },
+  "effects": {
+    "containers_started": 0,
+    "local_files_created": 0,
+    "local_private_keys_created": 0,
+    "public_broadcasts": 0,
+    "public_network_calls": 0,
+    "public_signatures": 0
+  },
+  "environment": "controlled-local-qbft",
+  "outcome": "pass",
+  "reason_code": "local_scale_report_valid",
+  "schema_version": "xir-lab-local-command-status-v1",
+  "tool_version": "0.1.0"
+}

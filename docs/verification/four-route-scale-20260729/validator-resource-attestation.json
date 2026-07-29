@@ -1,0 +1,182 @@
+{
+  "after": {
+    "xir-local-scale-local-destination-v1-1": {
+      "memory_bytes": 1073741824,
+      "memory_swap_bytes": 1073741824,
+      "restart_count": 1,
+      "running": false
+    },
+    "xir-local-scale-local-destination-v2-1": {
+      "memory_bytes": 1073741824,
+      "memory_swap_bytes": 1073741824,
+      "restart_count": 0,
+      "running": false
+    },
+    "xir-local-scale-local-destination-v3-1": {
+      "memory_bytes": 1073741824,
+      "memory_swap_bytes": 1073741824,
+      "restart_count": 0,
+      "running": false
+    },
+    "xir-local-scale-local-destination-v4-1": {
+      "memory_bytes": 1073741824,
+      "memory_swap_bytes": 1073741824,
+      "restart_count": 0,
+      "running": false
+    },
+    "xir-local-scale-local-intermediate-v1-1": {
+      "memory_bytes": 1073741824,
+      "memory_swap_bytes": 1073741824,
+      "restart_count": 0,
+      "running": false
+    },
+    "xir-local-scale-local-intermediate-v2-1": {
+      "memory_bytes": 1073741824,
+      "memory_swap_bytes": 1073741824,
+      "restart_count": 0,
+      "running": false
+    },
+    "xir-local-scale-local-intermediate-v3-1": {
+      "memory_bytes": 1073741824,
+      "memory_swap_bytes": 1073741824,
+      "restart_count": 0,
+      "running": false
+    },
+    "xir-local-scale-local-intermediate-v4-1": {
+      "memory_bytes": 1073741824,
+      "memory_swap_bytes": 1073741824,
+      "restart_count": 0,
+      "running": false
+    },
+    "xir-local-scale-local-source-v1-1": {
+      "memory_bytes": 1073741824,
+      "memory_swap_bytes": 1073741824,
+      "restart_count": 0,
+      "running": false
+    },
+    "xir-local-scale-local-source-v2-1": {
+      "memory_bytes": 1073741824,
+      "memory_swap_bytes": 1073741824,
+      "restart_count": 0,
+      "running": false
+    },
+    "xir-local-scale-local-source-v3-1": {
+      "memory_bytes": 1073741824,
+      "memory_swap_bytes": 1073741824,
+      "restart_count": 0,
+      "running": false
+    },
+    "xir-local-scale-local-source-v4-1": {
+      "memory_bytes": 1073741824,
+      "memory_swap_bytes": 1073741824,
+      "restart_count": 0,
+      "running": false
+    }
+  },
+  "before": {
+    "xir-local-scale-local-destination-v1-1": {
+      "memory_bytes": 536870912,
+      "memory_swap_bytes": 1073741824,
+      "restart_count": 1,
+      "running": false
+    },
+    "xir-local-scale-local-destination-v2-1": {
+      "memory_bytes": 536870912,
+      "memory_swap_bytes": 1073741824,
+      "restart_count": 0,
+      "running": false
+    },
+    "xir-local-scale-local-destination-v3-1": {
+      "memory_bytes": 536870912,
+      "memory_swap_bytes": 1073741824,
+      "restart_count": 0,
+      "running": false
+    },
+    "xir-local-scale-local-destination-v4-1": {
+      "memory_bytes": 536870912,
+      "memory_swap_bytes": 1073741824,
+      "restart_count": 0,
+      "running": false
+    },
+    "xir-local-scale-local-intermediate-v1-1": {
+      "memory_bytes": 536870912,
+      "memory_swap_bytes": 1073741824,
+      "restart_count": 0,
+      "running": false
+    },
+    "xir-local-scale-local-intermediate-v2-1": {
+      "memory_bytes": 536870912,
+      "memory_swap_bytes": 1073741824,
+      "restart_count": 0,
+      "running": false
+    },
+    "xir-local-scale-local-intermediate-v3-1": {
+      "memory_bytes": 536870912,
+      "memory_swap_bytes": 1073741824,
+      "restart_count": 0,
+      "running": false
+    },
+    "xir-local-scale-local-intermediate-v4-1": {
+      "memory_bytes": 536870912,
+      "memory_swap_bytes": 1073741824,
+      "restart_count": 0,
+      "running": false
+    },
+    "xir-local-scale-local-source-v1-1": {
+      "memory_bytes": 536870912,
+      "memory_swap_bytes": 1073741824,
+      "restart_count": 0,
+      "running": false
+    },
+    "xir-local-scale-local-source-v2-1": {
+      "memory_bytes": 536870912,
+      "memory_swap_bytes": 1073741824,
+      "restart_count": 0,
+      "running": false
+    },
+    "xir-local-scale-local-source-v3-1": {
+      "memory_bytes": 536870912,
+      "memory_swap_bytes": 1073741824,
+      "restart_count": 0,
+      "running": false
+    },
+    "xir-local-scale-local-source-v4-1": {
+      "memory_bytes": 536870912,
+      "memory_swap_bytes": 1073741824,
+      "restart_count": 0,
+      "running": false
+    }
+  },
+  "observed_at": "2026-07-29T16:22:27.765896+00:00",
+  "project": "xir-local-scale",
+  "schema_version": "xir-lab-validator-resource-attestation-v1",
+  "target_count": 12,
+  "target_memory_bytes": 1073741824,
+  "targets": [
+    "xir-local-scale-local-destination-v1-1",
+    "xir-local-scale-local-destination-v2-1",
+    "xir-local-scale-local-destination-v3-1",
+    "xir-local-scale-local-destination-v4-1",
+    "xir-local-scale-local-intermediate-v1-1",
+    "xir-local-scale-local-intermediate-v2-1",
+    "xir-local-scale-local-intermediate-v3-1",
+    "xir-local-scale-local-intermediate-v4-1",
+    "xir-local-scale-local-source-v1-1",
+    "xir-local-scale-local-source-v2-1",
+    "xir-local-scale-local-source-v3-1",
+    "xir-local-scale-local-source-v4-1"
+  ],
+  "unrelated_container_names_after": [
+    "autodoc-postgres",
+    "pg-thiagoleki",
+    "rfq-test-pg",
+    "spot3-b14ef808-c-native"
+  ],
+  "unrelated_container_names_before": [
+    "autodoc-postgres",
+    "pg-thiagoleki",
+    "rfq-test-pg",
+    "spot3-b14ef808-c-native"
+  ],
+  "unrelated_container_set_unchanged": true
+}

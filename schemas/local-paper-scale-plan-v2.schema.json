@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xir.example/schemas/local-paper-scale-plan-v2.schema.json",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "plan_sha256",
+    "environment",
+    "profile_sha256",
+    "topology_sha256",
+    "counts",
+    "route_counts",
+    "route_semantics",
+    "progression",
+    "eligible",
+    "reason_codes"
+  ],
+  "properties": {
+    "schema_version": {"const": "xir-lab-local-paper-scale-plan-v2"},
+    "plan_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "environment": {"const": "controlled-local-qbft"},
+    "profile_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "topology_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "counts": {
+      "const": {
+        "designated_attempts": 40000,
+        "source_transactions": 40000,
+        "intermediate_transactions": 40000,
+        "destination_transactions": 40000,
+        "physical_transactions": 120000,
+        "xir_transitions": 20000
+      }
+    },
+    "route_counts": {
+      "const": {"HH": 10000, "HL": 10000, "LH": 10000, "LL": 10000}
+    },
+    "route_semantics": {"type": "object"},
+    "progression": {
+      "type": "object",
+      "required": [
+        "smoke_freeze_sha256",
+        "rehearsal_freeze_sha256",
+        "measured_limits_sha256"
+      ],
+      "properties": {
+        "smoke_freeze_sha256": {
+          "type": ["string", "null"],
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "rehearsal_freeze_sha256": {
+          "type": ["string", "null"],
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "measured_limits_sha256": {
+          "type": ["string", "null"],
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "additionalProperties": false
+    },
+    "eligible": {"type": "boolean"},
+    "reason_codes": {
+      "type": "array",
+      "items": {"type": "string"},
+      "uniqueItems": true
+    }
+  },
+  "additionalProperties": false
+}

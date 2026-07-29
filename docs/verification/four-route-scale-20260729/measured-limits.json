@@ -1,0 +1,50 @@
+{
+  "batch_size": 100,
+  "claim_note": "Resource peaks are sampled controlled-host observations, not production capacity or public-network measurements.",
+  "configured_cpu_ceiling_percent": 900.0,
+  "configured_memory_ceiling_bytes": 12884901888,
+  "cpu_samples_percent": [
+    67.25,
+    54.64,
+    42.65,
+    61.699999999999996,
+    31.81
+  ],
+  "frozen_filesystem_reserve_bytes": 6442450944,
+  "measurement_scope": "five post-rehearsal container snapshots",
+  "memory_samples_bytes": [
+    4872942383,
+    4874724963,
+    4850397999,
+    4863400340,
+    4886678728
+  ],
+  "minimum_validator_memory_limit_bytes": 1073741824,
+  "peak_cpu_percent": 67.25,
+  "peak_memory_bytes": 4886678728,
+  "per_validator_memory_limit_bytes": {
+    "xir-local-scale-local-destination-v1-1": 1073741824,
+    "xir-local-scale-local-destination-v2-1": 1073741824,
+    "xir-local-scale-local-destination-v3-1": 1073741824,
+    "xir-local-scale-local-destination-v4-1": 1073741824,
+    "xir-local-scale-local-intermediate-v1-1": 1073741824,
+    "xir-local-scale-local-intermediate-v2-1": 1073741824,
+    "xir-local-scale-local-intermediate-v3-1": 1073741824,
+    "xir-local-scale-local-intermediate-v4-1": 1073741824,
+    "xir-local-scale-local-source-v1-1": 1073741824,
+    "xir-local-scale-local-source-v2-1": 1073741824,
+    "xir-local-scale-local-source-v3-1": 1073741824,
+    "xir-local-scale-local-source-v4-1": 1073741824
+  },
+  "projected_scale_evidence_bytes": 111738880,
+  "rehearsal_attempts": 1000,
+  "rehearsal_database_bytes": 2793472,
+  "rehearsal_elapsed_seconds": 93.21329641342163,
+  "rehearsal_physical_transactions": 3000,
+  "rehearsal_physical_transactions_per_second": 32.184249623512244,
+  "restart_outcomes": [
+    "local-source/v4:continued-finality-and-caught-up"
+  ],
+  "runtime_filesystem_available_bytes": 61910979444736,
+  "schema_version": "xir-lab-local-measured-limits-v1"
+}

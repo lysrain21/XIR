@@ -1,0 +1,205 @@
+{
+  "command": "local-preflight",
+  "details": {
+    "output_path": null,
+    "preflight": {
+      "checks": [
+        {
+          "check_id": "logical_cpus",
+          "observed": 14,
+          "reason_code": "ok",
+          "required": 4,
+          "status": "pass"
+        },
+        {
+          "check_id": "memory_bytes",
+          "observed": 122272350208,
+          "reason_code": "ok",
+          "required": 12884901888,
+          "status": "pass"
+        },
+        {
+          "check_id": "disk_available_bytes",
+          "observed": 8422453248,
+          "reason_code": "ok",
+          "required": 6442450944,
+          "status": "pass"
+        },
+        {
+          "check_id": "identity_manifest",
+          "observed": true,
+          "reason_code": "ok",
+          "required": true,
+          "status": "pass"
+        },
+        {
+          "check_id": "twelve_node_observations",
+          "observed": 12,
+          "reason_code": "ok",
+          "required": 12,
+          "status": "pass"
+        },
+        {
+          "check_id": "local-source:reachable",
+          "observed": 4,
+          "reason_code": "ok",
+          "required": 4,
+          "status": "pass"
+        },
+        {
+          "check_id": "local-source:chain_id",
+          "observed": [
+            3133701
+          ],
+          "reason_code": "ok",
+          "required": [
+            3133701
+          ],
+          "status": "pass"
+        },
+        {
+          "check_id": "local-source:peer_count",
+          "observed": 3,
+          "reason_code": "ok",
+          "required": 3,
+          "status": "pass"
+        },
+        {
+          "check_id": "local-source:block_progress",
+          "observed": 4,
+          "reason_code": "ok",
+          "required": 4,
+          "status": "pass"
+        },
+        {
+          "check_id": "local-source:checkpoint_agreement",
+          "observed": [
+            "0xbff039e87aa47216bc3b3355823f006dc2bdd6fb870f20c168f595590a25d8df"
+          ],
+          "reason_code": "ok",
+          "required": "one common hash",
+          "status": "pass"
+        },
+        {
+          "check_id": "local-intermediate:reachable",
+          "observed": 4,
+          "reason_code": "ok",
+          "required": 4,
+          "status": "pass"
+        },
+        {
+          "check_id": "local-intermediate:chain_id",
+          "observed": [
+            3133702
+          ],
+          "reason_code": "ok",
+          "required": [
+            3133702
+          ],
+          "status": "pass"
+        },
+        {
+          "check_id": "local-intermediate:peer_count",
+          "observed": 3,
+          "reason_code": "ok",
+          "required": 3,
+          "status": "pass"
+        },
+        {
+          "check_id": "local-intermediate:block_progress",
+          "observed": 4,
+          "reason_code": "ok",
+          "required": 4,
+          "status": "pass"
+        },
+        {
+          "check_id": "local-intermediate:checkpoint_agreement",
+          "observed": [
+            "0x0592bfd16c28ce8d54579bb86034bc6b7be8f8fd1ebac33663be81fa434c1610"
+          ],
+          "reason_code": "ok",
+          "required": "one common hash",
+          "status": "pass"
+        },
+        {
+          "check_id": "local-destination:reachable",
+          "observed": 4,
+          "reason_code": "ok",
+          "required": 4,
+          "status": "pass"
+        },
+        {
+          "check_id": "local-destination:chain_id",
+          "observed": [
+            3133703
+          ],
+          "reason_code": "ok",
+          "required": [
+            3133703
+          ],
+          "status": "pass"
+        },
+        {
+          "check_id": "local-destination:peer_count",
+          "observed": 3,
+          "reason_code": "ok",
+          "required": 3,
+          "status": "pass"
+        },
+        {
+          "check_id": "local-destination:block_progress",
+          "observed": 4,
+          "reason_code": "ok",
+          "required": 4,
+          "status": "pass"
+        },
+        {
+          "check_id": "local-destination:checkpoint_agreement",
+          "observed": [
+            "0x718a56410715bdb3a4e7a4d37a185f80de721bf736787476dc4154697646b1e0"
+          ],
+          "reason_code": "ok",
+          "required": "one common hash",
+          "status": "pass"
+        },
+        {
+          "check_id": "unknown_networks",
+          "observed": [],
+          "reason_code": "ok",
+          "required": [],
+          "status": "pass"
+        }
+      ],
+      "effects": {
+        "containers_started": 0,
+        "public_broadcasts": 0,
+        "public_network_calls": 0,
+        "public_signatures": 0
+      },
+      "eligible": true,
+      "host": {
+        "disk_available_bytes": 8422453248,
+        "logical_cpus": 14,
+        "memory_bytes": 122272350208,
+        "storage_filesystem_path": "/ebs/docker/165536.165536"
+      },
+      "identity_manifest_sha256": "c3e28e7a5700fca2a433f7b4f3ff1e8de15ac82814af05df6886b47ad4ff62f3",
+      "mode": "smoke",
+      "schema_version": "xir-lab-local-preflight-v1",
+      "topology_sha256": "c18fcd7dab48a055063aff254d6ed82a827a6aef9942f18be93a5cafea737a3b"
+    }
+  },
+  "effects": {
+    "containers_started": 0,
+    "local_files_created": 0,
+    "local_private_keys_created": 0,
+    "public_broadcasts": 0,
+    "public_network_calls": 0,
+    "public_signatures": 0
+  },
+  "environment": "controlled-local-qbft",
+  "outcome": "pass",
+  "reason_code": "local_preflight_passed",
+  "schema_version": "xir-lab-local-command-status-v1",
+  "tool_version": "0.1.0"
+}

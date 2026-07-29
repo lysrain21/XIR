@@ -1,0 +1,436 @@
+{
+  "claim_boundaries": [
+    "Latency and throughput are observed on one controlled local QBFT host.",
+    "Hyperlane and LayerZero are protocol-distinct controlled adapters, not vendor deployments.",
+    "Gas is EVM execution gas and excludes public L1 or rollup data fees.",
+    "Results do not establish public or production capacity, cost, security, or reliability."
+  ],
+  "controlled_physical_transactions_per_second": 34.31968255074246,
+  "descriptive_results": {
+    "by_execution_class": {
+      "heterogeneous-xir": {
+        "calldata_bytes_mean": 260.0,
+        "calldata_bytes_p50": 260.0,
+        "calldata_bytes_p95": 260.0,
+        "calldata_bytes_total": 15600000,
+        "end_to_end_latency_ms_mean": 7273.8627666473385,
+        "end_to_end_latency_ms_p50": 7127.517223358154,
+        "end_to_end_latency_ms_p95": 8717.56887435913,
+        "gas_mean": 68226.60366666666,
+        "gas_p50": 76243.0,
+        "gas_p95": 77735.0,
+        "gas_total": 4093596220,
+        "logical_attempts": 20000,
+        "physical_transactions": 60000,
+        "runner_finalization_latency_ms_mean": 1434.8481510718664,
+        "runner_finalization_latency_ms_p50": 1410.8917713165283,
+        "runner_finalization_latency_ms_p95": 1938.2202625274658,
+        "unique_blocks": {
+          "local-destination": 1129,
+          "local-intermediate": 1131,
+          "local-source": 1140
+        }
+      },
+      "homogeneous-native": {
+        "calldata_bytes_mean": 260.0,
+        "calldata_bytes_p50": 260.0,
+        "calldata_bytes_p95": 260.0,
+        "calldata_bytes_total": 15600000,
+        "end_to_end_latency_ms_mean": 7264.35218141079,
+        "end_to_end_latency_ms_p50": 7126.837968826294,
+        "end_to_end_latency_ms_p95": 8694.933891296387,
+        "gas_mean": 59503.983,
+        "gas_p50": 51561.0,
+        "gas_p95": 76279.0,
+        "gas_total": 3570238980,
+        "logical_attempts": 20000,
+        "physical_transactions": 60000,
+        "runner_finalization_latency_ms_mean": 1433.7970998684566,
+        "runner_finalization_latency_ms_p50": 1412.4772548675537,
+        "runner_finalization_latency_ms_p95": 1939.3906593322754,
+        "unique_blocks": {
+          "local-destination": 1132,
+          "local-intermediate": 1128,
+          "local-source": 1148
+        }
+      }
+    },
+    "by_route": {
+      "HH": {
+        "calldata_bytes_mean": 260.0,
+        "calldata_bytes_p50": 260.0,
+        "calldata_bytes_p95": 260.0,
+        "calldata_bytes_total": 7800000,
+        "end_to_end_latency_ms_mean": 7262.09989438057,
+        "end_to_end_latency_ms_p50": 7126.095771789551,
+        "end_to_end_latency_ms_p95": 8707.709550857544,
+        "gas_mean": 59463.98,
+        "gas_p50": 51561.0,
+        "gas_p95": 76195.0,
+        "gas_total": 1783919400,
+        "logical_attempts": 10000,
+        "physical_transactions": 30000,
+        "runner_finalization_latency_ms_mean": 1435.4911960601808,
+        "runner_finalization_latency_ms_p50": 1414.968490600586,
+        "runner_finalization_latency_ms_p95": 1941.0200119018555,
+        "unique_blocks": {
+          "local-destination": 1096,
+          "local-intermediate": 1100,
+          "local-source": 1109
+        }
+      },
+      "HL": {
+        "calldata_bytes_mean": 260.0,
+        "calldata_bytes_p50": 260.0,
+        "calldata_bytes_p95": 260.0,
+        "calldata_bytes_total": 7800000,
+        "end_to_end_latency_ms_mean": 7274.998526620865,
+        "end_to_end_latency_ms_p50": 7124.159812927246,
+        "end_to_end_latency_ms_p95": 8705.409288406372,
+        "gas_mean": 68228.59346666667,
+        "gas_p50": 76267.0,
+        "gas_p95": 77735.0,
+        "gas_total": 2046857804,
+        "logical_attempts": 10000,
+        "physical_transactions": 30000,
+        "runner_finalization_latency_ms_mean": 1435.7330206314723,
+        "runner_finalization_latency_ms_p50": 1411.6182327270508,
+        "runner_finalization_latency_ms_p95": 1939.61501121521,
+        "unique_blocks": {
+          "local-destination": 1092,
+          "local-intermediate": 1098,
+          "local-source": 1103
+        }
+      },
+      "LH": {
+        "calldata_bytes_mean": 260.0,
+        "calldata_bytes_p50": 260.0,
+        "calldata_bytes_p95": 260.0,
+        "calldata_bytes_total": 7800000,
+        "end_to_end_latency_ms_mean": 7272.727006673813,
+        "end_to_end_latency_ms_p50": 7130.376577377319,
+        "end_to_end_latency_ms_p95": 8732.008695602417,
+        "gas_mean": 68224.61386666667,
+        "gas_p50": 76243.0,
+        "gas_p95": 77735.0,
+        "gas_total": 2046738416,
+        "logical_attempts": 10000,
+        "physical_transactions": 30000,
+        "runner_finalization_latency_ms_mean": 1433.9632815122604,
+        "runner_finalization_latency_ms_p50": 1410.266399383545,
+        "runner_finalization_latency_ms_p95": 1936.854600906372,
+        "unique_blocks": {
+          "local-destination": 1102,
+          "local-intermediate": 1110,
+          "local-source": 1109
+        }
+      },
+      "LL": {
+        "calldata_bytes_mean": 260.0,
+        "calldata_bytes_p50": 260.0,
+        "calldata_bytes_p95": 260.0,
+        "calldata_bytes_total": 7800000,
+        "end_to_end_latency_ms_mean": 7266.60446844101,
+        "end_to_end_latency_ms_p50": 7127.603054046631,
+        "end_to_end_latency_ms_p95": 8677.228689193726,
+        "gas_mean": 59543.986,
+        "gas_p50": 51645.0,
+        "gas_p95": 76279.0,
+        "gas_total": 1786319580,
+        "logical_attempts": 10000,
+        "physical_transactions": 30000,
+        "runner_finalization_latency_ms_mean": 1432.1030036767324,
+        "runner_finalization_latency_ms_p50": 1408.799171447754,
+        "runner_finalization_latency_ms_p95": 1938.009262084961,
+        "unique_blocks": {
+          "local-destination": 1101,
+          "local-intermediate": 1099,
+          "local-source": 1114
+        }
+      }
+    },
+    "by_route_stage": {
+      "HH/destination": {
+        "calldata_bytes_mean": 260.0,
+        "calldata_bytes_p50": 260.0,
+        "calldata_bytes_p95": 260.0,
+        "calldata_bytes_total": 2600000,
+        "end_to_end_latency_ms_mean": 1463.5629877090455,
+        "end_to_end_latency_ms_p50": 1441.5764808654785,
+        "end_to_end_latency_ms_p95": 1977.290153503418,
+        "gas_mean": 76190.4412,
+        "gas_p50": 76195.0,
+        "gas_p95": 76195.0,
+        "gas_total": 761904412,
+        "logical_attempts": 10000,
+        "physical_transactions": 10000,
+        "runner_finalization_latency_ms_mean": 1455.0198514699937,
+        "runner_finalization_latency_ms_p50": 1433.732509613037,
+        "runner_finalization_latency_ms_p95": 1966.428279876709,
+        "unique_blocks": {
+          "local-destination": 1096
+        }
+      },
+      "HH/intermediate": {
+        "calldata_bytes_mean": 260.0,
+        "calldata_bytes_p50": 260.0,
+        "calldata_bytes_p95": 260.0,
+        "calldata_bytes_total": 2600000,
+        "end_to_end_latency_ms_mean": 1442.731343436241,
+        "end_to_end_latency_ms_p50": 1423.7122535705566,
+        "end_to_end_latency_ms_p95": 1935.206651687622,
+        "gas_mean": 51556.5276,
+        "gas_p50": 51561.0,
+        "gas_p95": 51561.0,
+        "gas_total": 515565276,
+        "logical_attempts": 10000,
+        "physical_transactions": 10000,
+        "runner_finalization_latency_ms_mean": 1434.4370668411254,
+        "runner_finalization_latency_ms_p50": 1415.5800342559814,
+        "runner_finalization_latency_ms_p95": 1924.8833656311035,
+        "unique_blocks": {
+          "local-intermediate": 1100
+        }
+      },
+      "HH/source": {
+        "calldata_bytes_mean": 260.0,
+        "calldata_bytes_p50": 260.0,
+        "calldata_bytes_p95": 260.0,
+        "calldata_bytes_total": 2600000,
+        "end_to_end_latency_ms_mean": 1425.3105774641037,
+        "end_to_end_latency_ms_p50": 1403.7654399871826,
+        "end_to_end_latency_ms_p95": 1935.1119995117188,
+        "gas_mean": 50644.9712,
+        "gas_p50": 50648.0,
+        "gas_p95": 50648.0,
+        "gas_total": 506449712,
+        "logical_attempts": 10000,
+        "physical_transactions": 10000,
+        "runner_finalization_latency_ms_mean": 1417.016669869423,
+        "runner_finalization_latency_ms_p50": 1395.9922790527344,
+        "runner_finalization_latency_ms_p95": 1926.6376495361328,
+        "unique_blocks": {
+          "local-source": 1109
+        }
+      },
+      "HL/destination": {
+        "calldata_bytes_mean": 260.0,
+        "calldata_bytes_p50": 260.0,
+        "calldata_bytes_p95": 260.0,
+        "calldata_bytes_total": 2600000,
+        "end_to_end_latency_ms_mean": 1460.7614139556886,
+        "end_to_end_latency_ms_p50": 1435.2660179138184,
+        "end_to_end_latency_ms_p95": 1959.197998046875,
+        "gas_mean": 76262.416,
+        "gas_p50": 76267.0,
+        "gas_p95": 76267.0,
+        "gas_total": 762624160,
+        "logical_attempts": 10000,
+        "physical_transactions": 10000,
+        "runner_finalization_latency_ms_mean": 1452.5176528215409,
+        "runner_finalization_latency_ms_p50": 1426.9733428955078,
+        "runner_finalization_latency_ms_p95": 1948.8327503204346,
+        "unique_blocks": {
+          "local-destination": 1092
+        }
+      },
+      "HL/intermediate": {
+        "calldata_bytes_mean": 260.0,
+        "calldata_bytes_p50": 260.0,
+        "calldata_bytes_p95": 260.0,
+        "calldata_bytes_total": 2600000,
+        "end_to_end_latency_ms_mean": 1446.3790984153748,
+        "end_to_end_latency_ms_p50": 1425.048589706421,
+        "end_to_end_latency_ms_p95": 1950.6568908691406,
+        "gas_mean": 77730.4412,
+        "gas_p50": 77735.0,
+        "gas_p95": 77735.0,
+        "gas_total": 777304412,
+        "logical_attempts": 10000,
+        "physical_transactions": 10000,
+        "runner_finalization_latency_ms_mean": 1438.1025717258453,
+        "runner_finalization_latency_ms_p50": 1417.2158241271973,
+        "runner_finalization_latency_ms_p95": 1941.3318634033203,
+        "unique_blocks": {
+          "local-intermediate": 1098
+        }
+      },
+      "HL/source": {
+        "calldata_bytes_mean": 260.0,
+        "calldata_bytes_p50": 260.0,
+        "calldata_bytes_p95": 260.0,
+        "calldata_bytes_total": 2600000,
+        "end_to_end_latency_ms_mean": 1424.8149517059326,
+        "end_to_end_latency_ms_p50": 1395.148515701294,
+        "end_to_end_latency_ms_p95": 1936.8972778320312,
+        "gas_mean": 50692.9232,
+        "gas_p50": 50696.0,
+        "gas_p95": 50696.0,
+        "gas_total": 506929232,
+        "logical_attempts": 10000,
+        "physical_transactions": 10000,
+        "runner_finalization_latency_ms_mean": 1416.5788373470307,
+        "runner_finalization_latency_ms_p50": 1386.8844509124756,
+        "runner_finalization_latency_ms_p95": 1929.246425628662,
+        "unique_blocks": {
+          "local-source": 1103
+        }
+      },
+      "LH/destination": {
+        "calldata_bytes_mean": 260.0,
+        "calldata_bytes_p50": 260.0,
+        "calldata_bytes_p95": 260.0,
+        "calldata_bytes_total": 2600000,
+        "end_to_end_latency_ms_mean": 1460.4528810024262,
+        "end_to_end_latency_ms_p50": 1435.065746307373,
+        "end_to_end_latency_ms_p95": 1952.138900756836,
+        "gas_mean": 76238.4004,
+        "gas_p50": 76243.0,
+        "gas_p95": 76243.0,
+        "gas_total": 762384004,
+        "logical_attempts": 10000,
+        "physical_transactions": 10000,
+        "runner_finalization_latency_ms_mean": 1452.194304895401,
+        "runner_finalization_latency_ms_p50": 1427.386999130249,
+        "runner_finalization_latency_ms_p95": 1943.7048435211182,
+        "unique_blocks": {
+          "local-destination": 1102
+        }
+      },
+      "LH/intermediate": {
+        "calldata_bytes_mean": 260.0,
+        "calldata_bytes_p50": 260.0,
+        "calldata_bytes_p95": 260.0,
+        "calldata_bytes_total": 2600000,
+        "end_to_end_latency_ms_mean": 1443.4339862585068,
+        "end_to_end_latency_ms_p50": 1423.4189987182617,
+        "end_to_end_latency_ms_p95": 1947.6778507232666,
+        "gas_mean": 77730.4712,
+        "gas_p50": 77735.0,
+        "gas_p95": 77735.0,
+        "gas_total": 777304712,
+        "logical_attempts": 10000,
+        "physical_transactions": 10000,
+        "runner_finalization_latency_ms_mean": 1435.1612599611283,
+        "runner_finalization_latency_ms_p50": 1415.3900146484375,
+        "runner_finalization_latency_ms_p95": 1938.4210109710693,
+        "unique_blocks": {
+          "local-intermediate": 1110
+        }
+      },
+      "LH/source": {
+        "calldata_bytes_mean": 260.0,
+        "calldata_bytes_p50": 260.0,
+        "calldata_bytes_p95": 260.0,
+        "calldata_bytes_total": 2600000,
+        "end_to_end_latency_ms_mean": 1422.9737877368927,
+        "end_to_end_latency_ms_p50": 1398.1051445007324,
+        "end_to_end_latency_ms_p95": 1936.4526271820068,
+        "gas_mean": 50704.97,
+        "gas_p50": 50708.0,
+        "gas_p95": 50708.0,
+        "gas_total": 507049700,
+        "logical_attempts": 10000,
+        "physical_transactions": 10000,
+        "runner_finalization_latency_ms_mean": 1414.534279680252,
+        "runner_finalization_latency_ms_p50": 1389.817476272583,
+        "runner_finalization_latency_ms_p95": 1925.6227016448975,
+        "unique_blocks": {
+          "local-source": 1109
+        }
+      },
+      "LL/destination": {
+        "calldata_bytes_mean": 260.0,
+        "calldata_bytes_p50": 260.0,
+        "calldata_bytes_p95": 260.0,
+        "calldata_bytes_total": 2600000,
+        "end_to_end_latency_ms_mean": 1460.9364587306977,
+        "end_to_end_latency_ms_p50": 1438.3840560913086,
+        "end_to_end_latency_ms_p95": 1958.8327407836914,
+        "gas_mean": 76274.4604,
+        "gas_p50": 76279.0,
+        "gas_p95": 76279.0,
+        "gas_total": 762744604,
+        "logical_attempts": 10000,
+        "physical_transactions": 10000,
+        "runner_finalization_latency_ms_mean": 1452.4255080461503,
+        "runner_finalization_latency_ms_p50": 1430.1998615264893,
+        "runner_finalization_latency_ms_p95": 1950.1094818115234,
+        "unique_blocks": {
+          "local-destination": 1101
+        }
+      },
+      "LL/intermediate": {
+        "calldata_bytes_mean": 260.0,
+        "calldata_bytes_p50": 260.0,
+        "calldata_bytes_p95": 260.0,
+        "calldata_bytes_total": 2600000,
+        "end_to_end_latency_ms_mean": 1440.150011253357,
+        "end_to_end_latency_ms_p50": 1420.2277660369873,
+        "end_to_end_latency_ms_p95": 1934.1998100280762,
+        "gas_mean": 51640.5228,
+        "gas_p50": 51645.0,
+        "gas_p95": 51645.0,
+        "gas_total": 516405228,
+        "logical_attempts": 10000,
+        "physical_transactions": 10000,
+        "runner_finalization_latency_ms_mean": 1431.8776960134505,
+        "runner_finalization_latency_ms_p50": 1411.548137664795,
+        "runner_finalization_latency_ms_p95": 1924.837589263916,
+        "unique_blocks": {
+          "local-intermediate": 1099
+        }
+      },
+      "LL/source": {
+        "calldata_bytes_mean": 260.0,
+        "calldata_bytes_p50": 260.0,
+        "calldata_bytes_p95": 260.0,
+        "calldata_bytes_total": 2600000,
+        "end_to_end_latency_ms_mean": 1420.2232786655427,
+        "end_to_end_latency_ms_p50": 1392.744541168213,
+        "end_to_end_latency_ms_p95": 1945.2323913574219,
+        "gas_mean": 50716.9748,
+        "gas_p50": 50720.0,
+        "gas_p95": 50720.0,
+        "gas_total": 507169748,
+        "logical_attempts": 10000,
+        "physical_transactions": 10000,
+        "runner_finalization_latency_ms_mean": 1412.0058069705963,
+        "runner_finalization_latency_ms_p50": 1384.087085723877,
+        "runner_finalization_latency_ms_p95": 1936.1238479614258,
+        "unique_blocks": {
+          "local-source": 1114
+        }
+      }
+    }
+  },
+  "elapsed_seconds": 3496.535838365555,
+  "environment": "controlled-local-qbft",
+  "pooled_descriptive_comparison": {
+    "heterogeneous_gas_overhead_percent": 50.6447246286799,
+    "heterogeneous_minus_homogeneous_mean_calldata_bytes": 0.0,
+    "heterogeneous_minus_homogeneous_mean_gas": 26131.931000000004,
+    "heterogeneous_routes": [
+      "HL",
+      "LH"
+    ],
+    "homogeneous_routes": [
+      "HH",
+      "LL"
+    ],
+    "limitation": "The pooled comparison is descriptive because route direction and carrier order are not separately randomized.",
+    "sample_transactions_per_class": 20000,
+    "scope": "intermediate-stage only"
+  },
+  "sample": {
+    "application_effects": 40000,
+    "attempts_per_route": 10000,
+    "designated_attempts": 40000,
+    "physical_transactions": 120000,
+    "retry_generations": 0,
+    "transactions_per_route": 30000,
+    "xir_transitions": 20000
+  },
+  "schema_version": "xir-lab-local-paper-scale-analysis-v2",
+  "workload_model": "controlled-protocol-distinct-adapters"
+}
