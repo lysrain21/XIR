@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xir.example/schemas/local-identity-manifest-v1.schema.json",
+  "type": "object",
+  "required": ["schema_version", "payload_sha256", "payload"],
+  "properties": {
+    "schema_version": {"const": "xir-lab-local-identity-manifest-v1"},
+    "payload_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "payload": {
+      "type": "object",
+      "required": [
+        "domain",
+        "topology_sha256",
+        "created_at",
+        "development_only",
+        "accounts",
+        "networks"
+      ],
+      "properties": {
+        "domain": {"const": "xir-lab-local-identity-manifest-v1"},
+        "topology_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "created_at": {"type": "string", "format": "date-time"},
+        "development_only": {"const": true},
+        "accounts": {
+          "type": "object",
+          "required": ["deployer", "runner"],
+          "properties": {
+            "deployer": {"$ref": "#/$defs/address"},
+            "runner": {"$ref": "#/$defs/address"}
+          },
+          "additionalProperties": false
+        },
+        "networks": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": {
+            "type": "object",
+            "required": [
+              "network_id",
+              "chain_id",
+              "genesis_path",
+              "genesis_sha256",
+              "validators"
+            ],
+            "properties": {
+              "network_id": {"type": "string"},
+              "chain_id": {"type": "integer"},
+              "genesis_path": {"type": "string"},
+              "genesis_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+              "validators": {
+                "type": "array",
+                "minItems": 4,
+                "maxItems": 4,
+                "items": {"$ref": "#/$defs/validator"}
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "address": {"type": "string", "pattern": "^0x[0-9a-fA-F]{40}$"},
+    "validator": {
+      "type": "object",
+      "required": [
+        "validator_id",
+        "address",
+        "public_key",
+        "enode",
+        "private_key_path"
+      ],
+      "properties": {
+        "validator_id": {"type": "string", "pattern": "^v[1-4]$"},
+        "address": {"$ref": "#/$defs/address"},
+        "public_key": {"type": "string", "pattern": "^[0-9a-f]{128}$"},
+        "enode": {
+          "type": "string",
+          "pattern": "^enode://[0-9a-f]{128}@172\\.28\\.[0-9]{1,3}\\.[0-9]{1,3}:30303$"
+        },
+        "private_key_path": {"type": "string", "pattern": "^[a-z0-9/_-]+$"}
+      },
+      "additionalProperties": false
+    }
+  }
+}

@@ -97,3 +97,64 @@ The optional 10,000-attempt public-testnet scale run requires its own later
 approval/change and is not required for the primary research result.
 
 No GitHub release, DOI upload, or other remote publication was performed.
+
+## Controlled local three-chain scale extension
+
+- OpenSpec change: `add-local-three-chain-scale-lab`
+- Verification date: 2026-07-29 UTC
+- Implementation state: complete
+- Full-scale execution state: correctly blocked on this host by capacity
+  preflight; no twelve-node launch was attempted
+
+The extension adds a pinned Besu 26.4.0 topology for three independent QBFT
+chains and exactly four validators per chain, repository-external development
+identity initialization, deterministic Compose rendering, strict host and
+twelve-node health gates, a resumable three-stage workload, exact
+smoke/rehearsal/scale progression, and controlled-local claim exclusions.
+
+The scale plan is fixed at 5,000 matched pairs, 10,000 designated attempts,
+1,250 attempts per condition/arm cell, and 30,000 physical transactions.
+Scale execution verifies the content digests of reconciled smoke and rehearsal
+SQLite evidence plus `measured-limits.json`; it also requires an eligible
+identity-bound twelve-node preflight.
+
+Verification results:
+
+```text
+ruff check .
+All checks passed!
+
+mypy src/xir_lab
+Success: no issues found in 65 source files
+
+pytest -q
+360 passed, 1 warning
+
+forge test --root contracts
+32 passed; 0 failed; 0 skipped
+
+docker compose ... config --quiet
+compose config: ok
+
+validate all schemas/*.json as JSON Schema Draft 2020-12
+schemas: ok
+
+openspec validate add-local-three-chain-scale-lab --strict
+Change 'add-local-three-chain-scale-lab' is valid
+```
+
+A bounded live infrastructure check started one complete four-validator
+`local-source` network. All nodes reported chain ID 3133701 and three peers,
+all advanced their heads, and all returned the same hash at checkpoint block
+18. The temporary containers, network, volumes, and disposable keys were
+removed after verification. See
+`docs/verification/local-source-four-validator-20260729.json`.
+
+The current host reported 2 logical CPUs, 8,320,823,296 bytes of memory, and
+107,331,014,656 bytes of available disk. Smoke requires 4 CPUs and 12 GiB;
+scale requires 8 CPUs and 16 GiB. Both modes are ineligible because CPU and
+memory are below threshold. See
+`docs/verification/local-scale-host-capacity-20260729.json`.
+
+No public-network RPC, signature, broadcast, faucet request, token transfer,
+deployment, or carrier operation occurred during this extension.

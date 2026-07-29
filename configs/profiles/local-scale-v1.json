@@ -1,0 +1,23 @@
+{
+  "schema_version": "xir-lab-local-scale-profile-v1",
+  "profile_id": "local-scale-v1",
+  "environment": "controlled-local-qbft",
+  "fixed_seed": "78a05041037df275984ebcce6dcd86ca3a1e9764f31df68aa3e8221549786306",
+  "conditions": ["HH", "HL", "LH", "LL"],
+  "counts": {
+    "pair_slots_per_condition": 1250,
+    "planned_pair_slots": 5000,
+    "attempts_per_condition_arm": 1250,
+    "planned_designated_attempts": 10000,
+    "planned_warmup_attempts": 0,
+    "retry_attempts_in_designated_count": false
+  },
+  "physical_stages": ["source", "intermediate", "destination"],
+  "progression": {
+    "smoke_attempts": 40,
+    "rehearsal_attempts": 1000,
+    "scale_attempts": 10000,
+    "requires_reconciled_smoke": true,
+    "requires_reconciled_rehearsal": true
+  }
+}

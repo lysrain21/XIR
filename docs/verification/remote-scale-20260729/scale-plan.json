@@ -1,0 +1,32 @@
+{
+  "condition_arm_counts": {
+    "HH/baseline": 1250,
+    "HH/xir": 1250,
+    "HL/baseline": 1250,
+    "HL/xir": 1250,
+    "LH/baseline": 1250,
+    "LH/xir": 1250,
+    "LL/baseline": 1250,
+    "LL/xir": 1250
+  },
+  "counts": {
+    "designated_attempts": 10000,
+    "destination_transactions": 10000,
+    "intermediate_transactions": 10000,
+    "pair_slots": 5000,
+    "physical_transactions": 30000,
+    "source_transactions": 10000
+  },
+  "eligible": true,
+  "environment": "controlled-local-qbft",
+  "plan_sha256": "3de021fe8bd20e572644a8badd677e00a1d5917f46c6f7b97e0c3f05bd098811",
+  "profile_sha256": "278bb04f38eadf5c7f2be71cd7077427cc5618535b42810829b6c2118df6e7b8",
+  "progression": {
+    "measured_limits_sha256": "9e97c25740d595ea106390fa52dc4a0b955a5d4095ed63b8dd24de5061fd7e04",
+    "rehearsal_freeze_sha256": "9d09caf02542530fc971398746284b4859dd6eef46e72c03af76c04b4ab9a804",
+    "smoke_freeze_sha256": "1738e71be6df58eac7640b3302bf99aa5516a347b7bf25b2e618cdfd04469810"
+  },
+  "reason_codes": [],
+  "schema_version": "xir-lab-local-scale-plan-v1",
+  "topology_sha256": "c18fcd7dab48a055063aff254d6ed82a827a6aef9942f18be93a5cafea737a3b"
+}

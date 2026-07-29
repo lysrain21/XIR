@@ -18,11 +18,14 @@ use or any public-testnet write operation.
 
 ## Current status
 
-The repository is being built as the zero-write implementation for the
-`build-xir-testnet-lab` OpenSpec change. Planning, fixture replay, validation,
-and offline analysis must work without a signer. Public-testnet deployment,
-configuration, pilot execution, primary execution, scale execution, funding,
-and publication require separately scoped approvals and follow-up operations.
+The repository contains a guarded public-testnet pilot path and an isolated
+local scale lab. Planning, fixture replay, validation, and offline analysis
+work without a signer. Public-testnet deployment, configuration, execution,
+funding, and publication require separately scoped approvals.
+
+The local lab renders three Besu QBFT chains with four validators each and
+uses repository-external development keys. Its exact scale profile is 10,000
+designated attempts and 30,000 physical three-stage transactions.
 
 ## Planned workflow
 
@@ -42,6 +45,23 @@ xir-lab publish
 Live-capable commands must remain fail-closed unless their operation-specific
 approval, identity, signer, deployment, budget, and preflight gates all pass.
 No command creates a wallet, obtains test tokens, or funds an account.
+
+The controlled local workflow is:
+
+```text
+scripts/local_scale.sh init
+scripts/local_scale.sh up
+scripts/local_scale.sh health
+scripts/local_scale.sh deploy
+scripts/local_scale.sh run-smoke
+scripts/local_scale.sh run-rehearsal
+scripts/local_scale.sh plan
+scripts/local_scale.sh scale-preflight
+scripts/local_scale.sh run-scale
+```
+
+See [docs/local-scale-runbook.md](docs/local-scale-runbook.md) for resource
+gates, fault recovery, evidence freezing, and cleanup.
 
 ## Architecture
 

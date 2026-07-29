@@ -18,6 +18,14 @@ The runtime may refer to an external signer or encrypted keystore by a
 non-secret identifier. Signer material and private spools must remain outside
 the repository, run-result roots, CI workspace, and publication roots.
 
+The controlled local lab is the sole exception to the general wallet-creation
+boundary: `local-init` creates disposable development keys under the
+user-selected `XIR_LOCAL_RUNTIME_ROOT`, which must resolve outside the
+repository. These keys are operationally designated only for private chain IDs
+3133701–3133703, must never receive public-network funds, and remain excluded
+from publication.
+The public identity manifest contains addresses and enode identities only.
+
 ## Public-network writes
 
 All commands default to offline or read-only behavior. Wallet creation,

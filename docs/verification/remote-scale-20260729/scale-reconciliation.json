@@ -1,0 +1,43 @@
+{
+  "checks": {
+    "all_finalized": true,
+    "attempt_identity_count": true,
+    "condition_arm_balance": true,
+    "receipts_complete": true,
+    "signed_spool_empty": true,
+    "sqlite_integrity": true,
+    "stage_balance": true,
+    "transaction_hash_uniqueness": true
+  },
+  "condition_arm_stage_rows": {
+    "HH/baseline": 3750,
+    "HH/xir": 3750,
+    "HL/baseline": 3750,
+    "HL/xir": 3750,
+    "LH/baseline": 3750,
+    "LH/xir": 3750,
+    "LL/baseline": 3750,
+    "LL/xir": 3750
+  },
+  "counts": {
+    "calldata_bytes": 5880000,
+    "distinct_attempts": 10000,
+    "distinct_transaction_hashes": 30000,
+    "gas_used": 2075372312,
+    "physical_transactions": 30000,
+    "signed_spool_files": 0
+  },
+  "eligible": true,
+  "evidence_sha256": "1a0beae9f5ce37171b871cbfedcfd98c56659b055918f5846ff6a7d3d5ec45cd",
+  "observed_from_epoch_seconds": 1785334161.06997,
+  "observed_through_epoch_seconds": 1785335207.441745,
+  "schema_version": "xir-lab-local-scale-reconciliation-v1",
+  "stages": {
+    "0": 10000,
+    "1": 10000,
+    "2": 10000
+  },
+  "states": {
+    "finalized": 30000
+  }
+}

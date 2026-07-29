@@ -1,0 +1,38 @@
+{
+  "command": "local-run",
+  "details": {
+    "summary": {
+      "artifact_sha256": "e2054cf786d464a8c4648b0f70b78030d5d7f179bf14c4e8c7a9f2cb15125b4a",
+      "attempts": 40,
+      "calldata_bytes": 23520,
+      "completed_at": "2026-07-29T14:04:06.498004+00:00",
+      "deployment_sha256": "6726e13abbfbfc05029df80f0adc98e6f97d35fb74ec5b4f7385083f30201746",
+      "elapsed_seconds": 7.7530041597783566,
+      "environment": "controlled-local-qbft",
+      "evidence_path": "/vePFS-Mindverse/user/intern/lucian/xir/runtime/local-scale-run-004/evidence/smoke.sqlite",
+      "evidence_sha256": "1738e71be6df58eac7640b3302bf99aa5516a347b7bf25b2e618cdfd04469810",
+      "gas_used": 8301260,
+      "identity_manifest_sha256": "c3e28e7a5700fca2a433f7b4f3ff1e8de15ac82814af05df6886b47ad4ff62f3",
+      "phase": "smoke",
+      "physical_transactions": 120,
+      "profile_sha256": "278bb04f38eadf5c7f2be71cd7077427cc5618535b42810829b6c2118df6e7b8",
+      "rpc_requests": 252,
+      "schema_version": "xir-lab-local-phase-summary-v1",
+      "started_at": "2026-07-29T14:03:58.745018+00:00",
+      "topology_sha256": "c18fcd7dab48a055063aff254d6ed82a827a6aef9942f18be93a5cafea737a3b"
+    }
+  },
+  "effects": {
+    "containers_started": 0,
+    "local_files_created": 1,
+    "local_private_keys_created": 0,
+    "public_broadcasts": 0,
+    "public_network_calls": 0,
+    "public_signatures": 0
+  },
+  "environment": "controlled-local-qbft",
+  "outcome": "complete",
+  "reason_code": "local_smoke_reconciled",
+  "schema_version": "xir-lab-local-command-status-v1",
+  "tool_version": "0.1.0"
+}

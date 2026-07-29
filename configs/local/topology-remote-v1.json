@@ -1,0 +1,64 @@
+{
+  "schema_version": "xir-lab-local-topology-v1",
+  "topology_id": "three-chain-four-validator-qbft-remote-v1",
+  "project_name": "xir-local-scale",
+  "besu_image": "hyperledger/besu@sha256:e23ac0182ecb08663ee188771f7f500dc3ea07a8d9ba14c407728ee5ac45c252",
+  "validator_data_storage": "docker-volume",
+  "runtime_root_environment_variable": "XIR_LOCAL_RUNTIME_ROOT",
+  "allowed_rpc_hosts": ["127.0.0.1", "localhost"],
+  "public_chain_id_denylist": [11155420, 421614, 84532],
+  "networks": [
+    {
+      "network_id": "local-source",
+      "route_role": "source",
+      "chain_id": 3133701,
+      "host_rpc_port": 18545,
+      "subnet": "172.28.11.0/24",
+      "validator_count": 4,
+      "block_period_seconds": 1,
+      "request_timeout_seconds": 4,
+      "gas_limit": "0x1c9c380"
+    },
+    {
+      "network_id": "local-intermediate",
+      "route_role": "intermediate",
+      "chain_id": 3133702,
+      "host_rpc_port": 28545,
+      "subnet": "172.28.12.0/24",
+      "validator_count": 4,
+      "block_period_seconds": 1,
+      "request_timeout_seconds": 4,
+      "gas_limit": "0x1c9c380"
+    },
+    {
+      "network_id": "local-destination",
+      "route_role": "destination",
+      "chain_id": 3133703,
+      "host_rpc_port": 38545,
+      "subnet": "172.28.13.0/24",
+      "validator_count": 4,
+      "block_period_seconds": 1,
+      "request_timeout_seconds": 4,
+      "gas_limit": "0x1c9c380"
+    }
+  ],
+  "resource_policy": {
+    "render": {
+      "minimum_logical_cpus": 1,
+      "minimum_memory_bytes": 1073741824,
+      "minimum_disk_available_bytes": 1073741824
+    },
+    "smoke": {
+      "minimum_logical_cpus": 4,
+      "minimum_memory_bytes": 12884901888,
+      "minimum_disk_available_bytes": 6442450944
+    },
+    "scale": {
+      "minimum_logical_cpus": 8,
+      "minimum_memory_bytes": 17179869184,
+      "minimum_disk_available_bytes": 6442450944
+    },
+    "validator_memory_bytes": 536870912,
+    "validator_cpu_limit": 0.75
+  }
+}

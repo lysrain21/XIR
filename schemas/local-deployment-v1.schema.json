@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xir.example/schemas/local-deployment-v1.schema.json",
+  "type": "object",
+  "required": ["schema_version", "payload_sha256", "payload"],
+  "properties": {
+    "schema_version": {"const": "xir-lab-local-deployment-v1"},
+    "payload_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "payload": {
+      "type": "object",
+      "required": [
+        "domain",
+        "environment",
+        "topology_sha256",
+        "identity_manifest_sha256",
+        "artifact_sha256",
+        "contracts"
+      ],
+      "properties": {
+        "domain": {"const": "xir-lab-local-deployment-v1"},
+        "environment": {"const": "controlled-local-qbft"},
+        "topology_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "identity_manifest_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "artifact_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "contracts": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": {
+            "type": "object",
+            "required": [
+              "network_id",
+              "chain_id",
+              "stage",
+              "address",
+              "transaction_hash",
+              "block_number"
+            ],
+            "properties": {
+              "network_id": {"type": "string"},
+              "chain_id": {"type": "integer"},
+              "stage": {"enum": ["source", "intermediate", "destination"]},
+              "address": {"type": "string", "pattern": "^0x[0-9a-fA-F]{40}$"},
+              "transaction_hash": {
+                "type": "string",
+                "pattern": "^0x[0-9a-fA-F]{64}$"
+              },
+              "block_number": {"type": "integer", "minimum": 1}
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,27 @@
+{
+  "schema_version": "xir-lab-local-host-capacity-record-v1",
+  "captured_at_utc": "2026-07-29",
+  "topology_sha256": "4cee7f9ffd1638fb69b97f3cc74c49b7e67da9b94bf15a8369f5f99bc82dede5",
+  "observed": {
+    "logical_cpus": 2,
+    "memory_bytes": 8320823296,
+    "disk_available_bytes": 107331014656
+  },
+  "smoke_required": {
+    "logical_cpus": 4,
+    "memory_bytes": 12884901888,
+    "disk_available_bytes": 21474836480
+  },
+  "scale_required": {
+    "logical_cpus": 8,
+    "memory_bytes": 17179869184,
+    "disk_available_bytes": 42949672960
+  },
+  "smoke_eligible": false,
+  "scale_eligible": false,
+  "containers_started_by_preflight": 0,
+  "reason_codes": [
+    "insufficient_logical_cpus",
+    "insufficient_memory"
+  ]
+}

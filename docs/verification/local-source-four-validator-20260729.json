@@ -1,0 +1,40 @@
+{
+  "schema_version": "xir-lab-local-four-validator-verification-v1",
+  "captured_at_utc": "2026-07-29",
+  "environment": "controlled-local-qbft",
+  "topology_sha256": "4cee7f9ffd1638fb69b97f3cc74c49b7e67da9b94bf15a8369f5f99bc82dede5",
+  "besu": {
+    "version": "26.4.0",
+    "image": "hyperledger/besu@sha256:e23ac0182ecb08663ee188771f7f500dc3ea07a8d9ba14c407728ee5ac45c252"
+  },
+  "network_id": "local-source",
+  "chain_ids": [
+    3133701,
+    3133701,
+    3133701,
+    3133701
+  ],
+  "peer_counts": [
+    3,
+    3,
+    3,
+    3
+  ],
+  "first_heads": [
+    14,
+    15,
+    15,
+    16
+  ],
+  "second_heads": [
+    18,
+    18,
+    18,
+    18
+  ],
+  "block_progress": true,
+  "checkpoint_block": 18,
+  "checkpoint_hash": "0xf15877ebb6cc42a7442b27575b0a4e8321e9c06be98e380a5b819ab442f1eac6",
+  "checkpoint_agreement": true,
+  "scope": "one four-validator network; full twelve-node topology gated by host capacity"
+}

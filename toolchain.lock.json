@@ -14,5 +14,13 @@
     "version": "1.5.1-stable",
     "commit": "b0a9dd9ceda36f63e2326ce530c10e6916f4b8a2"
   },
+  "docker": {
+    "engine_version": "29.1.3",
+    "compose_version": "2.40.3"
+  },
+  "besu": {
+    "version": "26.4.0",
+    "image": "hyperledger/besu@sha256:e23ac0182ecb08663ee188771f7f500dc3ea07a8d9ba14c407728ee5ac45c252"
+  },
   "python_lock": "uv.lock"
 }

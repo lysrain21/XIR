@@ -1,0 +1,23 @@
+{
+  "command": "local-init",
+  "details": {
+    "compose_path": "/vePFS-Mindverse/user/intern/lucian/xir/runtime/local-scale-run-004/compose.yaml",
+    "compose_sha256": "6d35767b487b25659d4b5f24275babe275b4fca458f0288c65232bb37ae6f38a",
+    "identity_manifest_path": "/vePFS-Mindverse/user/intern/lucian/xir/runtime/local-scale-run-004/identity-manifest.json",
+    "identity_manifest_sha256": "c3e28e7a5700fca2a433f7b4f3ff1e8de15ac82814af05df6886b47ad4ff62f3",
+    "runtime_root": "/vePFS-Mindverse/user/intern/lucian/xir/runtime/local-scale-run-004"
+  },
+  "effects": {
+    "containers_started": 0,
+    "local_files_created": 19,
+    "local_private_keys_created": 14,
+    "public_broadcasts": 0,
+    "public_network_calls": 0,
+    "public_signatures": 0
+  },
+  "environment": "controlled-local-qbft",
+  "outcome": "initialized",
+  "reason_code": "local_identity_and_compose_frozen",
+  "schema_version": "xir-lab-local-command-status-v1",
+  "tool_version": "0.1.0"
+}

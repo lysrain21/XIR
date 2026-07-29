@@ -1,0 +1,81 @@
+{
+  "after_recovery": {
+    "checkpoint_agreement": true,
+    "checkpoint_block": 178,
+    "checkpoint_hashes": {
+      "v1": "0x9f5ad3dfb7886eaa2dde5e6d893d545564f5f2cd6bcd53f45da3daf35e579117",
+      "v2": "0x9f5ad3dfb7886eaa2dde5e6d893d545564f5f2cd6bcd53f45da3daf35e579117",
+      "v3": "0x9f5ad3dfb7886eaa2dde5e6d893d545564f5f2cd6bcd53f45da3daf35e579117",
+      "v4": "0x9f5ad3dfb7886eaa2dde5e6d893d545564f5f2cd6bcd53f45da3daf35e579117"
+    },
+    "heads": {
+      "v1": 178,
+      "v2": 178,
+      "v3": 178,
+      "v4": 178
+    },
+    "observed_at": "2026-07-29T14:00:11.352218+00:00",
+    "peer_counts": {
+      "v1": 3,
+      "v2": 3,
+      "v3": 3,
+      "v4": 3
+    }
+  },
+  "before": {
+    "checkpoint_agreement": true,
+    "checkpoint_block": 167,
+    "checkpoint_hashes": {
+      "v1": "0xe63d68f3fd156799a77dd69daca64e37a96a24a03f5578d02d83ba3306678004",
+      "v2": "0xe63d68f3fd156799a77dd69daca64e37a96a24a03f5578d02d83ba3306678004",
+      "v3": "0xe63d68f3fd156799a77dd69daca64e37a96a24a03f5578d02d83ba3306678004",
+      "v4": "0xe63d68f3fd156799a77dd69daca64e37a96a24a03f5578d02d83ba3306678004"
+    },
+    "heads": {
+      "v1": 167,
+      "v2": 167,
+      "v3": 167,
+      "v4": 167
+    },
+    "observed_at": "2026-07-29T13:59:48.932622+00:00",
+    "peer_counts": {
+      "v1": 3,
+      "v2": 3,
+      "v3": 3,
+      "v4": 3
+    }
+  },
+  "chain_id": 3133701,
+  "container": "xir-local-scale-local-source-v4-1",
+  "during_outage": {
+    "checkpoint_agreement": true,
+    "checkpoint_block": 170,
+    "checkpoint_hashes": {
+      "v1": "0x112a20783ae6cda8484a8b8ae2eab011c65886eb2e0ce4299c5b04ca61d75bc1",
+      "v2": "0x112a20783ae6cda8484a8b8ae2eab011c65886eb2e0ce4299c5b04ca61d75bc1",
+      "v3": "0x112a20783ae6cda8484a8b8ae2eab011c65886eb2e0ce4299c5b04ca61d75bc1"
+    },
+    "heads": {
+      "v1": 170,
+      "v2": 170,
+      "v3": 170
+    },
+    "observed_at": "2026-07-29T13:59:55.583069+00:00",
+    "peer_counts": {
+      "v1": 2,
+      "v2": 2,
+      "v3": 2
+    }
+  },
+  "effects": {
+    "public_broadcasts": 0,
+    "public_network_calls": 0,
+    "validators_restarted": 1,
+    "validators_stopped": 1
+  },
+  "eligible": true,
+  "environment": "controlled-local-qbft",
+  "network_id": "local-source",
+  "schema_version": "xir-lab-local-outage-recovery-v1",
+  "stopped_validator": "v4"
+}

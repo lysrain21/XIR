@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xir.example/schemas/local-preflight-v1.schema.json",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "mode",
+    "topology_sha256",
+    "identity_manifest_sha256",
+    "eligible",
+    "checks",
+    "effects",
+    "host"
+  ],
+  "properties": {
+    "schema_version": {"const": "xir-lab-local-preflight-v1"},
+    "mode": {"enum": ["render", "smoke", "scale"]},
+    "topology_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "identity_manifest_sha256": {
+      "type": ["string", "null"],
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "eligible": {"type": "boolean"},
+    "checks": {
+      "type": "array",
+      "minItems": 3,
+      "items": {
+        "type": "object",
+        "required": ["check_id", "status", "observed", "required", "reason_code"],
+        "properties": {
+          "check_id": {"type": "string"},
+          "status": {"enum": ["pass", "fail"]},
+          "observed": {},
+          "required": {},
+          "reason_code": {"type": "string"}
+        },
+        "additionalProperties": false
+      }
+    },
+    "effects": {
+      "type": "object",
+      "required": [
+        "public_network_calls",
+        "public_signatures",
+        "public_broadcasts",
+        "containers_started"
+      ],
+      "properties": {
+        "public_network_calls": {"const": 0},
+        "public_signatures": {"const": 0},
+        "public_broadcasts": {"const": 0},
+        "containers_started": {"const": 0}
+      },
+      "additionalProperties": false
+    },
+    "host": {
+      "type": "object",
+      "required": [
+        "logical_cpus",
+        "memory_bytes",
+        "disk_available_bytes",
+        "storage_filesystem_path"
+      ],
+      "properties": {
+        "logical_cpus": {"type": "integer", "minimum": 0},
+        "memory_bytes": {"type": "integer", "minimum": 0},
+        "disk_available_bytes": {"type": "integer", "minimum": 0},
+        "storage_filesystem_path": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

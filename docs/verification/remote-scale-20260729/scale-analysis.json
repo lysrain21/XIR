@@ -1,0 +1,187 @@
+{
+  "claim_boundaries": [
+    "Latency is runner-observed finalization time on controlled local QBFT.",
+    "Gas is EVM execution gas and excludes public L1 or rollup data fees.",
+    "The workload models three stages; it is not public carrier traffic.",
+    "Results do not establish production capacity or reliability."
+  ],
+  "comparisons": {
+    "xir_gas_overhead_percent": 39.23248363162975,
+    "xir_minus_baseline_mean_gas": 22689.786666666674
+  },
+  "descriptive_results": {
+    "by_arm": {
+      "baseline": {
+        "gas_mean": 57834.18373333333,
+        "gas_p50": 50734.0,
+        "gas_p95": 72909.0,
+        "gas_total": 867512756,
+        "physical_transactions": 15000,
+        "runner_finalization_latency_ms_mean": 1593.7303101380667,
+        "runner_finalization_latency_ms_p50": 1389.20259475708,
+        "runner_finalization_latency_ms_p95": 2115.029811859131
+      },
+      "xir": {
+        "gas_mean": 80523.9704,
+        "gas_p50": 73424.0,
+        "gas_p95": 95599.0,
+        "gas_total": 1207859556,
+        "physical_transactions": 15000,
+        "runner_finalization_latency_ms_mean": 1593.3684813976288,
+        "runner_finalization_latency_ms_p50": 1389.6913528442383,
+        "runner_finalization_latency_ms_p95": 2115.217685699463
+      }
+    },
+    "by_condition_arm": {
+      "HH/baseline": {
+        "gas_mean": 57825.11573333333,
+        "gas_p50": 50722.0,
+        "gas_p95": 72897.0,
+        "gas_total": 216844184,
+        "physical_transactions": 3750,
+        "runner_finalization_latency_ms_mean": 1635.6336037317913,
+        "runner_finalization_latency_ms_p50": 1385.265827178955,
+        "runner_finalization_latency_ms_p95": 2100.095748901367
+      },
+      "HH/xir": {
+        "gas_mean": 80515.032,
+        "gas_p50": 73412.0,
+        "gas_p95": 95587.0,
+        "gas_total": 301931370,
+        "physical_transactions": 3750,
+        "runner_finalization_latency_ms_mean": 1634.9535958607992,
+        "runner_finalization_latency_ms_p50": 1385.465383529663,
+        "runner_finalization_latency_ms_p95": 2098.381996154785
+      },
+      "HL/baseline": {
+        "gas_mean": 57837.32693333333,
+        "gas_p50": 50734.0,
+        "gas_p95": 72909.0,
+        "gas_total": 216889976,
+        "physical_transactions": 3750,
+        "runner_finalization_latency_ms_mean": 1668.7390504837035,
+        "runner_finalization_latency_ms_p50": 1385.694980621338,
+        "runner_finalization_latency_ms_p95": 2157.020330429077
+      },
+      "HL/xir": {
+        "gas_mean": 80527.2144,
+        "gas_p50": 73424.0,
+        "gas_p95": 95599.0,
+        "gas_total": 301977054,
+        "physical_transactions": 3750,
+        "runner_finalization_latency_ms_mean": 1668.3154624938966,
+        "runner_finalization_latency_ms_p50": 1383.3589553833008,
+        "runner_finalization_latency_ms_p95": 2158.0562591552734
+      },
+      "LH/baseline": {
+        "gas_mean": 57837.20213333333,
+        "gas_p50": 50734.0,
+        "gas_p95": 72909.0,
+        "gas_total": 216889508,
+        "physical_transactions": 3750,
+        "runner_finalization_latency_ms_mean": 1616.30041624705,
+        "runner_finalization_latency_ms_p50": 1398.4644412994385,
+        "runner_finalization_latency_ms_p95": 2119.791269302368
+      },
+      "LH/xir": {
+        "gas_mean": 80526.7696,
+        "gas_p50": 73424.0,
+        "gas_p95": 95599.0,
+        "gas_total": 301975386,
+        "physical_transactions": 3750,
+        "runner_finalization_latency_ms_mean": 1616.6505362828573,
+        "runner_finalization_latency_ms_p50": 1398.4150886535645,
+        "runner_finalization_latency_ms_p95": 2129.0512084960938
+      },
+      "LL/baseline": {
+        "gas_mean": 57837.09013333333,
+        "gas_p50": 50734.0,
+        "gas_p95": 72909.0,
+        "gas_total": 216889088,
+        "physical_transactions": 3750,
+        "runner_finalization_latency_ms_mean": 1454.2481700897217,
+        "runner_finalization_latency_ms_p50": 1388.1750106811523,
+        "runner_finalization_latency_ms_p95": 2077.4385929107666
+      },
+      "LL/xir": {
+        "gas_mean": 80526.8656,
+        "gas_p50": 73424.0,
+        "gas_p95": 95599.0,
+        "gas_total": 301975746,
+        "physical_transactions": 3750,
+        "runner_finalization_latency_ms_mean": 1453.5543309529623,
+        "runner_finalization_latency_ms_p50": 1390.2111053466797,
+        "runner_finalization_latency_ms_p95": 2082.6265811920166
+      }
+    },
+    "by_stage_arm": {
+      "destination/baseline": {
+        "gas_mean": 72901.2312,
+        "gas_p50": 72909.0,
+        "gas_p95": 72909.0,
+        "gas_total": 364506156,
+        "physical_transactions": 5000,
+        "runner_finalization_latency_ms_mean": 1436.8071006298064,
+        "runner_finalization_latency_ms_p50": 1393.9235210418701,
+        "runner_finalization_latency_ms_p95": 2135.8017921447754
+      },
+      "destination/xir": {
+        "gas_mean": 95591.5264,
+        "gas_p50": 95599.0,
+        "gas_p95": 95599.0,
+        "gas_total": 477957632,
+        "physical_transactions": 5000,
+        "runner_finalization_latency_ms_mean": 1436.3736637592315,
+        "runner_finalization_latency_ms_p50": 1393.3014869689941,
+        "runner_finalization_latency_ms_p95": 2141.3865089416504
+      },
+      "intermediate/baseline": {
+        "gas_mean": 50726.4472,
+        "gas_p50": 50734.0,
+        "gas_p95": 50734.0,
+        "gas_total": 253632236,
+        "physical_transactions": 5000,
+        "runner_finalization_latency_ms_mean": 1941.0121039867402,
+        "runner_finalization_latency_ms_p50": 1397.679090499878,
+        "runner_finalization_latency_ms_p95": 2148.4122276306152
+      },
+      "intermediate/xir": {
+        "gas_mean": 73416.4424,
+        "gas_p50": 73424.0,
+        "gas_p95": 73424.0,
+        "gas_total": 367082212,
+        "physical_transactions": 5000,
+        "runner_finalization_latency_ms_mean": 1940.9043074607848,
+        "runner_finalization_latency_ms_p50": 1399.071216583252,
+        "runner_finalization_latency_ms_p95": 2152.5375843048096
+      },
+      "source/baseline": {
+        "gas_mean": 49874.8728,
+        "gas_p50": 49881.0,
+        "gas_p95": 49881.0,
+        "gas_total": 249374364,
+        "physical_transactions": 5000,
+        "runner_finalization_latency_ms_mean": 1403.3717257976532,
+        "runner_finalization_latency_ms_p50": 1376.542091369629,
+        "runner_finalization_latency_ms_p95": 2065.941095352173
+      },
+      "source/xir": {
+        "gas_mean": 72563.9424,
+        "gas_p50": 72570.0,
+        "gas_p95": 72570.0,
+        "gas_total": 362819712,
+        "physical_transactions": 5000,
+        "runner_finalization_latency_ms_mean": 1402.8274729728698,
+        "runner_finalization_latency_ms_p50": 1373.8505840301514,
+        "runner_finalization_latency_ms_p95": 2067.586660385132
+      }
+    }
+  },
+  "environment": "controlled-local-qbft",
+  "sample": {
+    "balanced_condition_arm_stage_rows": 3750,
+    "designated_attempts": 10000,
+    "physical_transactions": 30000
+  },
+  "schema_version": "xir-lab-local-scale-analysis-v1"
+}

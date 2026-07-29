@@ -1,0 +1,186 @@
+{
+  "checks": [
+    {
+      "check_id": "logical_cpus",
+      "observed": 14,
+      "reason_code": "ok",
+      "required": 8,
+      "status": "pass"
+    },
+    {
+      "check_id": "memory_bytes",
+      "observed": 122272350208,
+      "reason_code": "ok",
+      "required": 17179869184,
+      "status": "pass"
+    },
+    {
+      "check_id": "disk_available_bytes",
+      "observed": 8899321856,
+      "reason_code": "ok",
+      "required": 6442450944,
+      "status": "pass"
+    },
+    {
+      "check_id": "identity_manifest",
+      "observed": true,
+      "reason_code": "ok",
+      "required": true,
+      "status": "pass"
+    },
+    {
+      "check_id": "twelve_node_observations",
+      "observed": 12,
+      "reason_code": "ok",
+      "required": 12,
+      "status": "pass"
+    },
+    {
+      "check_id": "local-source:reachable",
+      "observed": 4,
+      "reason_code": "ok",
+      "required": 4,
+      "status": "pass"
+    },
+    {
+      "check_id": "local-source:chain_id",
+      "observed": [
+        3133701
+      ],
+      "reason_code": "ok",
+      "required": [
+        3133701
+      ],
+      "status": "pass"
+    },
+    {
+      "check_id": "local-source:peer_count",
+      "observed": 3,
+      "reason_code": "ok",
+      "required": 3,
+      "status": "pass"
+    },
+    {
+      "check_id": "local-source:block_progress",
+      "observed": 4,
+      "reason_code": "ok",
+      "required": 4,
+      "status": "pass"
+    },
+    {
+      "check_id": "local-source:checkpoint_agreement",
+      "observed": [
+        "0xf4d6a9da9038680bddfff603cb5eb8ff4ed90e0772ff61964ef73016c7f89708"
+      ],
+      "reason_code": "ok",
+      "required": "one common hash",
+      "status": "pass"
+    },
+    {
+      "check_id": "local-intermediate:reachable",
+      "observed": 4,
+      "reason_code": "ok",
+      "required": 4,
+      "status": "pass"
+    },
+    {
+      "check_id": "local-intermediate:chain_id",
+      "observed": [
+        3133702
+      ],
+      "reason_code": "ok",
+      "required": [
+        3133702
+      ],
+      "status": "pass"
+    },
+    {
+      "check_id": "local-intermediate:peer_count",
+      "observed": 3,
+      "reason_code": "ok",
+      "required": 3,
+      "status": "pass"
+    },
+    {
+      "check_id": "local-intermediate:block_progress",
+      "observed": 4,
+      "reason_code": "ok",
+      "required": 4,
+      "status": "pass"
+    },
+    {
+      "check_id": "local-intermediate:checkpoint_agreement",
+      "observed": [
+        "0xe2f8bdfb9d25cb898fece1114f98b749f0454b8d05b5beefabcc15aa9da697e9"
+      ],
+      "reason_code": "ok",
+      "required": "one common hash",
+      "status": "pass"
+    },
+    {
+      "check_id": "local-destination:reachable",
+      "observed": 4,
+      "reason_code": "ok",
+      "required": 4,
+      "status": "pass"
+    },
+    {
+      "check_id": "local-destination:chain_id",
+      "observed": [
+        3133703
+      ],
+      "reason_code": "ok",
+      "required": [
+        3133703
+      ],
+      "status": "pass"
+    },
+    {
+      "check_id": "local-destination:peer_count",
+      "observed": 3,
+      "reason_code": "ok",
+      "required": 3,
+      "status": "pass"
+    },
+    {
+      "check_id": "local-destination:block_progress",
+      "observed": 4,
+      "reason_code": "ok",
+      "required": 4,
+      "status": "pass"
+    },
+    {
+      "check_id": "local-destination:checkpoint_agreement",
+      "observed": [
+        "0x6e4f05987a903f57a14c6569adf10ace029620dbc02ac3e39cb82345176ec516"
+      ],
+      "reason_code": "ok",
+      "required": "one common hash",
+      "status": "pass"
+    },
+    {
+      "check_id": "unknown_networks",
+      "observed": [],
+      "reason_code": "ok",
+      "required": [],
+      "status": "pass"
+    }
+  ],
+  "effects": {
+    "containers_started": 0,
+    "public_broadcasts": 0,
+    "public_network_calls": 0,
+    "public_signatures": 0
+  },
+  "eligible": true,
+  "host": {
+    "disk_available_bytes": 8899321856,
+    "logical_cpus": 14,
+    "memory_bytes": 122272350208,
+    "storage_filesystem_path": "/ebs/docker"
+  },
+  "identity_manifest_sha256": "c3e28e7a5700fca2a433f7b4f3ff1e8de15ac82814af05df6886b47ad4ff62f3",
+  "mode": "scale",
+  "schema_version": "xir-lab-local-preflight-v1",
+  "topology_sha256": "c18fcd7dab48a055063aff254d6ed82a827a6aef9942f18be93a5cafea737a3b"
+}

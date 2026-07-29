@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xir.example/schemas/local-scale-report-v1.schema.json",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "environment",
+    "topology_sha256",
+    "identity_manifest_sha256",
+    "plan_sha256",
+    "counts",
+    "metrics",
+    "reconciled",
+    "offline_rebuild_digests",
+    "claim_exclusions"
+  ],
+  "properties": {
+    "schema_version": {"const": "xir-lab-local-scale-report-v1"},
+    "environment": {"const": "controlled-local-qbft"},
+    "topology_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "identity_manifest_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "plan_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "counts": {
+      "type": "object",
+      "required": [
+        "planned_attempts",
+        "terminal_attempts",
+        "physical_transactions",
+        "retries"
+      ],
+      "properties": {
+        "planned_attempts": {"const": 10000},
+        "terminal_attempts": {"type": "integer", "minimum": 0, "maximum": 10000},
+        "physical_transactions": {"const": 30000},
+        "retries": {"type": "integer", "minimum": 0}
+      },
+      "additionalProperties": false
+    },
+    "metrics": {
+      "type": "object",
+      "required": [
+        "gas_used",
+        "calldata_bytes",
+        "controlled_latency_ms",
+        "completion_invocation_rpc_requests",
+        "storage_bytes",
+        "peak_cpu_percent",
+        "peak_memory_bytes",
+        "restart_outcomes"
+      ],
+      "properties": {
+        "gas_used": {"type": "integer", "minimum": 0},
+        "calldata_bytes": {"type": "integer", "minimum": 0},
+        "controlled_latency_ms": {"type": "integer", "minimum": 0},
+        "completion_invocation_rpc_requests": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "storage_bytes": {"type": "integer", "minimum": 0},
+        "peak_cpu_percent": {"type": "number", "minimum": 0},
+        "peak_memory_bytes": {"type": "integer", "minimum": 0},
+        "restart_outcomes": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "reconciled": {"const": true},
+    "offline_rebuild_digests": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+    },
+    "claim_exclusions": {
+      "type": "array",
+      "allOf": [
+        {"contains": {"const": "public_carrier_capacity"}},
+        {"contains": {"const": "public_network_latency"}},
+        {"contains": {"const": "rollup_or_l1_data_fees"}},
+        {"contains": {"const": "production_cost"}},
+        {"contains": {"const": "production_reliability"}}
+      ],
+      "items": {"type": "string"},
+      "uniqueItems": true
+    }
+  },
+  "additionalProperties": false
+}

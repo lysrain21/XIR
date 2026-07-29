@@ -1,0 +1,26 @@
+{
+  "coverage_note": "Samples cover both main scale execution segments; the final 100-transaction recovery tail is represented by final health and restart evidence but was not resource-sampled.",
+  "peak_cpu_percent": 173.6,
+  "peak_memory_bytes": 6148849657,
+  "restart_outcomes": [
+    "xir-local-scale-local-destination-v1-1:automatic-restart-and-health-recovery"
+  ],
+  "sample_count": 216,
+  "sampled_from": "2026-07-29T14:09:22.580250+00:00",
+  "sampled_through": "2026-07-29T14:25:28.358507+00:00",
+  "schema_version": "xir-lab-local-scale-resources-v1",
+  "validator_restart_counts": {
+    "xir-local-scale-local-destination-v1-1": 1,
+    "xir-local-scale-local-destination-v2-1": 0,
+    "xir-local-scale-local-destination-v3-1": 0,
+    "xir-local-scale-local-destination-v4-1": 0,
+    "xir-local-scale-local-intermediate-v1-1": 0,
+    "xir-local-scale-local-intermediate-v2-1": 0,
+    "xir-local-scale-local-intermediate-v3-1": 0,
+    "xir-local-scale-local-intermediate-v4-1": 0,
+    "xir-local-scale-local-source-v1-1": 0,
+    "xir-local-scale-local-source-v2-1": 0,
+    "xir-local-scale-local-source-v3-1": 0,
+    "xir-local-scale-local-source-v4-1": 0
+  }
+}

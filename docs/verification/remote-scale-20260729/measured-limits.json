@@ -1,0 +1,31 @@
+{
+  "batch_size": 100,
+  "claim_note": "Resource peaks are sampled controlled-host observations, not production capacity or public-network measurements.",
+  "configured_cpu_ceiling_percent": 900.0,
+  "configured_memory_ceiling_bytes": 6442450944,
+  "cpu_samples_percent": [
+    20.26,
+    24.93,
+    29.63,
+    25.169999999999998,
+    25.87
+  ],
+  "measurement_scope": "five post-rehearsal container snapshots",
+  "memory_samples_bytes": [
+    4793984610,
+    4801324640,
+    4817367854,
+    4816738709,
+    4811076399
+  ],
+  "peak_cpu_percent": 29.63,
+  "peak_memory_bytes": 4817367854,
+  "rehearsal_attempts": 1000,
+  "rehearsal_elapsed_seconds": 97.97375236451626,
+  "rehearsal_physical_transactions": 3000,
+  "rehearsal_physical_transactions_per_second": 30.620446064353537,
+  "restart_outcomes": [
+    "local-source/v4:continued-finality-and-caught-up"
+  ],
+  "schema_version": "xir-lab-local-measured-limits-v1"
+}

@@ -1,0 +1,38 @@
+{
+  "claim_exclusions": [
+    "public_carrier_capacity",
+    "public_network_latency",
+    "rollup_or_l1_data_fees",
+    "production_cost",
+    "production_reliability",
+    "full_run_rpc_request_total"
+  ],
+  "counts": {
+    "physical_transactions": 30000,
+    "planned_attempts": 10000,
+    "retries": 0,
+    "terminal_attempts": 10000
+  },
+  "environment": "controlled-local-qbft",
+  "identity_manifest_sha256": "c3e28e7a5700fca2a433f7b4f3ff1e8de15ac82814af05df6886b47ad4ff62f3",
+  "metrics": {
+    "calldata_bytes": 5880000,
+    "completion_invocation_rpc_requests": 2600,
+    "controlled_latency_ms": 1046371,
+    "gas_used": 2075372312,
+    "peak_cpu_percent": 173.6,
+    "peak_memory_bytes": 6148849657,
+    "restart_outcomes": [
+      "xir-local-scale-local-destination-v1-1:automatic-restart-and-health-recovery"
+    ],
+    "storage_bytes": 10290153
+  },
+  "offline_rebuild_digests": [
+    "dd6863d60d1ba39af790fbdc556693773b7f399ef42fd67e2ea1af0e793d6adb",
+    "dd6863d60d1ba39af790fbdc556693773b7f399ef42fd67e2ea1af0e793d6adb"
+  ],
+  "plan_sha256": "3de021fe8bd20e572644a8badd677e00a1d5917f46c6f7b97e0c3f05bd098811",
+  "reconciled": true,
+  "schema_version": "xir-lab-local-scale-report-v1",
+  "topology_sha256": "c18fcd7dab48a055063aff254d6ed82a827a6aef9942f18be93a5cafea737a3b"
+}

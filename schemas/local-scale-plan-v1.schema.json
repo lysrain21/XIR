@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xir.example/schemas/local-scale-plan-v1.schema.json",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "plan_sha256",
+    "environment",
+    "profile_sha256",
+    "topology_sha256",
+    "counts",
+    "condition_arm_counts",
+    "progression",
+    "eligible",
+    "reason_codes"
+  ],
+  "properties": {
+    "schema_version": {"const": "xir-lab-local-scale-plan-v1"},
+    "plan_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "environment": {"const": "controlled-local-qbft"},
+    "profile_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "topology_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "counts": {
+      "type": "object",
+      "required": [
+        "pair_slots",
+        "designated_attempts",
+        "source_transactions",
+        "intermediate_transactions",
+        "destination_transactions",
+        "physical_transactions"
+      ],
+      "properties": {
+        "pair_slots": {"const": 5000},
+        "designated_attempts": {"const": 10000},
+        "source_transactions": {"const": 10000},
+        "intermediate_transactions": {"const": 10000},
+        "destination_transactions": {"const": 10000},
+        "physical_transactions": {"const": 30000}
+      },
+      "additionalProperties": false
+    },
+    "condition_arm_counts": {
+      "const": {
+        "HH/baseline": 1250,
+        "HH/xir": 1250,
+        "HL/baseline": 1250,
+        "HL/xir": 1250,
+        "LH/baseline": 1250,
+        "LH/xir": 1250,
+        "LL/baseline": 1250,
+        "LL/xir": 1250
+      }
+    },
+    "progression": {
+      "type": "object",
+      "required": [
+        "smoke_freeze_sha256",
+        "rehearsal_freeze_sha256",
+        "measured_limits_sha256"
+      ],
+      "properties": {
+        "smoke_freeze_sha256": {
+          "type": ["string", "null"],
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "rehearsal_freeze_sha256": {
+          "type": ["string", "null"],
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "measured_limits_sha256": {
+          "type": ["string", "null"],
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "additionalProperties": false
+    },
+    "eligible": {"type": "boolean"},
+    "reason_codes": {
+      "type": "array",
+      "items": {"type": "string"},
+      "uniqueItems": true
+    }
+  },
+  "additionalProperties": false
+}

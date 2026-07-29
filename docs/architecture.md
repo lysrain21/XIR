@@ -49,3 +49,28 @@ Stops are persistent: drain prevents new source work while allowing bounded
 in-flight completion; halt blocks signing and all broadcasts, including
 persisted bytes; revocation additionally blocks approval reuse. Reservations
 remain locked through ambiguous submission and approved finality.
+
+## Controlled local scale plane
+
+The local scale plane is independent from the public-testnet plane. A frozen
+topology renders three Besu QBFT chains with four validators per chain.
+Chain IDs 3133701, 3133702, and 3133703 represent source, intermediate, and
+destination roles. Exactly one RPC endpoint per chain is exposed on loopback;
+validator-to-validator RPC and P2P traffic remain on three isolated Docker
+networks.
+
+`local-init` generates disposable secp256k1 deployer, runner, and validator
+keys in a repository-external runtime root. The checked-in topology and public
+identity manifest deterministically render Compose; validator databases and
+private signed recovery bytes stay outside publishable roots.
+
+The progression is 40-attempt smoke, 1,000-attempt rehearsal, and
+10,000-attempt scale. Scale execution requires frozen smoke, rehearsal, and
+measured-limit digests plus a matching eligible twelve-node preflight. Each
+designated attempt creates three physical transactions. A durable SQLite
+ledger and exact-byte private spool support restart recovery and terminal
+reconciliation.
+
+Controlled carriers exercise ordering, replay rejection, outage, and recovery
+inside the local environment. They do not emulate the private infrastructure
+or public behavior of Hyperlane and LayerZero.

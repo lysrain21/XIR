@@ -33,3 +33,14 @@ designated primary attempt in headline matched-overhead statistics.
 The optional 10,000-attempt profile evaluates the bounded runner, collector,
 recovery, storage, and reconciliation pipeline. It is not a carrier throughput
 benchmark or a production reliability estimate.
+
+Controlled-local evidence has a separate identity: three private Besu QBFT
+chains, twelve validators, controlled carrier labels, repository-external
+development accounts, and a frozen topology digest. It may support claims
+about deterministic planning, local execution, restart recovery, evidence
+storage, reconciliation, and resource use on the recorded host.
+
+Controlled-local results cannot establish public Hyperlane or LayerZero
+capacity, public carrier latency or fees, testnet reliability, production
+security, or real cross-chain message delivery. A report must label the
+environment `controlled-local-qbft` and carry these exclusions.
