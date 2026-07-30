@@ -26,6 +26,25 @@ contract HyperlaneAdapter is IXIRCarrierAdapter, IBaselineCarrier, OutboundContr
     error UnsupportedOptions();
     error UnknownMessageKind();
     error UnknownBaselineRoute();
+    error InvalidBundle();
+    error UnverifiedPriorEvidence(uint256 index);
+
+    struct DeliveryBundle {
+        bytes32 profileHash;
+        bytes32 transitionHash;
+        bytes32[] priorProfiles;
+        bytes32[] priorEvidence;
+        bytes32[] priorTransitions;
+    }
+
+    struct ForwardRequest {
+        address[] verifiers;
+        bytes32[] profileHashes;
+        bytes32[] evidenceHashes;
+        bytes32[] transitionHashes;
+        bytes32 currentProfileHash;
+        bytes32 currentTransitionHash;
+    }
 
     address public immutable mailbox;
     uint32 public immutable remoteDomain;
@@ -35,6 +54,7 @@ contract HyperlaneAdapter is IXIRCarrierAdapter, IBaselineCarrier, OutboundContr
 
     uint8 private constant KIND_XIR = 1;
     uint8 private constant KIND_BASELINE = 2;
+    uint8 private constant KIND_XIR_BUNDLE = 3;
 
     event HyperlaneEvidence(
         bytes32 indexed evidenceHash,
@@ -51,6 +71,12 @@ contract HyperlaneAdapter is IXIRCarrierAdapter, IBaselineCarrier, OutboundContr
         uint256 fee
     );
     event BaselineReceiverSet(bytes32 indexed routeId, address indexed receiver);
+    event PriorEvidenceCarried(
+        bytes32 indexed messageId,
+        bytes32 indexed profileHash,
+        bytes32 indexed evidenceHash,
+        bytes32 transitionHash
+    );
 
     constructor(
         address mailbox_,
@@ -116,6 +142,49 @@ contract HyperlaneAdapter is IXIRCarrierAdapter, IBaselineCarrier, OutboundContr
         return _dispatch(abi.encode(KIND_XIR, body));
     }
 
+    function sendSourceBundle(ForwardRequest calldata request)
+        external
+        payable
+        onlyRunner
+        whenSourceStartAllowed
+        returns (bytes32)
+    {
+        return _forwardVerified(request);
+    }
+
+    function forwardInFlightBundle(ForwardRequest calldata request)
+        external
+        payable
+        onlyRunner
+        whenOutboundActive
+        returns (bytes32)
+    {
+        return _forwardVerified(request);
+    }
+
+    function quoteBundle(ForwardRequest calldata request) external view returns (uint256) {
+        _checkBundle(request);
+        return IHyperlaneMailbox(mailbox).quoteDispatch(
+            remoteDomain, remoteAdapter, _bundleBody(request)
+        );
+    }
+
+    function _forwardVerified(ForwardRequest calldata request) private returns (bytes32) {
+        _checkBundle(request);
+        for (uint256 i = 0; i < request.verifiers.length; i++) {
+            if (
+                request.verifiers[i] == address(0)
+                    || !IXIRCarrierAdapter(request.verifiers[i])
+                        .verify(
+                            request.profileHashes[i],
+                            request.evidenceHashes[i],
+                            request.transitionHashes[i]
+                        )
+            ) revert UnverifiedPriorEvidence(i);
+        }
+        return _dispatch(_bundleBody(request));
+    }
+
     function sendBaselineSource(
         bytes32 routeId,
         bytes calldata message,
@@ -167,6 +236,48 @@ contract HyperlaneAdapter is IXIRCarrierAdapter, IBaselineCarrier, OutboundContr
             IBaselineCarrierReceiver(receiver).baselineCarrierReceive(messageId, payload);
             return;
         }
+        if (kind == KIND_XIR_BUNDLE) {
+            DeliveryBundle memory bundle = abi.decode(message, (DeliveryBundle));
+            if (
+                bundle.priorProfiles.length != bundle.priorEvidence.length
+                    || bundle.priorProfiles.length != bundle.priorTransitions.length
+            ) revert InvalidBundle();
+            bytes32 messageId = keccak256(abi.encode(origin, sender, body));
+            acceptedEvidence[
+                keccak256(
+                    abi.encode(
+                        bundle.profileHash,
+                        messageId,
+                        bundle.transitionHash
+                    )
+                )
+            ] = true;
+            emit HyperlaneEvidence(
+                messageId,
+                bundle.profileHash,
+                bundle.transitionHash,
+                origin,
+                sender
+            );
+            for (uint256 i = 0; i < bundle.priorProfiles.length; i++) {
+                acceptedEvidence[
+                    keccak256(
+                        abi.encode(
+                            bundle.priorProfiles[i],
+                            bundle.priorEvidence[i],
+                            bundle.priorTransitions[i]
+                        )
+                    )
+                ] = true;
+                emit PriorEvidenceCarried(
+                    messageId,
+                    bundle.priorProfiles[i],
+                    bundle.priorEvidence[i],
+                    bundle.priorTransitions[i]
+                );
+            }
+            return;
+        }
         if (kind != KIND_XIR) revert UnknownMessageKind();
         (bytes32 profileHash, bytes32 transitionHash, bytes32 evidenceHash) =
             abi.decode(message, (bytes32, bytes32, bytes32));
@@ -181,5 +292,32 @@ contract HyperlaneAdapter is IXIRCarrierAdapter, IBaselineCarrier, OutboundContr
         returns (bool)
     {
         return acceptedEvidence[keccak256(abi.encode(profileHash, evidenceHash, transitionHash))];
+    }
+
+    function _checkBundle(ForwardRequest calldata request) private pure {
+        if (
+            request.verifiers.length != request.profileHashes.length
+                || request.verifiers.length != request.evidenceHashes.length
+                || request.verifiers.length != request.transitionHashes.length
+        ) revert InvalidBundle();
+    }
+
+    function _bundleBody(ForwardRequest calldata request)
+        private
+        pure
+        returns (bytes memory)
+    {
+        return abi.encode(
+            KIND_XIR_BUNDLE,
+            abi.encode(
+                DeliveryBundle({
+                    profileHash: request.currentProfileHash,
+                    transitionHash: request.currentTransitionHash,
+                    priorProfiles: request.profileHashes,
+                    priorEvidence: request.evidenceHashes,
+                    priorTransitions: request.transitionHashes
+                })
+            )
+        );
     }
 }

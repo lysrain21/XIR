@@ -1,0 +1,102 @@
+{
+  "schema_version": "xir-lab-native-stack-profile-v1",
+  "profile_id": "native-protocol-stack-four-route-v1",
+  "environment": "controlled-local-qbft-native-stacks",
+  "fixed_seed": "b893f2d8e040d49026f4ac81ab041a8b19d8cf04c5af913c0f6bf0faf21b1c87",
+  "component_lock": {
+    "relative_path": "toolchain/native-protocol-stack.lock.json",
+    "sha256": "1821732ab7b4865797f8b5ac377a6ae178af5859fad4e785d177928bd2dbc89e"
+  },
+  "chains": [
+    {
+      "network_id": "local-source",
+      "route_role": "source",
+      "chain_id": 3133701,
+      "rpc_url": "http://127.0.0.1:18545",
+      "hyperlane_domain": 3133701,
+      "layerzero_eid": 49001
+    },
+    {
+      "network_id": "local-intermediate",
+      "route_role": "intermediate",
+      "chain_id": 3133702,
+      "rpc_url": "http://127.0.0.1:28545",
+      "hyperlane_domain": 3133702,
+      "layerzero_eid": 49002
+    },
+    {
+      "network_id": "local-destination",
+      "route_role": "destination",
+      "chain_id": 3133703,
+      "rpc_url": "http://127.0.0.1:38545",
+      "hyperlane_domain": 3133703,
+      "layerzero_eid": 49003
+    }
+  ],
+  "routes": {
+    "HH": {
+      "first_protocol": "hyperlane",
+      "second_protocol": "hyperlane",
+      "execution_class": "homogeneous-native",
+      "xir": false
+    },
+    "HL": {
+      "first_protocol": "hyperlane",
+      "second_protocol": "layerzero-v2",
+      "execution_class": "heterogeneous-xir",
+      "xir": true
+    },
+    "LH": {
+      "first_protocol": "layerzero-v2",
+      "second_protocol": "hyperlane",
+      "execution_class": "heterogeneous-xir",
+      "xir": true
+    },
+    "LL": {
+      "first_protocol": "layerzero-v2",
+      "second_protocol": "layerzero-v2",
+      "execution_class": "homogeneous-native",
+      "xir": false
+    }
+  },
+  "payload": {
+    "minimum_bytes": 32,
+    "size_step_bytes": 32,
+    "size_bucket_count": 4
+  },
+  "progression": {
+    "smoke_attempts_per_route": 10,
+    "rehearsal_attempts_per_route": 250,
+    "scale_attempts_per_route": 10000,
+    "warmup_attempts": 0,
+    "retries_in_designated_denominator": false
+  },
+  "protocol": {
+    "hyperlane": {
+      "ism": "messageIdMultisigIsm",
+      "validator_threshold": 1,
+      "validators_per_origin": 1,
+      "checkpoint_syncer": "localStorage",
+      "relayer_count": 1,
+      "allow_local_checkpoint_syncers": true
+    },
+    "layerzero_v2": {
+      "send_library": "SendUln302",
+      "receive_library": "ReceiveUln302",
+      "required_dvns": 1,
+      "optional_dvns": 0,
+      "dvn_quorum": 1,
+      "executor_count": 1,
+      "source_confirmations": 1,
+      "worker_classification": "self-hosted-research-worker"
+    }
+  },
+  "resource_policy": {
+    "minimum_logical_cpus": 8,
+    "minimum_available_memory_bytes": 17179869184,
+    "minimum_gpfs_available_bytes": 21474836480,
+    "minimum_docker_available_bytes": 5368709120,
+    "maximum_process_rss_bytes": 8589934592,
+    "monitor_interval_seconds": 5
+  }
+}

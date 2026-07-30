@@ -1,0 +1,32 @@
+{
+  "schema_version": "xir-lab-hyperlane-template-v1",
+  "cli_package": "@hyperlane-xyz/cli@39.0.0",
+  "chain_names": [
+    "xirlocalsource",
+    "xirlocalintermediate",
+    "xirlocaldestination"
+  ],
+  "core": {
+    "default_ism_type": "messageIdMultisigIsm",
+    "validator_threshold": 1,
+    "default_hook_type": "protocolFee",
+    "default_protocol_fee_wei": "0",
+    "required_hook_type": "merkleTreeHook"
+  },
+  "agents": {
+    "validator_count": 3,
+    "relayer_count": 1,
+    "checkpoint_syncer_type": "localStorage",
+    "allow_local_checkpoint_syncers": true,
+    "gas_payment_enforcement": "none",
+    "index_from_block": 0
+  },
+  "runtime_placeholders": {
+    "owner_address": "XIR_RUNTIME_PUBLIC_IDENTITY",
+    "validator_address": "XIR_RUNTIME_PUBLIC_IDENTITY",
+    "relayer_address": "XIR_RUNTIME_PUBLIC_IDENTITY",
+    "deployer_key_file": "XIR_RUNTIME_SECRET_FILE",
+    "validator_key_file": "XIR_RUNTIME_SECRET_FILE",
+    "relayer_key_file": "XIR_RUNTIME_SECRET_FILE"
+  }
+}

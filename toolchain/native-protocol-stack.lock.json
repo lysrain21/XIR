@@ -1,0 +1,63 @@
+{
+  "schema_version": "xir-lab-native-component-lock-v1",
+  "components": [
+    {
+      "component_id": "hyperlane",
+      "official_repository": "https://github.com/hyperlane-xyz/hyperlane-monorepo.git",
+      "commit": "5857ead81a8783d168d48d370be72de88d5fb230",
+      "role": "formal-runtime",
+      "license_paths": ["LICENSE.md"],
+      "build": {
+        "working_directory": "rust/main",
+        "commands": [
+          "cargo build --release --locked --bin validator --bin relayer"
+        ],
+        "expected_outputs": [
+          "rust/main/target/release/validator",
+          "rust/main/target/release/relayer"
+        ]
+      }
+    },
+    {
+      "component_id": "layerzero-v2",
+      "official_repository": "https://github.com/LayerZero-Labs/LayerZero-v2.git",
+      "commit": "9c741e7f9790639537b1710a203bcdfd73b0b9ac",
+      "role": "formal-runtime",
+      "license_paths": ["LICENSE-LZBL-1.2", "LICENSE-MIT"],
+      "build": {
+        "working_directory": ".",
+        "commands": [
+          "corepack yarn install --immutable",
+          "corepack yarn workspace @layerzerolabs/lz-evm-protocol-v2 build",
+          "corepack yarn workspace @layerzerolabs/lz-evm-messagelib-v2 build"
+        ],
+        "expected_outputs": [
+          "packages/layerzero-v2/evm/protocol/out",
+          "packages/layerzero-v2/evm/messagelib/out"
+        ]
+      }
+    },
+    {
+      "component_id": "layerzero-devtools",
+      "official_repository": "https://github.com/LayerZero-Labs/devtools.git",
+      "commit": "4973ba8bef7b0fdf7268469abea3ea50dbd4bbd8",
+      "role": "build-reference",
+      "license_paths": ["packages/ua-devtools-evm-hardhat/LICENSE"],
+      "build": {
+        "working_directory": ".",
+        "commands": [],
+        "expected_outputs": []
+      }
+    }
+  ],
+  "formal_exclusions": [
+    "TestIsm",
+    "MockMailbox",
+    "EndpointV2Mock",
+    "SendUln302Mock",
+    "ReceiveUln302Mock",
+    "DVNMock",
+    "ExecutorMock",
+    "SimpleMessageLib"
+  ]
+}

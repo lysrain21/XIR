@@ -1,0 +1,27 @@
+[profile.default]
+src = "src"
+script = "script"
+out = "out"
+cache_path = "cache"
+libs = ["lib"]
+auto_detect_solc = true
+evm_version = "london"
+optimizer = true
+optimizer_runs = 20000
+via_ir = true
+fs_permissions = [{ access = "read-write", path = "./deployments" }]
+
+allow_paths = [
+  "lib/layerzero",
+  "lib/layerzero-node-modules",
+]
+
+remappings = [
+  "@layerzerolabs/lz-evm-protocol-v2/=lib/layerzero/packages/layerzero-v2/evm/protocol/",
+  "@layerzerolabs/lz-evm-messagelib-v2/=lib/layerzero/packages/layerzero-v2/evm/messagelib/",
+  "@openzeppelin/contracts/=lib/layerzero-node-modules/@openzeppelin/contracts/",
+  "@openzeppelin/contracts-upgradeable/=lib/layerzero-node-modules/@openzeppelin/contracts-upgradeable/",
+  "@layerzerolabs/lz-evm-v1-0.7/=lib/layerzero-node-modules/@layerzerolabs/lz-evm-v1-0.7/",
+  "hardhat-deploy/=lib/layerzero-node-modules/hardhat-deploy/",
+  "solidity-bytes-utils/=lib/layerzero-node-modules/solidity-bytes-utils/"
+]

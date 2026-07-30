@@ -17,6 +17,11 @@ contracts/cache/
 contracts/out/
 contracts/broadcast/
 contracts/lib/
+protocol-projects/**/lib/
+protocol-projects/**/cache/
+protocol-projects/**/out/
+protocol-projects/**/broadcast/
+protocol-projects/**/deployments/
 cache/
 out/
 broadcast/

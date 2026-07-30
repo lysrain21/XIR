@@ -1,0 +1,47 @@
+{
+  "schema_version": "xir-lab-layerzero-template-v1",
+  "official_contracts": [
+    "EndpointV2",
+    "SendUln302",
+    "ReceiveUln302",
+    "DVN",
+    "Executor",
+    "PriceFeed",
+    "DVNFeeLib",
+    "ExecutorFeeLib",
+    "Treasury",
+    "ERC1967Proxy"
+  ],
+  "configuration": {
+    "required_dvns": 1,
+    "optional_dvns": 0,
+    "optional_dvn_threshold": 0,
+    "confirmations": 1,
+    "executor_lz_receive_base_gas": 5000,
+    "executor_message_gas": 1500000,
+    "default_multiplier_bps": 10000,
+    "price_ratio_denominator": "100000000000000000000",
+    "native_decimals_rate": "1000000000000000000"
+  },
+  "worker": {
+    "classification": "self-hosted-research-worker",
+    "managed_layerzero_service": false,
+    "stages": [
+      "PacketSent",
+      "source-confirmed",
+      "DVN-instruction-signed",
+      "DVN.execute",
+      "ReceiveUln302.commitVerification",
+      "Executor.execute302",
+      "PacketDelivered"
+    ]
+  },
+  "forbidden_formal_components": [
+    "EndpointV2Mock",
+    "SendUln302Mock",
+    "ReceiveUln302Mock",
+    "DVNMock",
+    "ExecutorMock",
+    "SimpleMessageLib"
+  ]
+}

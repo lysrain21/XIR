@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xir.example/schemas/native-stack-plan-v1.schema.json",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "plan_sha256",
+    "phase",
+    "profile_sha256",
+    "topology_sha256",
+    "component_lock_sha256",
+    "route_counts",
+    "logical_attempts",
+    "expected_xir_transitions",
+    "expected_application_effects",
+    "physical_transaction_accounting",
+    "qualification",
+    "eligible",
+    "reason_codes"
+  ],
+  "properties": {
+    "schema_version": {"const": "xir-lab-native-stack-plan-v1"},
+    "plan_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "phase": {"enum": ["smoke", "rehearsal", "scale"]},
+    "profile_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "topology_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "component_lock_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "route_counts": {
+      "type": "object",
+      "required": ["HH", "HL", "LH", "LL"],
+      "properties": {
+        "HH": {"type": "integer", "minimum": 10},
+        "HL": {"type": "integer", "minimum": 10},
+        "LH": {"type": "integer", "minimum": 10},
+        "LL": {"type": "integer", "minimum": 10}
+      },
+      "additionalProperties": false
+    },
+    "logical_attempts": {"type": "integer", "minimum": 40},
+    "expected_xir_transitions": {"type": "integer", "minimum": 20},
+    "expected_application_effects": {"type": "integer", "minimum": 40},
+    "physical_transaction_accounting": {
+      "const": "derived-from-complete-protocol-evidence"
+    },
+    "qualification": {
+      "type": "object",
+      "required": [
+        "smoke_reconciliation_sha256",
+        "rehearsal_reconciliation_sha256",
+        "measured_limits_sha256"
+      ],
+      "properties": {
+        "smoke_reconciliation_sha256": {
+          "type": ["string", "null"],
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "rehearsal_reconciliation_sha256": {
+          "type": ["string", "null"],
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "measured_limits_sha256": {
+          "type": ["string", "null"],
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "additionalProperties": false
+    },
+    "eligible": {"type": "boolean"},
+    "reason_codes": {
+      "type": "array",
+      "items": {"type": "string"},
+      "uniqueItems": true
+    }
+  },
+  "additionalProperties": false
+}

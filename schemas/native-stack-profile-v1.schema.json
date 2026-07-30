@@ -1,0 +1,193 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xir.example/schemas/native-stack-profile-v1.schema.json",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "profile_id",
+    "environment",
+    "fixed_seed",
+    "component_lock",
+    "chains",
+    "routes",
+    "payload",
+    "progression",
+    "protocol",
+    "resource_policy"
+  ],
+  "properties": {
+    "schema_version": {"const": "xir-lab-native-stack-profile-v1"},
+    "profile_id": {"const": "native-protocol-stack-four-route-v1"},
+    "environment": {"const": "controlled-local-qbft-native-stacks"},
+    "fixed_seed": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "component_lock": {
+      "type": "object",
+      "required": ["relative_path", "sha256"],
+      "properties": {
+        "relative_path": {"const": "toolchain/native-protocol-stack.lock.json"},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      },
+      "additionalProperties": false
+    },
+    "chains": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "prefixItems": [
+        {"$ref": "#/$defs/sourceChain"},
+        {"$ref": "#/$defs/intermediateChain"},
+        {"$ref": "#/$defs/destinationChain"}
+      ],
+      "items": false
+    },
+    "routes": {
+      "const": {
+        "HH": {
+          "first_protocol": "hyperlane",
+          "second_protocol": "hyperlane",
+          "execution_class": "homogeneous-native",
+          "xir": false
+        },
+        "HL": {
+          "first_protocol": "hyperlane",
+          "second_protocol": "layerzero-v2",
+          "execution_class": "heterogeneous-xir",
+          "xir": true
+        },
+        "LH": {
+          "first_protocol": "layerzero-v2",
+          "second_protocol": "hyperlane",
+          "execution_class": "heterogeneous-xir",
+          "xir": true
+        },
+        "LL": {
+          "first_protocol": "layerzero-v2",
+          "second_protocol": "layerzero-v2",
+          "execution_class": "homogeneous-native",
+          "xir": false
+        }
+      }
+    },
+    "payload": {
+      "const": {
+        "minimum_bytes": 32,
+        "size_step_bytes": 32,
+        "size_bucket_count": 4
+      }
+    },
+    "progression": {
+      "const": {
+        "smoke_attempts_per_route": 10,
+        "rehearsal_attempts_per_route": 250,
+        "scale_attempts_per_route": 10000,
+        "warmup_attempts": 0,
+        "retries_in_designated_denominator": false
+      }
+    },
+    "protocol": {
+      "type": "object",
+      "required": ["hyperlane", "layerzero_v2"],
+      "properties": {
+        "hyperlane": {
+          "const": {
+            "ism": "messageIdMultisigIsm",
+            "validator_threshold": 1,
+            "validators_per_origin": 1,
+            "checkpoint_syncer": "localStorage",
+            "relayer_count": 1,
+            "allow_local_checkpoint_syncers": true
+          }
+        },
+        "layerzero_v2": {
+          "const": {
+            "send_library": "SendUln302",
+            "receive_library": "ReceiveUln302",
+            "required_dvns": 1,
+            "optional_dvns": 0,
+            "dvn_quorum": 1,
+            "executor_count": 1,
+            "source_confirmations": 1,
+            "worker_classification": "self-hosted-research-worker"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "resource_policy": {
+      "type": "object",
+      "required": [
+        "minimum_logical_cpus",
+        "minimum_available_memory_bytes",
+        "minimum_gpfs_available_bytes",
+        "minimum_docker_available_bytes",
+        "maximum_process_rss_bytes",
+        "monitor_interval_seconds"
+      ],
+      "properties": {
+        "minimum_logical_cpus": {"type": "integer", "minimum": 8},
+        "minimum_available_memory_bytes": {"type": "integer", "minimum": 17179869184},
+        "minimum_gpfs_available_bytes": {"type": "integer", "minimum": 21474836480},
+        "minimum_docker_available_bytes": {"type": "integer", "minimum": 5368709120},
+        "maximum_process_rss_bytes": {"type": "integer", "minimum": 1073741824},
+        "monitor_interval_seconds": {"type": "integer", "minimum": 1, "maximum": 60}
+      },
+      "additionalProperties": false
+    }
+  },
+  "$defs": {
+    "chain": {
+      "type": "object",
+      "required": [
+        "network_id",
+        "route_role",
+        "chain_id",
+        "rpc_url",
+        "hyperlane_domain",
+        "layerzero_eid"
+      ],
+      "properties": {
+        "network_id": {"type": "string"},
+        "route_role": {"enum": ["source", "intermediate", "destination"]},
+        "chain_id": {"type": "integer", "minimum": 1, "maximum": 4294967295},
+        "rpc_url": {"type": "string", "pattern": "^http://127\\.0\\.0\\.1:"},
+        "hyperlane_domain": {"type": "integer", "minimum": 1, "maximum": 4294967295},
+        "layerzero_eid": {"type": "integer", "minimum": 1, "maximum": 4294967295}
+      },
+      "additionalProperties": false
+    },
+    "sourceChain": {
+      "allOf": [
+        {"$ref": "#/$defs/chain"},
+        {
+          "properties": {
+            "network_id": {"const": "local-source"},
+            "route_role": {"const": "source"}
+          }
+        }
+      ]
+    },
+    "intermediateChain": {
+      "allOf": [
+        {"$ref": "#/$defs/chain"},
+        {
+          "properties": {
+            "network_id": {"const": "local-intermediate"},
+            "route_role": {"const": "intermediate"}
+          }
+        }
+      ]
+    },
+    "destinationChain": {
+      "allOf": [
+        {"$ref": "#/$defs/chain"},
+        {
+          "properties": {
+            "network_id": {"const": "local-destination"},
+            "route_role": {"const": "destination"}
+          }
+        }
+      ]
+    }
+  },
+  "additionalProperties": false
+}

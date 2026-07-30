@@ -18,7 +18,7 @@ from typing import Any
 
 import rfc8785
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 TERMINAL_ATTEMPT_STATES = frozenset(
     {
         "not_submitted",
@@ -93,24 +93,36 @@ class EvidenceStore:
         return connection
 
     def initialize(self) -> None:
-        migration = (
-            Path(__file__).resolve().parent
-            / "migrations"
-            / "001_initial.sql"
-        ).read_text(encoding="utf-8")
+        migrations_root = Path(__file__).resolve().parent / "migrations"
         with self._writer_lock, self.connect() as connection:
             present = connection.execute(
                 "SELECT 1 FROM sqlite_master WHERE type='table' AND name='schema_migrations'"
             ).fetchone()
             if present is None:
-                connection.executescript(migration)
+                connection.executescript(
+                    (migrations_root / "001_initial.sql").read_text(encoding="utf-8")
+                )
                 connection.execute(
                     "INSERT INTO schema_migrations(version, applied_at) VALUES (?, ?)",
-                    (SCHEMA_VERSION, _now()),
+                    (1, _now()),
                 )
-            version = connection.execute(
+            version = int(connection.execute(
                 "SELECT max(version) AS version FROM schema_migrations"
-            ).fetchone()["version"]
+            ).fetchone()["version"])
+            if version < 1 or version > SCHEMA_VERSION:
+                raise StoreError(f"unsupported database schema version: {version}")
+            for next_version in range(version + 1, SCHEMA_VERSION + 1):
+                path = migrations_root / f"{next_version:03d}_native_stack.sql"
+                if not path.is_file():
+                    raise StoreError(f"missing database migration: {path.name}")
+                connection.executescript(path.read_text(encoding="utf-8"))
+                connection.execute(
+                    "INSERT INTO schema_migrations(version, applied_at) VALUES (?, ?)",
+                    (next_version, _now()),
+                )
+            version = int(connection.execute(
+                "SELECT max(version) AS version FROM schema_migrations"
+            ).fetchone()["version"])
             if version != SCHEMA_VERSION:
                 raise StoreError(f"unsupported database schema version: {version}")
         self.raw_root.mkdir(parents=True, exist_ok=True)
