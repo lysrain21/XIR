@@ -1,0 +1,60 @@
+{
+  "denominator": {
+    "cumulative_per_route": 10260,
+    "logical_attempts": 40000,
+    "per_route": 10000
+  },
+  "failed_stages": [],
+  "incomplete_attempts": [],
+  "incomplete_layerzero_worker_lineages": [],
+  "invariants": {
+    "application_effects_exact": true,
+    "hyperlane_dispatch_lineage_exact": true,
+    "hyperlane_messages_exact": true,
+    "hyperlane_process_lineage_exact": true,
+    "layerzero_deliveries_exact": true,
+    "layerzero_messages_exact": true,
+    "layerzero_packet_lineage_exact": true,
+    "layerzero_worker_stages_exact": true,
+    "logical_attempts_exact": true,
+    "nonce_coordinates_unique": true,
+    "physical_transactions_evidenced": true,
+    "required_stages_exact": true,
+    "worker_has_no_failed_actions": true,
+    "xir_transitions_exact": true
+  },
+  "missing_attempts": [],
+  "missing_effects": [],
+  "missing_stages": [],
+  "missing_transitions": [],
+  "observed": {
+    "cumulative_effects": 41040,
+    "cumulative_xir_transitions": 20520,
+    "hyperlane_dispatch_ids": 41040,
+    "hyperlane_process_ids": 41040,
+    "layerzero_delivered_packets": 41040,
+    "layerzero_failed_actions": 0,
+    "layerzero_packet_guids": 41040,
+    "nonce_coordinates": 123120,
+    "physical_transactions": {
+      "coordinator": 123120,
+      "cumulative_unique": 287280,
+      "hyperlane_process": 41040,
+      "layerzero_worker": 123120
+    },
+    "protocol_messages": {
+      "hyperlane": 41040,
+      "layerzero_v2": 41040
+    },
+    "retries": {
+      "layerzero_raw_rebroadcasts": 42,
+      "runner_raw_replacements": 3,
+      "runner_transient_rpc_retries": 595,
+      "semantic_retry_attempts": 0
+    }
+  },
+  "phase": "scale",
+  "schema_version": "xir-lab-native-reconciliation-v1",
+  "unexpected_attempts": [],
+  "valid": true
+}

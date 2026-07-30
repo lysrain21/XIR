@@ -2,14 +2,20 @@
 from __future__ import annotations
 
 import argparse
+import json
+import sys
 import time
 from pathlib import Path
+
+from requests import RequestException
+from web3.exceptions import Web3RPCError
 
 from xir_lab.native.layerzero_worker import (
     LayerZeroWorker,
     LayerZeroWorkerState,
     load_worker_chains,
 )
+from xir_lab.native.rpc import is_transient_rpc_error
 
 
 def main() -> None:
@@ -30,9 +36,34 @@ def main() -> None:
         raw_root=args.raw_root,
         batch_packets=args.batch_packets,
     )
+    transient_error_count = 0
     while True:
-        worker.collect()
-        worker.process()
+        try:
+            worker.collect()
+            worker.process()
+        except (RequestException, Web3RPCError) as exc:
+            if not is_transient_rpc_error(exc):
+                raise
+            if args.command == "once":
+                raise
+            transient_error_count += 1
+            print(
+                json.dumps(
+                    {
+                        "event": "transient_rpc_error",
+                        "error_class": type(exc).__name__,
+                        "error": str(exc),
+                        "retry_count": transient_error_count,
+                        "retry_delay_seconds": args.poll_seconds,
+                        "observed_at": time.time(),
+                    },
+                    sort_keys=True,
+                ),
+                file=sys.stderr,
+                flush=True,
+            )
+            time.sleep(args.poll_seconds)
+            continue
         if args.command == "once":
             return
         time.sleep(args.poll_seconds)

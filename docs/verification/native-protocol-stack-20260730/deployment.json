@@ -1,0 +1,91 @@
+{
+  "chains": {
+    "destination": {
+      "gateway": "0x1D838087A000e1389eEd17cEc4cf306fc15A09F9",
+      "h_hom_in": "0xA4c085Ee1e5F7B29125f8c0215B142c2281613b8",
+      "h_xir_in": "0x7e18F880f0725aFA3B331cB6b729eDE84Dd69969",
+      "l_hom_in": "0x0ce88783182b7FB084D35ae1869BDECbf106409d",
+      "l_xir_in": "0xae30Cc868Dd0Dedb0884791CB7e38391bC903C13",
+      "receiver": "0xE8ec811B5434097a0bD3b91BB944FBc3e69cC2Cf",
+      "registry": "0x54BA60C993358e3FDDE11CbAc4Af3fb462401727"
+    },
+    "intermediate": {
+      "gateway": "0x790e2e16fEd731EAf1aECb6136a9e69003707cEA",
+      "h_hom_out": "0xf93a6A6cDc48d1b215264953b597813c6a56fffd",
+      "h_in": "0x8353761BF4FAa65c9aC3B2077f60e0af584c66b4",
+      "h_xir_out": "0x9CB5889c20ff34704ac29Ca08Db06d46d438544f",
+      "homogeneous_forwarder": "0x35246c28186Af4a03cd329579a5956Ba0eA0CE13",
+      "l_hom_out": "0x01c1a8B40e4AADF131194C2D9a875cc01bbe86Fa",
+      "l_in": "0x91072c61639B91A7FE0b97e2336e3988df977994",
+      "l_xir_out": "0xC1Ca807a6829C21EfCe7E4D58c99AF942Feb04cB",
+      "registry": "0x8D501Fe0016Cab99f5a309E6435d134f3d57E85d",
+      "xir_transition_recorder": "0x4CF003E03B7A387c8D51a5B360994c5925Fe7f73"
+    },
+    "source": {
+      "gateway": "0xb43142784F2129C820249566330AFb53E8d117fD",
+      "h_source": "0x3fC5466FD58Bb9c6E6854084aF3893f48392e9e9",
+      "l_source": "0xc9dd6Fc746FEe8F9A612C9931071Fbec044681E2",
+      "registry": "0x7A3A132868eF281655fb7142983b6B5F8Adb0B74"
+    }
+  },
+  "deployer": "0xad29670af4676f70dc2f6be7d0476f00af7b3978",
+  "deployment_block_bounds": {
+    "destination": {
+      "first": 10645,
+      "last": 10694
+    },
+    "intermediate": {
+      "first": 10640,
+      "last": 10687
+    },
+    "source": {
+      "first": 10612,
+      "last": 10648
+    }
+  },
+  "gateway_typed_ids": {
+    "destination": {
+      "hash": "0xcd28095d695b970197afa72c242fbe6742d3256fab44518dc7bc30cae262d161",
+      "kind": 1,
+      "value": "0xb0d49f044ee86c3e39d096b3e269d4a4f738a26b"
+    },
+    "intermediate": {
+      "hash": "0xc50c5dadf3aa05166482b07847019d4feecb5cd433c877316ea2360e09f9d63f",
+      "kind": 1,
+      "value": "0x42f6a678d363dcec979b1a56f99213afe995c7f8"
+    },
+    "source": {
+      "hash": "0x48ad17cd6bcd764bcd207f189c25bf7fd0bbff3d7aebc8cef792e69877515f22",
+      "kind": 1,
+      "value": "0x5298c2a49331de53426b872db69c74091bd73d0f"
+    }
+  },
+  "infrastructure": {
+    "destination": {
+      "layerzero_endpoint_v2": "0x7438FF6382bF8FEe1fdAf625cADCcA9ab8227E6E",
+      "mailbox": "0x3ce17Cf8b08A8769d99ccae2D0a12BD5Bf62F94e"
+    },
+    "intermediate": {
+      "layerzero_endpoint_v2": "0x7438FF6382bF8FEe1fdAf625cADCcA9ab8227E6E",
+      "mailbox": "0x3ce17Cf8b08A8769d99ccae2D0a12BD5Bf62F94e"
+    },
+    "source": {
+      "layerzero_endpoint_v2": "0x6FFE7ba43294F854B8C5749c3BCC45d65c7Ae22d",
+      "mailbox": "0x505429614442b6681fa19f640C74e3eeAf5ce173"
+    }
+  },
+  "profile_hashes": {
+    "H_AB": "0x0d79810296aedf4203b7c0679a0e92096735a3820ef3c67585d64f954e995fdc",
+    "H_BC": "0x12ca34cc6eb05dfd47d8b636a62c903850728bb0ec8c75be3ae4e0e2284bc521",
+    "L_AB": "0xe7cb13f934893be161b20859a9b316f9f9d2103636e6de82f7d653a61a775454",
+    "L_BC": "0x0bbebc40c0510193a0b9c7edeeefc625397aff5449ee7725add8e9943c725580"
+  },
+  "route_ids": {
+    "HH": "0x339c6e85ca73b8ea62139c23e9b1355818a0a2c171b08d22a1801a47870ab5fb",
+    "HL": "0xdf21f039ef2b8fa3fd65e5d2d5b7d20883f4b15f462e4c12de199c8eadb81e50",
+    "LH": "0xb39348a44ecb0998fa68bcd4d1b4d19b428108b27122de23579a96f4b4cf9c38",
+    "LL": "0x075f4e1db5b902ba37490005f0a9c28d5fa7df02c14ed98d298585e0193be2ec"
+  },
+  "runner": "0x88769a9e3ac4868de3e0efda18b752506632c614",
+  "schema_version": "xir-lab-native-application-deployment-v1"
+}

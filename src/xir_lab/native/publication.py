@@ -175,6 +175,15 @@ Resource samples: `{analysis['resource_samples']}`; explicit sampling gaps:
 `{extrema['minimum_gpfs_free_bytes']}` bytes; minimum Docker filesystem free
 space: `{extrema['minimum_docker_free_bytes']}` bytes.
 
+Recorded submission recovery events: LayerZero raw rebroadcasts
+`{observed['retries']['layerzero_raw_rebroadcasts']}`, runner raw transaction
+replacements `{observed['retries']['runner_raw_replacements']}`, runner
+transient RPC retries `{observed['retries']['runner_transient_rpc_retries']}`,
+and semantic attempt retries
+`{observed['retries']['semantic_retry_attempts']}`. Raw submission recovery
+and transient RPC retries retain the original attempt identity and retry
+lineage; they do not add a designated logical attempt.
+
 ## Evidence and reproducibility
 
 Raw receipts, protocol databases, checkpoint files, logs, signed-action

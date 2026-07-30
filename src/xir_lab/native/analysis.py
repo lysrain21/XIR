@@ -40,21 +40,34 @@ LAYERZERO_XIR_TOPIC = "0x" + keccak(
 ).hex()
 HYPERLANE_PROCESS_ID_TOPIC = "0x" + keccak(text="ProcessId(bytes32)").hex()
 HYPERLANE_DISPATCH_ID_TOPIC = "0x" + keccak(text="DispatchId(bytes32)").hex()
+LOG_QUERY_BLOCKS = 2_000
 
 
 def _logs(
-    client: Web3, address: str, topic: str, first_block: int
+    client: Web3,
+    address: str,
+    topic: str,
+    first_block: int,
+    *,
+    chunk_blocks: int = LOG_QUERY_BLOCKS,
 ) -> list[Any]:
-    return list(
-        client.eth.get_logs(
-            {
-                "fromBlock": first_block,
-                "toBlock": "latest",
-                "address": Web3.to_checksum_address(address),
-                "topics": [topic],
-            }
+    if chunk_blocks <= 0:
+        raise LocalTopologyError("log query chunk size must be positive")
+    last_block = int(client.eth.block_number)
+    logs: list[Any] = []
+    for chunk_first in range(first_block, last_block + 1, chunk_blocks):
+        chunk_last = min(chunk_first + chunk_blocks - 1, last_block)
+        logs.extend(
+            client.eth.get_logs(
+                {
+                    "fromBlock": chunk_first,
+                    "toBlock": chunk_last,
+                    "address": Web3.to_checksum_address(address),
+                    "topics": [topic],
+                }
+            )
         )
-    )
+    return logs
 
 
 def _expected_cumulative_per_route(profile: dict[str, Any], phase: str) -> int:
@@ -69,6 +82,22 @@ def _expected_cumulative_per_route(profile: dict[str, Any], phase: str) -> int:
         int(progression["smoke_attempts_per_route"])
         + int(progression["rehearsal_attempts_per_route"])
         + int(progression["scale_attempts_per_route"])
+    )
+
+
+def _install_guid_scope(
+    connection: sqlite3.Connection, guids: list[str]
+) -> None:
+    connection.execute(
+        """
+        CREATE TEMP TABLE native_scoped_guids(
+          guid TEXT PRIMARY KEY
+        ) WITHOUT ROWID
+        """
+    )
+    connection.executemany(
+        "INSERT INTO native_scoped_guids(guid) VALUES (?)",
+        ((guid.lower(),) for guid in guids),
     )
 
 
@@ -221,53 +250,63 @@ def reconcile_native_phase(
     if not layerzero_adapter_guids:
         raise LocalTopologyError("native phase has no LayerZero adapter GUIDs")
     scoped_guids = sorted(layerzero_adapter_guids)
-    guid_placeholders = ",".join("?" for _ in scoped_guids)
+    _install_guid_scope(worker, scoped_guids)
     delivered_packets = int(
         worker.execute(
-            f"""
-            SELECT COUNT(*) FROM packets
-            WHERE status='delivered' AND lower(guid) IN ({guid_placeholders})
+            """
+            SELECT COUNT(*)
+            FROM packets AS packet
+            JOIN native_scoped_guids AS scope
+              ON lower(packet.guid)=scope.guid
+            WHERE packet.status='delivered'
             """,
-            scoped_guids,
         ).fetchone()[0]
     )
     failed_worker_actions = int(
         worker.execute(
-            f"""
-            SELECT COUNT(*) FROM actions
-            WHERE status='failed' AND lower(guid) IN ({guid_placeholders})
+            """
+            SELECT COUNT(*)
+            FROM actions AS action
+            JOIN native_scoped_guids AS scope
+              ON lower(action.guid)=scope.guid
+            WHERE action.status='failed'
             """,
-            scoped_guids,
         ).fetchone()[0]
     )
     worker_packet_guids = {
         str(row[0]).lower()
         for row in worker.execute(
-            f"SELECT guid FROM packets WHERE lower(guid) IN ({guid_placeholders})",
-            scoped_guids,
+            """
+            SELECT packet.guid
+            FROM packets AS packet
+            JOIN native_scoped_guids AS scope
+              ON lower(packet.guid)=scope.guid
+            """
         ).fetchall()
     }
     incomplete_worker_lineages = [
         str(row[0])
         for row in worker.execute(
-            f"""
+            """
             SELECT packet.guid
             FROM packets AS packet
+            JOIN native_scoped_guids AS scope
+              ON lower(packet.guid)=scope.guid
             LEFT JOIN actions AS action ON action.guid=packet.guid
-            WHERE lower(packet.guid) IN ({guid_placeholders})
             GROUP BY packet.guid
             HAVING packet.status != 'delivered'
                OR COUNT(action.action_id) != 3
                OR SUM(CASE WHEN action.status='succeeded' THEN 1 ELSE 0 END) != 3
                OR COUNT(DISTINCT action.stage) != 3
             """,
-            scoped_guids,
         ).fetchall()
     ]
     phases = ("smoke", "rehearsal", "scale")
     included_phases = phases[: phases.index(phase) + 1]
     runner_transaction_coordinates: set[str] = set()
     nonce_coordinates: list[str] = []
+    runner_raw_replacements = 0
+    runner_transient_rpc_retries = 0
     run_root = runner_state_path.parents[1]
     for included_phase in included_phases:
         phase_db = run_root / included_phase / "runner.sqlite"
@@ -288,36 +327,65 @@ def reconcile_native_phase(
             runner_transaction_coordinates.add(
                 f"{role}:{str(row['transaction_hash']).lower()}"
             )
-            nonce_coordinates.append(f"{role}:{int(detail['nonce'])}")
+            nonce_coordinates.append(
+                f"{role}:{int(detail.get('transaction_nonce', detail['nonce']))}"
+            )
+        history_exists = phase_connection.execute(
+            """
+            SELECT COUNT(*) FROM sqlite_master
+            WHERE type='table' AND name='stage_history'
+            """
+        ).fetchone()[0]
+        if history_exists:
+            runner_raw_replacements += int(
+                phase_connection.execute(
+                    "SELECT COUNT(*) FROM stage_history WHERE state='superseded'"
+                ).fetchone()[0]
+            )
+        errors_exist = phase_connection.execute(
+            """
+            SELECT COUNT(*) FROM sqlite_master
+            WHERE type='table' AND name='attempt_errors'
+            """
+        ).fetchone()[0]
+        if errors_exist:
+            runner_transient_rpc_retries += int(
+                phase_connection.execute(
+                    "SELECT COUNT(*) FROM attempt_errors"
+                ).fetchone()[0]
+            )
         phase_connection.close()
     worker_transaction_coordinates = {
         f"{int(row['destination_chain_id'])}:{str(row['transaction_hash']).lower()}"
         for row in worker.execute(
-            f"""
-            SELECT destination_chain_id, transaction_hash FROM actions
-            WHERE status='succeeded' AND transaction_hash IS NOT NULL
-              AND lower(guid) IN ({guid_placeholders})
+            """
+            SELECT action.destination_chain_id, action.transaction_hash
+            FROM actions AS action
+            JOIN native_scoped_guids AS scope
+              ON lower(action.guid)=scope.guid
+            WHERE action.status='succeeded'
+              AND action.transaction_hash IS NOT NULL
             """,
-            scoped_guids,
         ).fetchall()
     }
     worker_rebroadcasts = int(
         worker.execute(
-            f"""
+            """
             SELECT COUNT(*) FROM observations
-            JOIN actions USING(action_id)
+            JOIN actions AS action USING(action_id)
+            JOIN native_scoped_guids AS scope
+              ON lower(action.guid)=scope.guid
             WHERE observations.state='submitted'
-              AND lower(actions.guid) IN ({guid_placeholders})
             """,
-            scoped_guids,
         ).fetchone()[0]
     ) - int(
         worker.execute(
-            f"""
-            SELECT COUNT(*) FROM actions
-            WHERE lower(guid) IN ({guid_placeholders})
+            """
+            SELECT COUNT(*)
+            FROM actions AS action
+            JOIN native_scoped_guids AS scope
+              ON lower(action.guid)=scope.guid
             """,
-            scoped_guids,
         ).fetchone()[0]
     )
     hyperlane_process_coordinates: set[str] = set()
@@ -424,6 +492,8 @@ def reconcile_native_phase(
             },
             "retries": {
                 "layerzero_raw_rebroadcasts": max(worker_rebroadcasts, 0),
+                "runner_raw_replacements": runner_raw_replacements,
+                "runner_transient_rpc_retries": runner_transient_rpc_retries,
                 "semantic_retry_attempts": 0,
             },
             "nonce_coordinates": len(nonce_coordinates),

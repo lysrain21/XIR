@@ -44,6 +44,12 @@ def test_native_report_states_self_hosted_boundary() -> None:
                 "cumulative_xir_transitions": 2,
                 "protocol_messages": {"hyperlane": 4, "layerzero_v2": 4},
                 "physical_transactions": {"cumulative_unique": 12},
+                "retries": {
+                    "layerzero_raw_rebroadcasts": 1,
+                    "runner_raw_replacements": 2,
+                    "runner_transient_rpc_retries": 3,
+                    "semantic_retry_attempts": 0,
+                },
             },
         },
         analysis={
@@ -76,3 +82,8 @@ def test_native_report_states_self_hosted_boundary() -> None:
     )
     assert "self-hosted XIR research worker" in report
     assert "not a LayerZero Labs managed service" in report
+    assert "runner raw transaction" in report
+    assert "replacements `2`" in report
+    assert "transient RPC retries `3`" in report
+    assert "semantic attempt retries" in report
+    assert "`0`" in report

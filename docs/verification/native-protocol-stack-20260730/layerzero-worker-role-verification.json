@@ -1,0 +1,55 @@
+{
+  "least_privilege_role": "ADMIN_ROLE",
+  "schema_version": "xir-lab-layerzero-worker-role-configuration-v1",
+  "verified": [
+    {
+      "address": "0x31448be9c61000dd208b8207ba4693865d046e25",
+      "admin_role": "0xa49807205ce4d355092ef5a8a18f56e8913cf4a201fbe287825b095693c21775",
+      "chain_id": 3133701,
+      "component": "dvn",
+      "effective": true,
+      "worker": "0xac22dbd22dd77a92ca23286ff49ba99c0bc8fcd8"
+    },
+    {
+      "address": "0x0a0147d39bcf5bfc5816c29ca879bc103003ace8",
+      "admin_role": "0xa49807205ce4d355092ef5a8a18f56e8913cf4a201fbe287825b095693c21775",
+      "chain_id": 3133701,
+      "component": "executor",
+      "effective": true,
+      "worker": "0xac22dbd22dd77a92ca23286ff49ba99c0bc8fcd8"
+    },
+    {
+      "address": "0xbf27882e8fd7edf143ddb38f12151a979e19d6c2",
+      "admin_role": "0xa49807205ce4d355092ef5a8a18f56e8913cf4a201fbe287825b095693c21775",
+      "chain_id": 3133702,
+      "component": "dvn",
+      "effective": true,
+      "worker": "0xac22dbd22dd77a92ca23286ff49ba99c0bc8fcd8"
+    },
+    {
+      "address": "0x2bdf0df3e7dea43bd2082ad740d5c51540e5841f",
+      "admin_role": "0xa49807205ce4d355092ef5a8a18f56e8913cf4a201fbe287825b095693c21775",
+      "chain_id": 3133702,
+      "component": "executor",
+      "effective": true,
+      "worker": "0xac22dbd22dd77a92ca23286ff49ba99c0bc8fcd8"
+    },
+    {
+      "address": "0xbf27882e8fd7edf143ddb38f12151a979e19d6c2",
+      "admin_role": "0xa49807205ce4d355092ef5a8a18f56e8913cf4a201fbe287825b095693c21775",
+      "chain_id": 3133703,
+      "component": "dvn",
+      "effective": true,
+      "worker": "0xac22dbd22dd77a92ca23286ff49ba99c0bc8fcd8"
+    },
+    {
+      "address": "0x2bdf0df3e7dea43bd2082ad740d5c51540e5841f",
+      "admin_role": "0xa49807205ce4d355092ef5a8a18f56e8913cf4a201fbe287825b095693c21775",
+      "chain_id": 3133703,
+      "component": "executor",
+      "effective": true,
+      "worker": "0xac22dbd22dd77a92ca23286ff49ba99c0bc8fcd8"
+    }
+  ],
+  "worker": "0xac22dbd22dd77a92ca23286ff49ba99c0bc8fcd8"
+}

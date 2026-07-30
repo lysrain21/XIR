@@ -1,0 +1,70 @@
+{
+  "components": [
+    {
+      "build_complete": true,
+      "clean": true,
+      "commit": "5857ead81a8783d168d48d370be72de88d5fb230",
+      "component_id": "hyperlane",
+      "licenses": [
+        {
+          "relative_path": "LICENSE.md",
+          "sha256": "039d076ba28e1be5e075ba29bffd79ed094464e2c436ddbf2e2539ca89795d1e"
+        }
+      ],
+      "official_repository": "https://github.com/hyperlane-xyz/hyperlane-monorepo.git",
+      "outputs": [
+        {
+          "relative_path": "rust/main/target/release/validator",
+          "sha256": "8c89e3368cbe2818bf60c25e15fbae34fc6098970793f4c34d4d46a041b817e1"
+        },
+        {
+          "relative_path": "rust/main/target/release/relayer",
+          "sha256": "40b91abcc0f662aea5389c5a1b1e973c9998e9dd260d721b6475ea83da32744c"
+        }
+      ]
+    },
+    {
+      "build_complete": true,
+      "clean": true,
+      "commit": "9c741e7f9790639537b1710a203bcdfd73b0b9ac",
+      "component_id": "layerzero-v2",
+      "licenses": [
+        {
+          "relative_path": "LICENSE-LZBL-1.2",
+          "sha256": "3d4db8501bee378a0da0b8ee497b1857677f267f0db45f2d9db63f2fcd7a78d9"
+        },
+        {
+          "relative_path": "LICENSE-MIT",
+          "sha256": "1bdefbc20068977ac6458e7142c276acb8d47090cf2dcb0016468ddd8a684244"
+        }
+      ],
+      "official_repository": "https://github.com/LayerZero-Labs/LayerZero-v2.git",
+      "outputs": [
+        {
+          "relative_path": "packages/layerzero-v2/evm/protocol/out",
+          "sha256": "a6db921d30dc80a53e9c9d4f0ba2c52f1d2a012668a0a8771db6d2812d8acf57"
+        },
+        {
+          "relative_path": "packages/layerzero-v2/evm/messagelib/out",
+          "sha256": "98f46dc1ce73dbd580a35d9baf9002df99bd1fe8c74e33164bd214b7c1bb9f33"
+        }
+      ]
+    },
+    {
+      "build_complete": true,
+      "clean": true,
+      "commit": "4973ba8bef7b0fdf7268469abea3ea50dbd4bbd8",
+      "component_id": "layerzero-devtools",
+      "licenses": [
+        {
+          "relative_path": "packages/ua-devtools-evm-hardhat/LICENSE",
+          "sha256": "1a61c3828992ed7b6a987d66fd691f0f34b6027cabb540162f6bf1c0f04b6617"
+        }
+      ],
+      "official_repository": "https://github.com/LayerZero-Labs/devtools.git",
+      "outputs": []
+    }
+  ],
+  "lock_sha256": "1821732ab7b4865797f8b5ac377a6ae178af5859fad4e785d177928bd2dbc89e",
+  "schema_version": "xir-lab-native-component-provenance-v1"
+}

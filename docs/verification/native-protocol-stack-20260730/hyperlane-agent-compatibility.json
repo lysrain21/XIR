@@ -1,0 +1,11 @@
+{
+  "agent_required_field": "interchainGasPaymaster",
+  "configured_address_kind": "official-ProtocolFee-hook-alias",
+  "gas_payment_enforcement": "none",
+  "hyperlane_commit": "5857ead81a8783d168d48d370be72de88d5fb230",
+  "igp_called_by_formal_workload": false,
+  "igp_deployed": false,
+  "locked_evm_version": "london",
+  "reason": "The pinned IGP source uses Cancun TSTORE/TLOAD and cannot be compiled for the retained London chains.",
+  "schema_version": "xir-lab-hyperlane-agent-compatibility-v1"
+}

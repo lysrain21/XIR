@@ -16,8 +16,11 @@ from typing import Any, cast
 from eth_abi.abi import encode
 from eth_account import Account
 from eth_account.messages import encode_defunct
+from eth_account.typed_transactions import TypedTransaction  # type: ignore[attr-defined]
 from eth_typing import HexStr
 from eth_utils import keccak  # type: ignore[attr-defined]
+from hexbytes import HexBytes
+from requests import RequestException
 from web3 import Web3
 from web3.exceptions import Web3RPCError
 
@@ -29,7 +32,7 @@ from xir_lab.localnet.native_profile import (
 from xir_lab.localnet.topology import LocalTopologyError
 from xir_lab.native.deployer import PROFILE_HASHES, ROUTE_IDS, gateway_typed_id
 from xir_lab.native.layerzero import executor_lz_receive_options
-from xir_lab.native.rpc import qbft_web3
+from xir_lab.native.rpc import is_transient_rpc_error, qbft_web3
 from xir_lab.native.xir_trace import (
     XIRContext,
     XIRReceipt,
@@ -71,6 +74,23 @@ class RunnerState:
               detail_json TEXT NOT NULL,
               observed_at REAL NOT NULL,
               PRIMARY KEY(attempt_id, stage)
+            ) STRICT;
+            CREATE TABLE IF NOT EXISTS stage_history(
+              history_id INTEGER PRIMARY KEY AUTOINCREMENT,
+              attempt_id TEXT NOT NULL REFERENCES attempts(attempt_id),
+              stage TEXT NOT NULL,
+              state TEXT NOT NULL,
+              transaction_hash TEXT,
+              detail_json TEXT NOT NULL,
+              observed_at REAL NOT NULL
+            ) STRICT;
+            CREATE TABLE IF NOT EXISTS attempt_errors(
+              error_id INTEGER PRIMARY KEY AUTOINCREMENT,
+              attempt_id TEXT NOT NULL REFERENCES attempts(attempt_id),
+              error_class TEXT NOT NULL,
+              error_message TEXT NOT NULL,
+              retry_index INTEGER NOT NULL,
+              observed_at REAL NOT NULL
             ) STRICT;
             """
         )
@@ -121,6 +141,24 @@ class RunnerState:
         transaction_hash: str | None = None,
     ) -> None:
         with self.lock:
+            observed_at = time.time()
+            detail_json = json.dumps(detail, sort_keys=True)
+            self.connection.execute(
+                """
+                INSERT INTO stage_history(
+                  attempt_id, stage, state, transaction_hash, detail_json,
+                  observed_at
+                ) VALUES (?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    attempt_id,
+                    stage,
+                    state,
+                    transaction_hash,
+                    detail_json,
+                    observed_at,
+                ),
+            )
             self.connection.execute(
                 """
                 INSERT INTO stages(
@@ -137,7 +175,42 @@ class RunnerState:
                     stage,
                     state,
                     transaction_hash,
-                    json.dumps(detail, sort_keys=True),
+                    detail_json,
+                    observed_at,
+                ),
+            )
+            self.connection.commit()
+
+    def pending_signed_transactions(self) -> list[sqlite3.Row]:
+        with self.lock:
+            return list(
+                self.connection.execute(
+                    """
+                    SELECT transaction_hash, detail_json
+                    FROM stages
+                    WHERE state='signed' AND transaction_hash IS NOT NULL
+                    """
+                ).fetchall()
+            )
+
+    def record_transient_error(
+        self,
+        attempt_id: str,
+        error: BaseException,
+        retry_index: int,
+    ) -> None:
+        with self.lock:
+            self.connection.execute(
+                """
+                INSERT INTO attempt_errors(
+                  attempt_id, error_class, error_message, retry_index, observed_at
+                ) VALUES (?, ?, ?, ?, ?)
+                """,
+                (
+                    attempt_id,
+                    type(error).__name__,
+                    str(error),
+                    retry_index,
                     time.time(),
                 ),
             )
@@ -211,6 +284,29 @@ class NativeExperimentRunner:
             role: int(client.eth.get_transaction_count(self.account.address, "pending"))
             for role, client in self.clients.items()
         }
+        role_by_chain_id = {
+            int(chain["chain_id"]): role
+            for role, chain in self.chain_by_role.items()
+        }
+        for pending in self.state.pending_signed_transactions():
+            transaction_hash = str(pending["transaction_hash"])
+            raw_path = self.signed_root / f"{transaction_hash}.raw"
+            if not raw_path.is_file():
+                continue
+            raw = raw_path.read_bytes()
+            if Account.recover_transaction(raw).lower() != self.account.address.lower():
+                raise LocalTopologyError(
+                    "pending signed native transaction has an unexpected signer"
+                )
+            decoded = TypedTransaction.from_bytes(HexBytes(raw)).as_dict()
+            role = role_by_chain_id.get(int(decoded["chainId"]))
+            if role is None:
+                raise LocalTopologyError(
+                    "pending signed native transaction has an unexpected chain"
+                )
+            self.nonces[role] = max(
+                self.nonces[role], int(decoded["nonce"]) + 1
+            )
         self.nonce_locks = {role: threading.Lock() for role in self.clients}
         self.xir_nonce_lock = threading.Lock()
         self.xir_nonce_next: int | None = None
@@ -234,6 +330,29 @@ class NativeExperimentRunner:
             abi=artifact["abi"],
         )
 
+    def _persist_receipt(
+        self,
+        *,
+        transaction_hash: str,
+        receipt: Any,
+        detail: dict[str, Any],
+    ) -> dict[str, Any]:
+        receipt_document = cast(
+            dict[str, Any], json.loads(Web3.to_json(cast(dict[Any, Any], receipt)))
+        )
+        receipt_path = self.raw_root / f"{transaction_hash}.json"
+        receipt_path.write_text(
+            json.dumps(receipt_document, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+        return {
+            **detail,
+            "receipt": str(receipt_path),
+            "receipt_sha256": hashlib.sha256(receipt_path.read_bytes()).hexdigest(),
+            "gas_used": int(receipt["gasUsed"]),
+            "block_number": int(receipt["blockNumber"]),
+        }
+
     def _transact(
         self,
         *,
@@ -246,30 +365,96 @@ class NativeExperimentRunner:
         preallocated_nonce: int | None = None,
     ) -> dict[str, Any]:
         existing = self.state.stage(attempt_id, stage)
-        if existing is not None and str(existing["state"]) == "succeeded":
-            return cast(dict[str, Any], json.loads(existing["detail_json"]))
         client = self.clients[role]
+        if existing is not None and str(existing["state"]) == "succeeded":
+            existing_detail = cast(
+                dict[str, Any], json.loads(existing["detail_json"])
+            )
+            existing_hash = existing["transaction_hash"]
+            if existing_hash and "receipt" not in existing_detail:
+                existing_receipt = client.eth.get_transaction_receipt(
+                    HexStr(str(existing_hash))
+                )
+                if int(existing_receipt["status"]) != 1:
+                    raise LocalTopologyError(
+                        f"previous native route transaction reverted: {stage}"
+                    )
+                existing_detail = self._persist_receipt(
+                    transaction_hash=str(existing_hash),
+                    receipt=existing_receipt,
+                    detail=existing_detail,
+                )
+                self.state.record_stage(
+                    attempt_id,
+                    stage,
+                    "succeeded",
+                    existing_detail,
+                    str(existing_hash),
+                )
+            return existing_detail
+        retry_lineage: list[dict[str, Any]] = []
         if existing is not None and existing["transaction_hash"]:
             prior_hash = str(existing["transaction_hash"])
             prior_hash_typed = HexStr(prior_hash)
+            prior_detail = cast(
+                dict[str, Any], json.loads(existing["detail_json"])
+            )
+            retry_lineage = list(prior_detail.get("retry_lineage", []))
             try:
                 prior_receipt = client.eth.get_transaction_receipt(prior_hash_typed)
             except Exception:  # Web3 providers use different not-found exception classes.
                 raw_path = self.signed_root / f"{prior_hash}.raw"
                 if raw_path.is_file():
+                    raw = raw_path.read_bytes()
+                    decoded = TypedTransaction.from_bytes(HexBytes(raw)).as_dict()
+                    transaction_nonce = int(decoded["nonce"])
+                    wait_for_prior = True
                     try:
-                        client.eth.send_raw_transaction(raw_path.read_bytes())
+                        client.eth.send_raw_transaction(raw)
                     except (ValueError, Web3RPCError) as exc:
                         message = str(exc).lower()
-                        if (
-                            "already known" not in message
-                            and "known transaction" not in message
-                            and "nonce too low" not in message
-                        ):
+                        known = (
+                            "already known" in message
+                            or "known transaction" in message
+                        )
+                        nonce_consumed = (
+                            "nonce too low" in message
+                            and int(
+                                client.eth.get_transaction_count(
+                                    self.account.address, "latest"
+                                )
+                            )
+                            > transaction_nonce
+                        )
+                        if nonce_consumed:
+                            retry_lineage.append(
+                                {
+                                    "prior_transaction_hash": prior_hash,
+                                    "prior_transaction_nonce": transaction_nonce,
+                                    "resolution": "superseded_by_mined_nonce",
+                                    "raw_sha256": hashlib.sha256(raw).hexdigest(),
+                                }
+                            )
+                            self.state.record_stage(
+                                attempt_id,
+                                stage,
+                                "superseded",
+                                {
+                                    **prior_detail,
+                                    "retry_count": len(retry_lineage),
+                                    "retry_lineage": retry_lineage,
+                                },
+                                prior_hash,
+                            )
+                            wait_for_prior = False
+                        elif not known:
                             raise
-                    prior_receipt = client.eth.wait_for_transaction_receipt(
-                        prior_hash_typed, timeout=self.timeout_seconds
-                    )
+                    if wait_for_prior:
+                        prior_receipt = client.eth.wait_for_transaction_receipt(
+                            prior_hash_typed, timeout=self.timeout_seconds
+                        )
+                    else:
+                        prior_receipt = None
                 else:
                     prior_receipt = None
             if prior_receipt is not None:
@@ -277,11 +462,11 @@ class NativeExperimentRunner:
                     raise LocalTopologyError(
                         f"previous native route transaction reverted: {stage}"
                     )
-                prior_detail = cast(
-                    dict[str, Any], json.loads(existing["detail_json"])
+                prior_detail = self._persist_receipt(
+                    transaction_hash=prior_hash,
+                    receipt=prior_receipt,
+                    detail=prior_detail,
                 )
-                prior_detail["gas_used"] = int(prior_receipt["gasUsed"])
-                prior_detail["block_number"] = int(prior_receipt["blockNumber"])
                 self.state.record_stage(
                     attempt_id, stage, "succeeded", prior_detail, prior_hash
                 )
@@ -314,6 +499,9 @@ class NativeExperimentRunner:
             "target": str(built["to"]).lower(),
             "calldata_sha256": hashlib.sha256(call_data).hexdigest(),
             **(detail or {}),
+            "transaction_nonce": nonce,
+            "retry_count": len(retry_lineage),
+            "retry_lineage": retry_lineage,
         }
         self.state.record_stage(attempt_id, stage, "intended", intended)
         signed = self.account.sign_transaction(built)
@@ -335,30 +523,25 @@ class NativeExperimentRunner:
         receipt = client.eth.wait_for_transaction_receipt(
             tx_hash, timeout=self.timeout_seconds
         )
-        receipt_document = cast(
-            dict[str, Any], json.loads(Web3.to_json(cast(dict[Any, Any], receipt)))
-        )
-        receipt_path = self.raw_root / f"{tx_hash.hex()}.json"
-        receipt_path.write_text(
-            json.dumps(receipt_document, indent=2, sort_keys=True) + "\n",
-            encoding="utf-8",
-        )
         if int(receipt["status"]) != 1:
+            failed_detail = self._persist_receipt(
+                transaction_hash=tx_hash.hex(),
+                receipt=receipt,
+                detail=intended,
+            )
             self.state.record_stage(
                 attempt_id,
                 stage,
                 "failed",
-                {**intended, "receipt": str(receipt_path)},
+                failed_detail,
                 tx_hash.hex(),
             )
             raise LocalTopologyError(f"native route transaction reverted: {stage}")
-        result = {
-            **intended,
-            "receipt": str(receipt_path),
-            "receipt_sha256": hashlib.sha256(receipt_path.read_bytes()).hexdigest(),
-            "gas_used": int(receipt["gasUsed"]),
-            "block_number": int(receipt["blockNumber"]),
-        }
+        result = self._persist_receipt(
+            transaction_hash=tx_hash.hex(),
+            receipt=receipt,
+            detail=intended,
+        )
         self.state.record_stage(
             attempt_id, stage, "succeeded", result, tx_hash.hex()
         )
@@ -418,8 +601,25 @@ class NativeExperimentRunner:
     def _run_if_needed(self, attempt: NativeAttempt) -> None:
         if not self.state.begin(attempt):
             return
-        self.run_attempt(attempt)
-        self.state.finish(attempt.attempt_id)
+        transient_retry = 0
+        transient_deadline: float | None = None
+        while True:
+            try:
+                self.run_attempt(attempt)
+                self.state.finish(attempt.attempt_id)
+                return
+            except (RequestException, Web3RPCError) as exc:
+                if not is_transient_rpc_error(exc):
+                    raise
+                transient_retry += 1
+                self.state.record_transient_error(
+                    attempt.attempt_id, exc, transient_retry
+                )
+                if transient_deadline is None:
+                    transient_deadline = time.monotonic() + self.timeout_seconds
+                if time.monotonic() >= transient_deadline:
+                    raise
+                time.sleep(0.5)
 
     def run_attempt(self, attempt: NativeAttempt) -> None:
         application_payload = native_application_payload(
@@ -704,16 +904,6 @@ class NativeExperimentRunner:
                 return bytes.fromhex(
                     str(completed_detail["evidence"]).removeprefix("0x")
                 )
-            if protocol == "L":
-                evidence = self._layerzero_guid_from_stage(completed_detail)
-                self.state.record_stage(
-                    attempt.attempt_id,
-                    "first_protocol_dispatch",
-                    "succeeded",
-                    {**completed_detail, "evidence": "0x" + evidence.hex()},
-                    str(completed["transaction_hash"]),
-                )
-                return evidence
         adapter_role = f"{protocol.lower()}_source"
         if protocol == "H":
             evidence = keccak(
@@ -777,16 +967,6 @@ class NativeExperimentRunner:
                 return bytes.fromhex(
                     str(completed_detail["evidence"]).removeprefix("0x")
                 )
-            if protocol == "L":
-                evidence = self._layerzero_guid_from_stage(completed_detail)
-                self.state.record_stage(
-                    attempt.attempt_id,
-                    "second_protocol_dispatch",
-                    "succeeded",
-                    {**completed_detail, "evidence": "0x" + evidence.hex()},
-                    str(completed["transaction_hash"]),
-                )
-                return evidence
         adapter_role = f"{protocol.lower()}_xir_out"
         verifier = self.contracts["intermediate"][f"{attempt.route[0].lower()}_in"]
         if protocol == "L":
