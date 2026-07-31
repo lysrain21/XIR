@@ -52,6 +52,7 @@ jq -e '.valid == true' "$verification" >/dev/null
   --reconciliation "$runtime_root/runs/scale/reconciliation.json" \
   --analysis "$closeout/rebuild-a/analysis.json" \
   --manifest "$manifest" \
+  --final-summary "$runtime_root/provenance/final-run-summary.json" \
   --evidence-pointer "$runtime_root" \
   --output "$report"
 sha256sum "$report" >"$report.sha256"

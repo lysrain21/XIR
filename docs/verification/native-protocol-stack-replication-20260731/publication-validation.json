@@ -1,0 +1,19 @@
+{
+  "checks": {
+    "all_reconciliation_invariants_true": true,
+    "final_validators_healthy": true,
+    "logical_denominator_exact": true,
+    "manifest_verified": true,
+    "natural_recovery_denominator_preserved": true,
+    "offline_rebuild_equal": true,
+    "reconciliation_valid": true,
+    "report_discloses_confounds": true,
+    "report_excludes_prior_runs": true,
+    "report_links_evidence": true,
+    "routes_balanced_and_successful": true,
+    "scale_calldata_complete": true,
+    "xir_attribution_exact": true
+  },
+  "schema_version": "xir-lab-native-publication-validation-v1",
+  "valid": true
+}

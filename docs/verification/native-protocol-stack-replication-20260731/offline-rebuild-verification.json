@@ -1,0 +1,7 @@
+{
+  "schema_version": "xir-lab-native-offline-rebuild-v1",
+  "rebuild_a_semantic_sha256": "dddfd174f8f6fbc608282d2a366d129abb28e72b7c917ec0cbe50081f2fe3ce7",
+  "rebuild_b_semantic_sha256": "dddfd174f8f6fbc608282d2a366d129abb28e72b7c917ec0cbe50081f2fe3ce7",
+  "equal": true,
+  "network_reads_required": false
+}

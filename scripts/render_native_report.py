@@ -23,6 +23,7 @@ def main() -> None:
     parser.add_argument("--reconciliation", type=Path, required=True)
     parser.add_argument("--analysis", type=Path, required=True)
     parser.add_argument("--manifest", type=Path, required=True)
+    parser.add_argument("--final-summary", type=Path)
     parser.add_argument("--evidence-pointer", required=True)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
@@ -38,6 +39,7 @@ def main() -> None:
         analysis=analysis,
         manifest_sha256=sha256_file(args.manifest),
         evidence_pointer=args.evidence_pointer,
+        final_summary=load(args.final_summary) if args.final_summary else None,
     )
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(report, encoding="utf-8")

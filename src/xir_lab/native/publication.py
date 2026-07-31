@@ -114,13 +114,27 @@ def render_report(
     analysis: dict[str, Any],
     manifest_sha256: str,
     evidence_pointer: str,
+    final_summary: dict[str, Any] | None = None,
 ) -> str:
     rows = []
     for row in analysis["per_route"]:
         rows.append(
             "| {route} | {logical_attempts} | {success_rate:.3f} | "
-            "{latency_seconds_mean:.3f} | {latency_seconds_p95:.3f} | "
-            "{coordinator_gas_used} | {xir} |".format(**row)
+            "{latency_seconds_mean:.3f} | {median:.3f} | "
+            "{latency_seconds_p95:.3f} | {p99:.3f} | {minimum:.3f} | "
+            "{maximum:.3f} | {coordinator_gas_used} | {xir} |".format(
+                median=row.get(
+                    "latency_seconds_median", row["latency_seconds_mean"]
+                ),
+                p99=row.get("latency_seconds_p99", row["latency_seconds_p95"]),
+                minimum=row.get(
+                    "latency_seconds_min", row["latency_seconds_mean"]
+                ),
+                maximum=row.get(
+                    "latency_seconds_max", row["latency_seconds_mean"]
+                ),
+                **row,
+            )
         )
     components = "\n".join(
         f"- {item['component_id']}: `{item['commit']}`"
@@ -128,6 +142,27 @@ def render_report(
     )
     observed = reconciliation["observed"]
     extrema = analysis["resource_extrema"]
+    closeout = final_summary or {}
+    validators = closeout.get("validators", {})
+    interruptions = closeout.get("interruptions", {})
+    resources = closeout.get("resources", {})
+    storage = closeout.get("storage", {})
+    calldata = closeout.get("calldata", {})
+    coordinator_calldata = (
+        calldata.get("coordinator", {}).get("groups", {}).get("all", {})
+    )
+    worker_calldata = (
+        calldata.get("layerzero_worker", {}).get("groups", {}).get("all", {})
+    )
+    recovery_transactions = int(
+        interruptions.get("recovery_only_transactions", 0)
+    )
+    reconciled_transactions = int(
+        observed["physical_transactions"]["cumulative_unique"]
+    )
+    physical_transactions_with_recovery = (
+        reconciled_transactions + recovery_transactions
+    )
     return f"""# Native Hyperlane–LayerZero–XIR Experiment Report
 
 ## Result
@@ -137,15 +172,20 @@ designated two-hop attempts for phase `{analysis['phase']}`. Reconciliation
 status is `{str(reconciliation['valid']).lower()}`. HH and LL are homogeneous
 native-protocol routes without XIR; HL and LH use exactly one XIR transition.
 
-| Route | Attempts | Success rate | Mean latency (s) | P95 latency (s) | Coordinator gas | XIR |
-| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| Route | Attempts | Success rate | Mean (s) | Median (s) | P95 (s) | P99 (s) | Min (s) | Max (s) | Coordinator gas | XIR |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
 {chr(10).join(rows)}
 
-Total application effects: `{observed['cumulative_effects']}`. Total XIR
-transitions: `{observed['cumulative_xir_transitions']}`. Observed protocol
-messages: Hyperlane `{observed['protocol_messages']['hyperlane']}`, LayerZero
-V2 `{observed['protocol_messages']['layerzero_v2']}`. Observed unique physical
-transactions: `{observed['physical_transactions']['cumulative_unique']}`.
+The accepted scale denominator contains 40,000 effects and 20,000 XIR
+transitions. The cumulative run-003 counters, which also include accepted smoke
+and rehearsal qualification phases, are effects
+`{observed['cumulative_effects']}`, XIR transitions
+`{observed['cumulative_xir_transitions']}`, Hyperlane messages
+`{observed['protocol_messages']['hyperlane']}`, and LayerZero V2 messages
+`{observed['protocol_messages']['layerzero_v2']}`. Reconciled workload
+transactions are `{reconciled_transactions}`; `{recovery_transactions}`
+additional recovery-only transactions make
+`{physical_transactions_with_recovery}` total evidenced physical transactions.
 The phase wall time was `{analysis['phase_wall_seconds']:.3f}` seconds and the
 logical-attempt throughput was
 `{analysis['throughput_logical_attempts_per_second']:.6f} attempts/s`.
@@ -175,6 +215,31 @@ Resource samples: `{analysis['resource_samples']}`; explicit sampling gaps:
 `{extrema['minimum_gpfs_free_bytes']}` bytes; minimum Docker filesystem free
 space: `{extrema['minimum_docker_free_bytes']}` bytes.
 
+Final validator state: `{validators.get('validator_count', 'not recorded')}`
+containers, all running `{validators.get('all_running', 'not recorded')}`, all
+healthy `{validators.get('all_healthy', 'not recorded')}`, cumulative Docker
+restart count `{validators.get('total_restart_count', 'not recorded')}`.
+The closeout inventory contains `{storage.get('total_files', 'not recorded')}`
+runtime files and `{storage.get('total_bytes', 'not recorded')}` bytes.
+Resource sampling ran from
+`{resources.get('first_observed_at', 'not recorded')}` to
+`{resources.get('last_observed_at', 'not recorded')}`; the median, P95, and
+maximum observed intervals were respectively
+`{resources.get('interval_seconds', {}).get('median', 'not recorded')}`,
+`{resources.get('interval_seconds', {}).get('p95', 'not recorded')}`, and
+`{resources.get('interval_seconds', {}).get('maximum', 'not recorded')}`
+seconds.
+
+Scale coordinator calldata covered
+`{coordinator_calldata.get('transactions', 'not recorded')}` transactions and
+`{coordinator_calldata.get('total_bytes', 'not recorded')}` bytes. LayerZero
+worker calldata induced by scale dispatches covered
+`{worker_calldata.get('transactions', 'not recorded')}` transactions and
+`{worker_calldata.get('total_bytes', 'not recorded')}` bytes. Official
+Hyperlane relayer process transactions remain proven by on-chain process
+lineage, but the pinned agent does not retain raw signed process transactions;
+therefore no aggregate Hyperlane process-calldata claim is made.
+
 Recorded submission recovery events: LayerZero raw rebroadcasts
 `{observed['retries']['layerzero_raw_rebroadcasts']}`, runner raw transaction
 replacements `{observed['retries']['runner_raw_replacements']}`, runner
@@ -183,6 +248,14 @@ and semantic attempt retries
 `{observed['retries']['semantic_retry_attempts']}`. Raw submission recovery
 and transient RPC retries retain the original attempt identity and retry
 lineage; they do not add a designated logical attempt.
+
+Natural interruption records: `{interruptions.get('event_count', 'not recorded')}`.
+All are classified as non-injected:
+`{interruptions.get('all_natural', 'not recorded')}`; the attempt denominator
+remained unchanged:
+`{interruptions.get('attempt_denominator_unchanged', 'not recorded')}`; and no
+replacement attempt was created:
+`{interruptions.get('no_replacement_attempts', 'not recorded')}`.
 
 ## Evidence and reproducibility
 
@@ -206,6 +279,14 @@ reconciliation and is rebuilt twice offline with equal semantic digests.
 - Protocol family, direction, and XIR presence are partly confounded by the
   four-route design. Route-level results are primary; pooled results are
   descriptive.
+- Validator and worker restarts, RPC interruptions, and nonce recovery pauses
+  occurred naturally during scale. They inflate wall-clock means and maxima;
+  the run is exact for functional accounting but is not an uninterrupted
+  performance measurement. Median and percentile values are reported without
+  removing affected attempts, and all recovery windows remain in the evidence.
 - Coordinator gas excludes protocol-agent gas; complete physical-transaction
   evidence and receipts are retained separately.
+- Run-001 is historical evidence and run-002 is rejected qualification
+  evidence. Neither contributes a row, timing value, effect, message, resource
+  sample, or denominator to accepted run-003 statistics.
 """

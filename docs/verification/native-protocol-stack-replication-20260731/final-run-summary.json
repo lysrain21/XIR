@@ -1,0 +1,828 @@
+{
+  "calldata": {
+    "coordinator": {
+      "expected_transactions": 120000,
+      "groups": {
+        "all": {
+          "maximum_bytes": 2340,
+          "mean_bytes": 998.6666666666666,
+          "median_bytes": 580.0,
+          "minimum_bytes": 164,
+          "p95_bytes": 2308.0,
+          "p99_bytes": 2340.0,
+          "total_bytes": 119840000,
+          "transactions": 120000
+        },
+        "route:HH": {
+          "maximum_bytes": 484,
+          "mean_bytes": 436.0,
+          "median_bytes": 436.0,
+          "minimum_bytes": 388,
+          "p95_bytes": 484.0,
+          "p99_bytes": 484.0,
+          "total_bytes": 4360000,
+          "transactions": 10000
+        },
+        "route:HL": {
+          "maximum_bytes": 2340,
+          "mean_bytes": 1088.8,
+          "median_bytes": 596.0,
+          "minimum_bytes": 164,
+          "p95_bytes": 2309.5999999998603,
+          "p99_bytes": 2340.0,
+          "total_bytes": 54440000,
+          "transactions": 50000
+        },
+        "route:LH": {
+          "maximum_bytes": 2340,
+          "mean_bytes": 1127.2,
+          "median_bytes": 596.0,
+          "minimum_bytes": 452,
+          "p95_bytes": 2309.5999999998603,
+          "p99_bytes": 2340.0,
+          "total_bytes": 56360000,
+          "transactions": 50000
+        },
+        "route:LL": {
+          "maximum_bytes": 516,
+          "mean_bytes": 468.0,
+          "median_bytes": 468.0,
+          "minimum_bytes": 420,
+          "p95_bytes": 516.0,
+          "p99_bytes": 516.0,
+          "total_bytes": 4680000,
+          "transactions": 10000
+        },
+        "route_stage:HH:source_dispatch": {
+          "maximum_bytes": 484,
+          "mean_bytes": 436.0,
+          "median_bytes": 436.0,
+          "minimum_bytes": 388,
+          "p95_bytes": 484.0,
+          "p99_bytes": 484.0,
+          "total_bytes": 4360000,
+          "transactions": 10000
+        },
+        "route_stage:HL:destination_deliver": {
+          "maximum_bytes": 2340,
+          "mean_bytes": 2292.0,
+          "median_bytes": 2292.0,
+          "minimum_bytes": 2244,
+          "p95_bytes": 2340.0,
+          "p99_bytes": 2340.0,
+          "total_bytes": 22920000,
+          "transactions": 10000
+        },
+        "route_stage:HL:first_protocol_dispatch": {
+          "maximum_bytes": 164,
+          "mean_bytes": 164.0,
+          "median_bytes": 164.0,
+          "minimum_bytes": 164,
+          "p95_bytes": 164.0,
+          "p99_bytes": 164.0,
+          "total_bytes": 1640000,
+          "transactions": 10000
+        },
+        "route_stage:HL:second_protocol_dispatch": {
+          "maximum_bytes": 580,
+          "mean_bytes": 580.0,
+          "median_bytes": 580.0,
+          "minimum_bytes": 580,
+          "p95_bytes": 580.0,
+          "p99_bytes": 580.0,
+          "total_bytes": 5800000,
+          "transactions": 10000
+        },
+        "route_stage:HL:xir_root_record": {
+          "maximum_bytes": 644,
+          "mean_bytes": 596.0,
+          "median_bytes": 596.0,
+          "minimum_bytes": 548,
+          "p95_bytes": 644.0,
+          "p99_bytes": 644.0,
+          "total_bytes": 5960000,
+          "transactions": 10000
+        },
+        "route_stage:HL:xir_transition": {
+          "maximum_bytes": 1860,
+          "mean_bytes": 1812.0,
+          "median_bytes": 1812.0,
+          "minimum_bytes": 1764,
+          "p95_bytes": 1860.0,
+          "p99_bytes": 1860.0,
+          "total_bytes": 18120000,
+          "transactions": 10000
+        },
+        "route_stage:LH:destination_deliver": {
+          "maximum_bytes": 2340,
+          "mean_bytes": 2292.0,
+          "median_bytes": 2292.0,
+          "minimum_bytes": 2244,
+          "p95_bytes": 2340.0,
+          "p99_bytes": 2340.0,
+          "total_bytes": 22920000,
+          "transactions": 10000
+        },
+        "route_stage:LH:first_protocol_dispatch": {
+          "maximum_bytes": 452,
+          "mean_bytes": 452.0,
+          "median_bytes": 452.0,
+          "minimum_bytes": 452,
+          "p95_bytes": 452.0,
+          "p99_bytes": 452.0,
+          "total_bytes": 4520000,
+          "transactions": 10000
+        },
+        "route_stage:LH:second_protocol_dispatch": {
+          "maximum_bytes": 484,
+          "mean_bytes": 484.0,
+          "median_bytes": 484.0,
+          "minimum_bytes": 484,
+          "p95_bytes": 484.0,
+          "p99_bytes": 484.0,
+          "total_bytes": 4840000,
+          "transactions": 10000
+        },
+        "route_stage:LH:xir_root_record": {
+          "maximum_bytes": 644,
+          "mean_bytes": 596.0,
+          "median_bytes": 596.0,
+          "minimum_bytes": 548,
+          "p95_bytes": 644.0,
+          "p99_bytes": 644.0,
+          "total_bytes": 5960000,
+          "transactions": 10000
+        },
+        "route_stage:LH:xir_transition": {
+          "maximum_bytes": 1860,
+          "mean_bytes": 1812.0,
+          "median_bytes": 1812.0,
+          "minimum_bytes": 1764,
+          "p95_bytes": 1860.0,
+          "p99_bytes": 1860.0,
+          "total_bytes": 18120000,
+          "transactions": 10000
+        },
+        "route_stage:LL:source_dispatch": {
+          "maximum_bytes": 516,
+          "mean_bytes": 468.0,
+          "median_bytes": 468.0,
+          "minimum_bytes": 420,
+          "p95_bytes": 516.0,
+          "p99_bytes": 516.0,
+          "total_bytes": 4680000,
+          "transactions": 10000
+        },
+        "stage:destination_deliver": {
+          "maximum_bytes": 2340,
+          "mean_bytes": 2292.0,
+          "median_bytes": 2292.0,
+          "minimum_bytes": 2244,
+          "p95_bytes": 2340.0,
+          "p99_bytes": 2340.0,
+          "total_bytes": 45840000,
+          "transactions": 20000
+        },
+        "stage:first_protocol_dispatch": {
+          "maximum_bytes": 452,
+          "mean_bytes": 308.0,
+          "median_bytes": 308.0,
+          "minimum_bytes": 164,
+          "p95_bytes": 452.0,
+          "p99_bytes": 452.0,
+          "total_bytes": 6160000,
+          "transactions": 20000
+        },
+        "stage:second_protocol_dispatch": {
+          "maximum_bytes": 580,
+          "mean_bytes": 532.0,
+          "median_bytes": 532.0,
+          "minimum_bytes": 484,
+          "p95_bytes": 580.0,
+          "p99_bytes": 580.0,
+          "total_bytes": 10640000,
+          "transactions": 20000
+        },
+        "stage:source_dispatch": {
+          "maximum_bytes": 516,
+          "mean_bytes": 452.0,
+          "median_bytes": 452.0,
+          "minimum_bytes": 388,
+          "p95_bytes": 516.0,
+          "p99_bytes": 516.0,
+          "total_bytes": 9040000,
+          "transactions": 20000
+        },
+        "stage:xir_root_record": {
+          "maximum_bytes": 644,
+          "mean_bytes": 596.0,
+          "median_bytes": 596.0,
+          "minimum_bytes": 548,
+          "p95_bytes": 644.0,
+          "p99_bytes": 644.0,
+          "total_bytes": 11920000,
+          "transactions": 20000
+        },
+        "stage:xir_transition": {
+          "maximum_bytes": 1860,
+          "mean_bytes": 1812.0,
+          "median_bytes": 1812.0,
+          "minimum_bytes": 1764,
+          "p95_bytes": 1860.0,
+          "p99_bytes": 1860.0,
+          "total_bytes": 36240000,
+          "transactions": 20000
+        }
+      },
+      "matched_transactions": 120000,
+      "scope": "scale current successful coordinator stages"
+    },
+    "hyperlane_process": {
+      "reason": "official Hyperlane relayer transactions are evidenced by on-chain process lineage but raw signed agent transactions are not retained by the pinned agent",
+      "scope": "not decoded into aggregate calldata metrics"
+    },
+    "layerzero_worker": {
+      "groups": {
+        "all": {
+          "maximum_bytes": 868,
+          "mean_bytes": 558.6666666666666,
+          "median_bytes": 676.0,
+          "minimum_bytes": 196,
+          "p95_bytes": 836.0,
+          "p99_bytes": 868.0,
+          "total_bytes": 67040000,
+          "transactions": 120000
+        },
+        "destination_chain:3133702": {
+          "maximum_bytes": 868,
+          "mean_bytes": 550.6666666666666,
+          "median_bytes": 676.0,
+          "minimum_bytes": 196,
+          "p95_bytes": 836.0,
+          "p99_bytes": 868.0,
+          "total_bytes": 33040000,
+          "transactions": 60000
+        },
+        "destination_chain:3133703": {
+          "maximum_bytes": 868,
+          "mean_bytes": 566.6666666666666,
+          "median_bytes": 676.0,
+          "minimum_bytes": 196,
+          "p95_bytes": 836.0,
+          "p99_bytes": 868.0,
+          "total_bytes": 34000000,
+          "transactions": 60000
+        },
+        "stage:commit_verification": {
+          "maximum_bytes": 196,
+          "mean_bytes": 196.0,
+          "median_bytes": 196.0,
+          "minimum_bytes": 196,
+          "p95_bytes": 196.0,
+          "p99_bytes": 196.0,
+          "total_bytes": 7840000,
+          "transactions": 40000
+        },
+        "stage:dvn_execute": {
+          "maximum_bytes": 676,
+          "mean_bytes": 676.0,
+          "median_bytes": 676.0,
+          "minimum_bytes": 676,
+          "p95_bytes": 676.0,
+          "p99_bytes": 676.0,
+          "total_bytes": 27040000,
+          "transactions": 40000
+        },
+        "stage:executor_execute": {
+          "maximum_bytes": 868,
+          "mean_bytes": 804.0,
+          "median_bytes": 820.0,
+          "minimum_bytes": 740,
+          "p95_bytes": 868.0,
+          "p99_bytes": 868.0,
+          "total_bytes": 32160000,
+          "transactions": 40000
+        }
+      },
+      "scale_interval": {
+        "finished_at": "2026-07-31T08:31:51.071949+00:00",
+        "started_at": "2026-07-31T01:30:32.553588+00:00"
+      },
+      "scale_packets": 40000,
+      "scope": "LayerZero worker actions observed within the scale wall interval"
+    }
+  },
+  "interruptions": {
+    "all_natural": true,
+    "attempt_denominator_unchanged": true,
+    "event_count": 11,
+    "events": [
+      {
+        "attempt_denominator_changed": false,
+        "classification": "destination_validator_container_restarts",
+        "event_id": "20260731T034948Z-destination-validator-restarts",
+        "intentional_fault_injection": false,
+        "recovery_only_transactions": 0,
+        "replacement_attempts_created": false,
+        "resolution": "Docker automatically restarted destination validators as memory pressure recurred; recovered peers restored chain progress without changing runner attempt identities."
+      },
+      {
+        "attempt_denominator_changed": false,
+        "classification": "intermediate_validator_container_restarts",
+        "event_id": "20260731T041313Z-intermediate-validator-restarts",
+        "intentional_fault_injection": false,
+        "recovery_only_transactions": 0,
+        "replacement_attempts_created": false,
+        "resolution": "Docker automatically restarted all four intermediate validators in a staggered sequence; recovered peers restored chain progress without changing runner attempt identities."
+      },
+      {
+        "attempt_denominator_changed": false,
+        "classification": "runner_transient_intermediate_rpc_internal_error",
+        "event_id": "20260731T051200Z-runner-transient-intermediate-rpc",
+        "intentional_fault_injection": false,
+        "recovery_only_transactions": 0,
+        "replacement_attempts_created": false,
+        "resolution": "Resume the unchanged durable runner against the same SQLite state, signed transaction evidence, deployment, concurrency, and batch parameters."
+      },
+      {
+        "attempt_denominator_changed": false,
+        "classification": "layerzero_worker_nonce_uniqueness_fail_closed",
+        "event_id": "20260731T054052Z-layerzero-worker-nonce-constraint",
+        "intentional_fault_injection": false,
+        "recovery_only_transactions": 0,
+        "replacement_attempts_created": false,
+        "resolution": "Restart the unchanged worker against the same worker.sqlite and raw signed transaction directory so persisted actions recover in place."
+      },
+      {
+        "attempt_denominator_changed": false,
+        "classification": "runner_layerzero_evidence_timeout_after_worker_outage",
+        "event_id": "20260731T055200Z-runner-layerzero-evidence-timeout",
+        "intentional_fault_injection": false,
+        "recovery_only_transactions": 0,
+        "replacement_attempts_created": false,
+        "resolution": "Resume the unchanged runner against the same SQLite state after the recovered worker delivered persisted packets; verify already-landed evidence without replacing attempts."
+      },
+      {
+        "attempt_denominator_changed": false,
+        "classification": "runner_transient_intermediate_rpc_internal_error",
+        "event_id": "20260731T061916Z-runner-transient-intermediate-rpc",
+        "intentional_fault_injection": false,
+        "recovery_only_transactions": 0,
+        "replacement_attempts_created": false,
+        "resolution": "Resume the unchanged durable runner against the same SQLite state, signed transaction evidence, deployment, concurrency, and batch parameters."
+      },
+      {
+        "attempt_denominator_changed": false,
+        "classification": "layerzero_worker_nonce_uniqueness_fail_closed",
+        "event_id": "20260731T073517Z-layerzero-worker-nonce-constraint",
+        "intentional_fault_injection": false,
+        "recovery_only_transactions": 0,
+        "replacement_attempts_created": false,
+        "resolution": "Restart the unchanged worker against the same worker.sqlite and raw signed transaction directory so persisted actions recover in place."
+      },
+      {
+        "attempt_denominator_changed": false,
+        "classification": "source_validator_container_restarts",
+        "event_id": "20260731T080007Z-source-validator-restarts",
+        "intentional_fault_injection": false,
+        "recovery_only_transactions": 0,
+        "replacement_attempts_created": false,
+        "resolution": "Docker automatically restarted three source validators. The first two restarts caused the source RPC and validator-count gaps that preceded the runner reserved-nonce leak; all peers recovered without changing attempt identities."
+      },
+      {
+        "attempt_denominator_changed": false,
+        "classification": "runner_reserved_nonce_gap_after_transient_rpc",
+        "event_id": "20260731T080012Z-runner-reserved-nonce-gap",
+        "intentional_fault_injection": false,
+        "recovery_only_transactions": 2,
+        "replacement_attempts_created": false,
+        "resolution": "A recovery-only createRecord consumed the source/root nonce leaked before durable stage intent. A higher-fee same-nonce cancellation superseded the prematurely signed designated transaction. The unchanged runner can now record its normal superseded lineage and rebuild the designated root stage without changing attempt identity."
+      },
+      {
+        "attempt_denominator_changed": false,
+        "classification": "runner_batched_reserved_nonce_alignment",
+        "event_id": "20260731T081320Z-runner-batched-nonce-alignment",
+        "intentional_fault_injection": false,
+        "recovery_only_transactions": 76,
+        "replacement_attempts_created": false,
+        "resolution": "Fifty-four recovery-only self-transfers filled source nonces that were reserved before durable stage intent. Twenty-two higher-fee same-nonce self-transfers cancelled out-of-order signed root transactions before execution. Ordinary signed dispatches were rebroadcast unchanged. The chain reached a contiguous source nonce without changing the gateway root nonce. A consistent SQLite backup was retained, superseded history was appended, and only current cancelled root-stage pointers were cleared so the unchanged runner can rebuild designated roots in order."
+      },
+      {
+        "attempt_denominator_changed": false,
+        "classification": "source_validator_v3_container_restart",
+        "event_id": "20260731T082007Z-source-validator-v3-restart",
+        "intentional_fault_injection": false,
+        "recovery_only_transactions": 0,
+        "replacement_attempts_created": false,
+        "resolution": "Docker automatically restarted the remaining source validator during the controlled nonce-alignment pause. The other three source validators retained quorum, no additional monitoring gap was recorded, and the validator returned healthy without changing any attempt identity."
+      }
+    ],
+    "no_replacement_attempts": true,
+    "recovery_only_transactions": 78
+  },
+  "resources": {
+    "declared_gap_records": 10,
+    "first_observed_at": "2026-07-31T01:30:31.858074+00:00",
+    "interval_seconds": {
+      "maximum": 333.1556360721588,
+      "median": 9.465768098831177,
+      "p95": 12.041474771499635
+    },
+    "last_observed_at": "2026-07-31T08:31:41.037467+00:00",
+    "nominal_interval_seconds": 5,
+    "process_generations": {
+      "layerzero-worker": [
+        {
+          "first_observed_at": "2026-07-31T01:30:31.858074+00:00",
+          "last_observed_at": "2026-07-31T05:40:45.782393+00:00",
+          "pid": 3635918,
+          "samples": 1722
+        },
+        {
+          "first_observed_at": "2026-07-31T05:52:09.850171+00:00",
+          "last_observed_at": "2026-07-31T07:35:00.003980+00:00",
+          "pid": 3939785,
+          "samples": 543
+        },
+        {
+          "first_observed_at": "2026-07-31T07:37:55.568287+00:00",
+          "last_observed_at": "2026-07-31T08:31:41.037467+00:00",
+          "pid": 4056806,
+          "samples": 236
+        }
+      ],
+      "native-monitor": [
+        {
+          "first_observed_at": "2026-07-31T01:30:31.858074+00:00",
+          "last_observed_at": "2026-07-31T05:12:24.425419+00:00",
+          "pid": 3652564,
+          "samples": 1560
+        },
+        {
+          "first_observed_at": "2026-07-31T05:13:18.401409+00:00",
+          "last_observed_at": "2026-07-31T05:53:22.566759+00:00",
+          "pid": 3897038,
+          "samples": 235
+        },
+        {
+          "first_observed_at": "2026-07-31T05:54:31.234454+00:00",
+          "last_observed_at": "2026-07-31T06:19:06.790460+00:00",
+          "pid": 3942345,
+          "samples": 141
+        },
+        {
+          "first_observed_at": "2026-07-31T06:21:14.453172+00:00",
+          "last_observed_at": "2026-07-31T08:10:24.541373+00:00",
+          "pid": 3972484,
+          "samples": 571
+        },
+        {
+          "first_observed_at": "2026-07-31T08:11:51.848381+00:00",
+          "last_observed_at": "2026-07-31T08:11:51.848381+00:00",
+          "pid": 4092818,
+          "samples": 1
+        },
+        {
+          "first_observed_at": "2026-07-31T08:17:25.004017+00:00",
+          "last_observed_at": "2026-07-31T08:31:41.037467+00:00",
+          "pid": 4100742,
+          "samples": 72
+        }
+      ],
+      "native-runner": [
+        {
+          "first_observed_at": "2026-07-31T01:30:31.858074+00:00",
+          "last_observed_at": "2026-07-31T05:12:24.425419+00:00",
+          "pid": 3652565,
+          "samples": 1560
+        },
+        {
+          "first_observed_at": "2026-07-31T05:13:18.401409+00:00",
+          "last_observed_at": "2026-07-31T05:53:12.167311+00:00",
+          "pid": 3897039,
+          "samples": 234
+        },
+        {
+          "first_observed_at": "2026-07-31T05:54:31.234454+00:00",
+          "last_observed_at": "2026-07-31T06:19:06.790460+00:00",
+          "pid": 3942346,
+          "samples": 141
+        },
+        {
+          "first_observed_at": "2026-07-31T06:21:14.453172+00:00",
+          "last_observed_at": "2026-07-31T08:10:12.548999+00:00",
+          "pid": 3972485,
+          "samples": 570
+        },
+        {
+          "first_observed_at": "2026-07-31T08:17:25.004017+00:00",
+          "last_observed_at": "2026-07-31T08:31:41.037467+00:00",
+          "pid": 4100743,
+          "samples": 72
+        }
+      ],
+      "relayer": [
+        {
+          "first_observed_at": "2026-07-31T01:30:31.858074+00:00",
+          "last_observed_at": "2026-07-31T08:31:41.037467+00:00",
+          "pid": 3635900,
+          "samples": 2580
+        }
+      ],
+      "validator-xirlocaldestination": [
+        {
+          "first_observed_at": "2026-07-31T01:30:31.858074+00:00",
+          "last_observed_at": "2026-07-31T08:31:41.037467+00:00",
+          "pid": 3635897,
+          "samples": 2580
+        }
+      ],
+      "validator-xirlocalintermediate": [
+        {
+          "first_observed_at": "2026-07-31T01:30:31.858074+00:00",
+          "last_observed_at": "2026-07-31T08:31:41.037467+00:00",
+          "pid": 3635896,
+          "samples": 2580
+        }
+      ],
+      "validator-xirlocalsource": [
+        {
+          "first_observed_at": "2026-07-31T01:30:31.858074+00:00",
+          "last_observed_at": "2026-07-31T08:31:41.037467+00:00",
+          "pid": 3635895,
+          "samples": 2580
+        }
+      ]
+    },
+    "samples": 2580
+  },
+  "run_id": "native-stack-run-003",
+  "schema_version": "xir-lab-native-closeout-summary-v1",
+  "storage": {
+    "runtime_root": "/vePFS-Mindverse/user/intern/lucian/xir/runtime/native-stack-run-003",
+    "top_level": {
+      "fresh-preflight.json": {
+        "bytes": 506,
+        "files": 1
+      },
+      "hyperlane": {
+        "bytes": 5787231408,
+        "files": 41135
+      },
+      "layerzero": {
+        "bytes": 823984958,
+        "files": 123136
+      },
+      "logs": {
+        "bytes": 40502,
+        "files": 6
+      },
+      "native-application": {
+        "bytes": 281982,
+        "files": 110
+      },
+      "pids": {
+        "bytes": 32,
+        "files": 4
+      },
+      "private": {
+        "bytes": 324,
+        "files": 5
+      },
+      "profile.json": {
+        "bytes": 2938,
+        "files": 1
+      },
+      "protocols": {
+        "bytes": 6285276427,
+        "files": 92554
+      },
+      "provenance": {
+        "bytes": 380866830,
+        "files": 140
+      },
+      "runs": {
+        "bytes": 1046816493,
+        "files": 246285
+      },
+      "tools": {
+        "bytes": 5062329,
+        "files": 731
+      }
+    },
+    "total_bytes": 14329564729,
+    "total_files": 504108
+  },
+  "validators": {
+    "all_healthy": true,
+    "all_running": true,
+    "total_restart_count": 24,
+    "validator_count": 12,
+    "validators": [
+      {
+        "health": "healthy",
+        "id": "32d7e30211e7e7f709bbc2d12cde72ebcfcf76fed2c9e0805ea91e2da6fe9e6f",
+        "memory_limit_bytes": 1073741824,
+        "mounts": [
+          {
+            "destination": "/data",
+            "name": "xir-local-scale-local-destination-v1-data",
+            "source": "/ebs/docker/165536.165536/volumes/xir-local-scale-local-destination-v1-data/_data"
+          }
+        ],
+        "name": "xir-local-scale-local-destination-v1-1",
+        "oom_killed": false,
+        "restart_count": 3,
+        "started_at": "2026-07-31T07:35:00.947411153Z",
+        "status": "running"
+      },
+      {
+        "health": "healthy",
+        "id": "cb6c696858a2295af9ebd160ceb41cedbda1a65e75c2ea443c5cf1b3aedfe996",
+        "memory_limit_bytes": 1073741824,
+        "mounts": [
+          {
+            "destination": "/data",
+            "name": "xir-local-scale-local-destination-v2-data",
+            "source": "/ebs/docker/165536.165536/volumes/xir-local-scale-local-destination-v2-data/_data"
+          }
+        ],
+        "name": "xir-local-scale-local-destination-v2-1",
+        "oom_killed": false,
+        "restart_count": 3,
+        "started_at": "2026-07-31T07:50:34.504483099Z",
+        "status": "running"
+      },
+      {
+        "health": "healthy",
+        "id": "7d6e67f33aa62622dfcef1f175cc66f67894cf5e3f9176e65e507584521b57cc",
+        "memory_limit_bytes": 1073741824,
+        "mounts": [
+          {
+            "destination": "/data",
+            "name": "xir-local-scale-local-destination-v3-data",
+            "source": "/ebs/docker/165536.165536/volumes/xir-local-scale-local-destination-v3-data/_data"
+          }
+        ],
+        "name": "xir-local-scale-local-destination-v3-1",
+        "oom_killed": false,
+        "restart_count": 3,
+        "started_at": "2026-07-31T07:52:21.58433652Z",
+        "status": "running"
+      },
+      {
+        "health": "healthy",
+        "id": "4bade64314bde2eefa091b9cde2a4f0e2d4b11c0554d4a63d5161078a26e1adf",
+        "memory_limit_bytes": 1073741824,
+        "mounts": [
+          {
+            "destination": "/data",
+            "name": "xir-local-scale-local-destination-v4-data",
+            "source": "/ebs/docker/165536.165536/volumes/xir-local-scale-local-destination-v4-data/_data"
+          }
+        ],
+        "name": "xir-local-scale-local-destination-v4-1",
+        "oom_killed": false,
+        "restart_count": 3,
+        "started_at": "2026-07-31T07:46:53.12137766Z",
+        "status": "running"
+      },
+      {
+        "health": "healthy",
+        "id": "de34626f2920dd72f74050f15b39d6512d790c58bad30e49804b25d07b2c70fa",
+        "memory_limit_bytes": 1073741824,
+        "mounts": [
+          {
+            "destination": "/data",
+            "name": "xir-local-scale-local-intermediate-v1-data",
+            "source": "/ebs/docker/165536.165536/volumes/xir-local-scale-local-intermediate-v1-data/_data"
+          }
+        ],
+        "name": "xir-local-scale-local-intermediate-v1-1",
+        "oom_killed": false,
+        "restart_count": 2,
+        "started_at": "2026-07-31T06:51:10.052305692Z",
+        "status": "running"
+      },
+      {
+        "health": "healthy",
+        "id": "cef2f255fba0af6d5e730ad04e67875ba4e979adf23cf4e3da8e96d5bbfce66e",
+        "memory_limit_bytes": 1073741824,
+        "mounts": [
+          {
+            "destination": "/data",
+            "name": "xir-local-scale-local-intermediate-v2-data",
+            "source": "/ebs/docker/165536.165536/volumes/xir-local-scale-local-intermediate-v2-data/_data"
+          }
+        ],
+        "name": "xir-local-scale-local-intermediate-v2-1",
+        "oom_killed": false,
+        "restart_count": 2,
+        "started_at": "2026-07-31T06:49:52.565399296Z",
+        "status": "running"
+      },
+      {
+        "health": "healthy",
+        "id": "fcf77d79a3e4cb4f50b89e79ba669feb612703c339e8e19f266228e02864ae63",
+        "memory_limit_bytes": 1073741824,
+        "mounts": [
+          {
+            "destination": "/data",
+            "name": "xir-local-scale-local-intermediate-v3-data",
+            "source": "/ebs/docker/165536.165536/volumes/xir-local-scale-local-intermediate-v3-data/_data"
+          }
+        ],
+        "name": "xir-local-scale-local-intermediate-v3-1",
+        "oom_killed": false,
+        "restart_count": 2,
+        "started_at": "2026-07-31T06:50:46.363242748Z",
+        "status": "running"
+      },
+      {
+        "health": "healthy",
+        "id": "289a837949d8a3da4c3c00ef3122308533f6346819727f341d389eab41b6578e",
+        "memory_limit_bytes": 1073741824,
+        "mounts": [
+          {
+            "destination": "/data",
+            "name": "xir-local-scale-local-intermediate-v4-data",
+            "source": "/ebs/docker/165536.165536/volumes/xir-local-scale-local-intermediate-v4-data/_data"
+          }
+        ],
+        "name": "xir-local-scale-local-intermediate-v4-1",
+        "oom_killed": false,
+        "restart_count": 2,
+        "started_at": "2026-07-31T06:49:53.550437236Z",
+        "status": "running"
+      },
+      {
+        "health": "healthy",
+        "id": "212a4c6ba2d1060a0d8e8ac2744b25aa582d2a90bd27bbabf17bbc5a82ef29af",
+        "memory_limit_bytes": 1073741824,
+        "mounts": [
+          {
+            "destination": "/data",
+            "name": "xir-local-scale-local-source-v1-data",
+            "source": "/ebs/docker/165536.165536/volumes/xir-local-scale-local-source-v1-data/_data"
+          }
+        ],
+        "name": "xir-local-scale-local-source-v1-1",
+        "oom_killed": false,
+        "restart_count": 1,
+        "started_at": "2026-07-31T08:00:11.424139507Z",
+        "status": "running"
+      },
+      {
+        "health": "healthy",
+        "id": "e23a672921dde75580046c6de242bdc59d9003aebdfd1c028a931ce39822458c",
+        "memory_limit_bytes": 1073741824,
+        "mounts": [
+          {
+            "destination": "/data",
+            "name": "xir-local-scale-local-source-v2-data",
+            "source": "/ebs/docker/165536.165536/volumes/xir-local-scale-local-source-v2-data/_data"
+          }
+        ],
+        "name": "xir-local-scale-local-source-v2-1",
+        "oom_killed": false,
+        "restart_count": 1,
+        "started_at": "2026-07-31T08:01:04.604992642Z",
+        "status": "running"
+      },
+      {
+        "health": "healthy",
+        "id": "83f3098dba374e98ebd519db2f646886aac86bd347be64a9d1c274b357e2dadd",
+        "memory_limit_bytes": 1073741824,
+        "mounts": [
+          {
+            "destination": "/data",
+            "name": "xir-local-scale-local-source-v3-data",
+            "source": "/ebs/docker/165536.165536/volumes/xir-local-scale-local-source-v3-data/_data"
+          }
+        ],
+        "name": "xir-local-scale-local-source-v3-1",
+        "oom_killed": false,
+        "restart_count": 1,
+        "started_at": "2026-07-31T08:20:07.361076258Z",
+        "status": "running"
+      },
+      {
+        "health": "healthy",
+        "id": "1ac75411e67f8c39a6ef02a2df5f839460caf1bf8a1ba771391b6e2049cabfe0",
+        "memory_limit_bytes": 1073741824,
+        "mounts": [
+          {
+            "destination": "/data",
+            "name": "xir-local-scale-local-source-v4-data",
+            "source": "/ebs/docker/165536.165536/volumes/xir-local-scale-local-source-v4-data/_data"
+          }
+        ],
+        "name": "xir-local-scale-local-source-v4-1",
+        "oom_killed": false,
+        "restart_count": 1,
+        "started_at": "2026-07-31T08:11:28.221777689Z",
+        "status": "running"
+      }
+    ]
+  }
+}

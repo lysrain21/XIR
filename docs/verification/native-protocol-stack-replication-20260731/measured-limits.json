@@ -1,0 +1,18 @@
+{
+  "batch_attempts": 256,
+  "concurrency": 16,
+  "confirmation_depth": 1,
+  "eligible": true,
+  "layerzero_batch_packets": 100,
+  "maximum_observed_layerzero_pending_packets": 7,
+  "monitor_interval_seconds": 5,
+  "rehearsal_throughput_logical_attempts_per_second": 1.722475575675476,
+  "rehearsal_wall_seconds": 580.5597560405731,
+  "resource_extrema": {
+    "minimum_docker_free_bytes": 30431952896,
+    "minimum_gpfs_free_bytes": 61464702353408,
+    "minimum_memory_available_bytes": 97034276864
+  },
+  "schema_version": "xir-lab-native-measured-limits-v1",
+  "semantic_sha256": "6b981bd99e335d41818285195d6665c6a905921ad889186a660837d7654f493c"
+}

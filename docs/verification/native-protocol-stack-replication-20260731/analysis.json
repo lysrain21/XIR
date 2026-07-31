@@ -1,0 +1,134 @@
+{
+  "application_effects": 41040,
+  "claim_exclusions": [
+    "No claim about LayerZero Labs managed DVN or Executor service performance.",
+    "No claim that adapter-only earlier experiments are native protocol-stack comparisons.",
+    "No causal claim beyond the matched local deployment and pinned component versions."
+  ],
+  "confounds": [
+    "Hyperlane uses official validator/relayer agents; LayerZero private-chain off-chain roles use the self-hosted research worker.",
+    "Coordinator gas excludes protocol-agent transaction gas; complete physical transaction evidence remains in raw receipts and protocol databases.",
+    "Results characterize this controlled three-chain four-validator-per-chain host, not public-network performance."
+  ],
+  "denominator": {
+    "cumulative_per_route": 10260,
+    "logical_attempts": 40000,
+    "per_route": 10000
+  },
+  "observed_process_restarts": 2,
+  "per_route": [
+    {
+      "coordinator_gas_mean": 94199.9905,
+      "coordinator_gas_used": 941999905,
+      "coordinator_transactions": 10000,
+      "latency_seconds_max": 1036.216700553894,
+      "latency_seconds_mean": 8.587068600058556,
+      "latency_seconds_median": 7.102612376213074,
+      "latency_seconds_min": 2.6986148357391357,
+      "latency_seconds_p95": 12.156986236572266,
+      "latency_seconds_p99": 17.240415334701538,
+      "logical_attempts": 10000,
+      "route": "HH",
+      "success_rate": 1.0,
+      "xir": false
+    },
+    {
+      "coordinator_gas_mean": 191991.6016,
+      "coordinator_gas_used": 1919916016,
+      "coordinator_transactions": 10000,
+      "latency_seconds_max": 1037.0695791244507,
+      "latency_seconds_mean": 7.15374163467884,
+      "latency_seconds_median": 5.158843994140625,
+      "latency_seconds_min": 4.531814813613892,
+      "latency_seconds_p95": 6.154237270355225,
+      "latency_seconds_p99": 7.179885625839233,
+      "logical_attempts": 10000,
+      "route": "LL",
+      "success_rate": 1.0,
+      "xir": false
+    },
+    {
+      "coordinator_gas_mean": 144395.4239,
+      "coordinator_gas_used": 7219771195,
+      "coordinator_transactions": 50000,
+      "latency_seconds_max": 1048.980388879776,
+      "latency_seconds_mean": 13.232114474725723,
+      "latency_seconds_median": 10.954938292503357,
+      "latency_seconds_min": 7.567634344100952,
+      "latency_seconds_p95": 14.892918348312378,
+      "latency_seconds_p99": 19.98544478416443,
+      "logical_attempts": 10000,
+      "route": "HL",
+      "success_rate": 1.0,
+      "xir": true
+    },
+    {
+      "coordinator_gas_mean": 145753.13168,
+      "coordinator_gas_used": 7287656584,
+      "coordinator_transactions": 50000,
+      "latency_seconds_max": 1047.960063457489,
+      "latency_seconds_mean": 12.8455826171875,
+      "latency_seconds_median": 10.918485760688782,
+      "latency_seconds_min": 7.244535684585571,
+      "latency_seconds_p95": 14.010846138000488,
+      "latency_seconds_p99": 19.079354524612427,
+      "logical_attempts": 10000,
+      "route": "LH",
+      "success_rate": 1.0,
+      "xir": true
+    }
+  ],
+  "phase": "scale",
+  "phase_wall_seconds": 25278.518360853195,
+  "physical_transactions": {
+    "coordinator": 123120,
+    "cumulative_unique": 287280,
+    "hyperlane_process": 41040,
+    "layerzero_worker": 123120
+  },
+  "pools": [
+    {
+      "coordinator_gas_used": 2861915921,
+      "coordinator_transactions": 20000,
+      "logical_attempts": 20000,
+      "pool": "homogeneous",
+      "routes": [
+        "HH",
+        "LL"
+      ],
+      "weighted_latency_seconds_mean": 7.870405117368698
+    },
+    {
+      "coordinator_gas_used": 14507427779,
+      "coordinator_transactions": 100000,
+      "logical_attempts": 20000,
+      "pool": "heterogeneous_xir",
+      "routes": [
+        "HL",
+        "LH"
+      ],
+      "weighted_latency_seconds_mean": 13.038848545956611
+    }
+  ],
+  "protocol_messages": {
+    "hyperlane": 41040,
+    "layerzero_v2": 41040
+  },
+  "reconciled": true,
+  "resource_extrema": {
+    "minimum_docker_free_bytes": 23524364288,
+    "minimum_gpfs_free_bytes": 61227107614720,
+    "minimum_memory_available_bytes": 96824201216
+  },
+  "resource_samples": 2580,
+  "resource_sampling_gaps": 10,
+  "schema_version": "xir-lab-native-analysis-v1",
+  "semantic_sha256": "dddfd174f8f6fbc608282d2a366d129abb28e72b7c917ec0cbe50081f2fe3ce7",
+  "throughput_logical_attempts_per_second": 1.5823712224346493,
+  "units": {
+    "gas": "gas used by coordinator-controlled transactions",
+    "latency": "seconds per logical two-hop attempt",
+    "success_rate": "successful logical attempts / designated attempts"
+  },
+  "xir_transitions": 20520
+}
