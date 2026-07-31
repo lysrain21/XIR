@@ -58,7 +58,7 @@
       "minimum_memory_bytes": 17179869184,
       "minimum_disk_available_bytes": 6442450944
     },
-    "validator_memory_bytes": 536870912,
+    "validator_memory_bytes": 1073741824,
     "validator_cpu_limit": 0.75
   }
 }

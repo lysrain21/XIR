@@ -145,6 +145,7 @@ def test_remote_topology_renders_twelve_isolated_named_volumes(
     tmp_path: Path,
 ) -> None:
     topology = load_topology(REMOTE_TOPOLOGY)
+    assert topology.resource_policy.validator_memory_bytes == 1024**3
     runtime = tmp_path / "remote-runtime"
     manifest_path = initialize_local_identities(
         topology,
