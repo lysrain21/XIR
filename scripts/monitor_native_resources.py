@@ -14,7 +14,11 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from xir_lab.native.monitor import sqlite_counts
+from xir_lab.native.monitor import (
+    capacity_stop_reason,
+    sqlite_counts,
+    write_stop_request,
+)
 
 
 def rpc(url: str, method: str) -> Any:
@@ -103,6 +107,9 @@ def main() -> None:
     parser.add_argument("--phase", choices=("smoke", "rehearsal", "scale", "recovery"), required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--stop-file", type=Path, required=True)
+    parser.add_argument("--submission-stop-file", type=Path, required=True)
+    parser.add_argument("--minimum-docker-free-bytes", type=int, required=True)
+    parser.add_argument("--minimum-gpfs-free-bytes", type=int, required=True)
     parser.add_argument("--interval", type=float, default=5.0)
     args = parser.parse_args()
     args.output.parent.mkdir(parents=True, exist_ok=True)
@@ -145,6 +152,22 @@ def main() -> None:
                     if path.exists()
                 ),
             }
+            stop_reason = capacity_stop_reason(
+                docker_free_bytes=docker.free,
+                gpfs_free_bytes=gpfs.free,
+                minimum_docker_free_bytes=args.minimum_docker_free_bytes,
+                minimum_gpfs_free_bytes=args.minimum_gpfs_free_bytes,
+            )
+            if stop_reason is not None:
+                write_stop_request(
+                    args.submission_stop_file,
+                    {
+                        "schema_version": "xir-lab-submission-stop-v1",
+                        "reason": "filesystem_reserve_breached",
+                        "observed_at": observed,
+                        **stop_reason,
+                    },
+                )
         except (OSError, KeyError) as exc:
             sample["gaps"].append({"scope": "host", "error": type(exc).__name__})
         try:

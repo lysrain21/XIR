@@ -253,6 +253,7 @@ class NativeExperimentRunner:
         timeout_seconds: int = 300,
         concurrency: int = 16,
         batch_attempts: int = 256,
+        submission_stop_file: Path | None = None,
     ) -> None:
         self.repository_root = repository_root
         self.runtime_root = runtime_root
@@ -273,6 +274,7 @@ class NativeExperimentRunner:
             raise LocalTopologyError("native runner concurrency/batch limits are invalid")
         self.concurrency = concurrency
         self.batch_attempts = batch_attempts
+        self.submission_stop_file = submission_stop_file
         self.chain_by_role = {
             str(chain["route_role"]): chain for chain in self.profile["chains"]
         }
@@ -590,6 +592,14 @@ class NativeExperimentRunner:
             profile_path=self.profile_path, phase=cast(Any, phase)
         )
         for offset in range(0, len(attempts), self.batch_attempts):
+            if (
+                self.submission_stop_file is not None
+                and self.submission_stop_file.exists()
+            ):
+                raise LocalTopologyError(
+                    "native submissions stopped by the resource monitor: "
+                    f"{self.submission_stop_file}"
+                )
             batch = attempts[offset : offset + self.batch_attempts]
             with ThreadPoolExecutor(max_workers=self.concurrency) as pool:
                 futures = [

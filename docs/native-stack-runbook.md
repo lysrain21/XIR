@@ -105,3 +105,38 @@ Each phase must reconcile:
 After scale, stop dedicated processes, retain validators and all state, freeze
 the evidence manifest, secret-scan the publication set, rebuild analysis twice,
 validate the report, and record all exclusions and confounds.
+
+## Clean replication (`native-stack-run-002`)
+
+The second formal run is independent. Preserve `native-stack-run-001` and its
+closeout digests unchanged. Before creating run 002, capture the complete
+Docker inventory and require the cleanup target to equal exactly the twelve
+validator containers and twelve volumes with Compose project label
+`xir-local-scale`. Stop and remove those explicit objects, capture the after
+inventory and reclaimed bytes, and do not run a global prune or remove any
+anonymous/unrelated volume.
+
+Create `runtime/native-stack-run-002` only after the scoped cleanup. Run
+`scripts/preflight_native_replication.py fresh` while the directory is empty.
+Render new validator volumes and create new random protocol-role accounts,
+protocol deployments, application deployment receipts, worker databases,
+runner databases, and attempt namespaces. Deterministic contract deployment
+addresses can repeat on a fresh chain; isolation is established by fresh
+labelled volumes, role identities, databases, receipt paths, and block
+evidence. Before smoke, run the `qualified` preflight and retain its JSON
+output.
+
+Scale admission requires at least 28 GiB free on the Docker filesystem and
+40 GiB free on GPFS. The phase monitor writes `submissions.stop` atomically if
+Docker space falls below 8 GiB or GPFS falls below 40 GiB. The runner checks
+that marker before every new batch; in-flight work is reconciled and the cause
+must be resolved before resumption. The monitor, agents, worker, and runner
+must remain stable through a multi-sample soak before scale.
+
+Do not inject a recovery event during the measured replication. If a natural
+interruption occurs, retain its append-only lineage and original attempt
+identity, then classify its timing impact in the report. All phase commands,
+analysis, manifests, and report generation must receive only the run-002
+runtime. The publication directory must be run-specific and contain only
+secret-free aggregates, validation records, digests, and the remote evidence
+pointer.

@@ -66,6 +66,9 @@ case "$action" in
       --phase "$phase" \
       --output "$runtime_root/runs/$phase/resources.ndjson" \
       --stop-file "$stop_file" \
+      --submission-stop-file "$runtime_root/runs/$phase/submissions.stop" \
+      --minimum-docker-free-bytes $((8 * 1024 * 1024 * 1024)) \
+      --minimum-gpfs-free-bytes $((40 * 1024 * 1024 * 1024)) \
       --interval 5
     ;;
   status)

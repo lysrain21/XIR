@@ -3,10 +3,12 @@ import sqlite3
 from pathlib import Path
 from unittest.mock import MagicMock
 
+import pytest
 from hexbytes import HexBytes
 from requests import ConnectionError
 
 from xir_lab.localnet.native_profile import NativeAttempt
+from xir_lab.localnet.topology import LocalTopologyError
 from xir_lab.native.runner import NativeExperimentRunner, RunnerState
 
 
@@ -211,3 +213,20 @@ def test_runner_recovers_receipt_for_legacy_succeeded_stage(
         result,
         transaction_hash,
     )
+
+
+def test_runner_refuses_a_new_batch_after_monitor_stop(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    runner = object.__new__(NativeExperimentRunner)
+    runner.profile_path = tmp_path / "profile.json"
+    runner.batch_attempts = 1
+    runner.submission_stop_file = tmp_path / "submissions.stop"
+    runner.submission_stop_file.write_text("{}\n", encoding="utf-8")
+    monkeypatch.setattr(
+        "xir_lab.native.runner.build_native_attempts",
+        lambda **_: (MagicMock(),),
+    )
+
+    with pytest.raises(LocalTopologyError, match="resource monitor"):
+        runner.run_phase("scale")

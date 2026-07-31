@@ -20,6 +20,8 @@ deployment="$runtime_root/native-application/deployment.json"
 key_file="$runtime_root/private/accounts/runner.key"
 phase_root="$runtime_root/runs/$phase"
 mkdir -p "$phase_root/raw-receipts" "$runtime_root/pids"
+submission_stop_file="$phase_root/submissions.stop"
+rm -f "$submission_stop_file"
 
 if [[ "$phase" = rehearsal ]]; then
   jq -e '.valid == true' "$runtime_root/runs/smoke/reconciliation.json" >/dev/null
@@ -41,6 +43,7 @@ set +e
   --raw-root "$phase_root/raw-receipts" \
   --concurrency "$concurrency" \
   --batch-attempts "$batch_attempts" \
+  --submission-stop-file "$submission_stop_file" \
   >"$phase_root/runner.log" 2>&1 &
 runner_pid=$!
 echo "$runner_pid" >"$runtime_root/pids/native-runner.pid"

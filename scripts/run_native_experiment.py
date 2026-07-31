@@ -18,6 +18,7 @@ def main() -> None:
     parser.add_argument("--raw-root", type=Path, required=True)
     parser.add_argument("--concurrency", type=int, default=16)
     parser.add_argument("--batch-attempts", type=int, default=256)
+    parser.add_argument("--submission-stop-file", type=Path)
     args = parser.parse_args()
     runner = NativeExperimentRunner(
         repository_root=Path(__file__).resolve().parents[1],
@@ -29,6 +30,7 @@ def main() -> None:
         raw_root=args.raw_root,
         concurrency=args.concurrency,
         batch_attempts=args.batch_attempts,
+        submission_stop_file=args.submission_stop_file,
     )
     runner.run_phase(args.phase)
 
