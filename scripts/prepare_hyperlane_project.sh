@@ -45,7 +45,9 @@ ln -sfn "$dependency_root/node_modules/@openzeppelin" \
 }
 mkdir -p "$project_root/lib"
 ln -sfn "$official_root" "$project_root/lib/hyperlane"
-forge build --root "$project_root"
+forge build --root "$project_root" \
+  "$project_root/script/DeployHyperlaneNative.s.sol" \
+  "$project_root/src/ProjectMarker.sol"
 git -C "$official_root" status --porcelain --untracked-files=all \
   >"$runtime_root/provenance/hyperlane-post-dependency-status.txt"
 [[ ! -s "$runtime_root/provenance/hyperlane-post-dependency-status.txt" ]] || {

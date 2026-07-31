@@ -38,7 +38,10 @@ roles. It is not a LayerZero Labs managed DVN or Executor.
    SHA-256 provenance.
 4. Render and deploy Hyperlane core contracts; capture the official CLI logs,
    registry addresses, deployment blocks, transactions, receipts, runtime
-   bytecode, and Mailbox domains.
+   bytecode, and Mailbox domains. The deployment project compiles only its
+   explicit London-compatible deployment script and marker dependency graph;
+   unrelated upstream Cancun-only token/IGP helpers are outside this
+   experiment's admitted contract set.
 5. Prepare and deploy the import-only LayerZero project. Capture every Forge
    transaction and receipt and run the effective configuration verifier.
 6. The formal gate fails if any forbidden test/mock component is present.
