@@ -12,7 +12,7 @@ from xir_lab.native.replication import (
 )
 
 
-def test_clean_replication_paths_require_empty_run_002(tmp_path: Path) -> None:
+def test_clean_replication_paths_require_empty_successor_run(tmp_path: Path) -> None:
     prior = tmp_path / "native-stack-run-001"
     prior.mkdir()
     current = tmp_path / "native-stack-run-002"
@@ -21,6 +21,10 @@ def test_clean_replication_paths_require_empty_run_002(tmp_path: Path) -> None:
     (current / "stale").write_text("x", encoding="utf-8")
     with pytest.raises(LocalTopologyError, match="not empty"):
         validate_replication_paths(current, prior)
+    next_run = tmp_path / "native-stack-run-003"
+    validate_replication_paths(next_run, current)
+    with pytest.raises(LocalTopologyError, match="must follow"):
+        validate_replication_paths(prior, current)
 
 
 def test_validator_inventory_is_exact_and_healthy() -> None:

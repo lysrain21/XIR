@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 from xir_lab.localnet.topology import LocalTopologyError
@@ -25,8 +26,14 @@ def validate_replication_paths(
     prior = prior_runtime_root.resolve()
     if runtime == prior or runtime in prior.parents or prior in runtime.parents:
         raise LocalTopologyError("replication and prior runtime paths overlap")
-    if runtime.name != "native-stack-run-002":
-        raise LocalTopologyError("replication runtime must be native-stack-run-002")
+    runtime_match = re.fullmatch(r"native-stack-run-(\d{3})", runtime.name)
+    prior_match = re.fullmatch(r"native-stack-run-(\d{3})", prior.name)
+    if runtime_match is None or prior_match is None:
+        raise LocalTopologyError(
+            "replication runtimes must use numbered native-stack-run paths"
+        )
+    if int(runtime_match.group(1)) <= int(prior_match.group(1)):
+        raise LocalTopologyError("replication run number must follow the prior run")
     if not prior.is_dir():
         raise LocalTopologyError("prior runtime is unavailable")
     if require_empty and runtime.exists() and any(runtime.iterdir()):

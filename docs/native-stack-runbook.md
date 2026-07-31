@@ -109,7 +109,7 @@ After scale, stop dedicated processes, retain validators and all state, freeze
 the evidence manifest, secret-scan the publication set, rebuild analysis twice,
 validate the report, and record all exclusions and confounds.
 
-## Clean replication (`native-stack-run-002`)
+## Clean replication (`native-stack-run-NNN`)
 
 The second formal run is independent. Preserve `native-stack-run-001` and its
 closeout digests unchanged. Before creating run 002, capture the complete
@@ -119,7 +119,7 @@ validator containers and twelve volumes with Compose project label
 inventory and reclaimed bytes, and do not run a global prune or remove any
 anonymous/unrelated volume.
 
-Create `runtime/native-stack-run-002` only after the scoped cleanup. Run
+Create the next numbered `runtime/native-stack-run-NNN` only after cleanup. Run
 `scripts/preflight_native_replication.py fresh` while the directory is empty.
 Render new validator volumes and create new random protocol-role accounts,
 protocol deployments, application deployment receipts, worker databases,
@@ -142,7 +142,7 @@ must remain stable through a multi-sample soak before scale.
 Do not inject a recovery event during the measured replication. If a natural
 interruption occurs, retain its append-only lineage and original attempt
 identity, then classify its timing impact in the report. All phase commands,
-analysis, manifests, and report generation must receive only the run-002
-runtime. The publication directory must be run-specific and contain only
+analysis, manifests, and report generation must receive only the accepted
+final runtime. The publication directory must be run-specific and contain only
 secret-free aggregates, validation records, digests, and the remote evidence
 pointer.
