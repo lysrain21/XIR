@@ -104,6 +104,17 @@ uses_docker_volume_engine() {
   docker_compose config --volumes | grep -Fxq "local-source-v1-data"
 }
 
+stage_bind_directory_permissions() {
+  chmod 755 "${runtime_root}" "${runtime_root}/data"
+  local network validator
+  for network in local-source local-intermediate local-destination; do
+    chmod 755 "${runtime_root}/data/${network}"
+    for validator in v1 v2 v3 v4; do
+      chmod 777 "${runtime_root}/data/${network}/${validator}"
+    done
+  done
+}
+
 host_gate() {
   local output
   set +e
@@ -159,6 +170,7 @@ case "${command}" in
         "${repository_root}/scripts/docker_volume_engine.py" \
         up "${compose_path}"
     else
+      stage_bind_directory_permissions
       docker_compose up --detach
     fi
     ;;

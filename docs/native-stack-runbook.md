@@ -124,7 +124,10 @@ runner databases, and attempt namespaces. Deterministic contract deployment
 addresses can repeat on a fresh chain; isolation is established by fresh
 labelled volumes, role identities, databases, receipt paths, and block
 evidence. Before smoke, run the `qualified` preflight and retain its JSON
-output.
+output. When the remote Compose engine renders GPFS bind-backed validator data,
+`local_scale.sh up` grants write access only to the twelve dedicated data
+leaves while keeping validator keys and the rest of the private runtime
+restricted.
 
 Scale admission requires at least 28 GiB free on the Docker filesystem and
 40 GiB free on GPFS. The phase monitor writes `submissions.stop` atomically if
