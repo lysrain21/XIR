@@ -17,9 +17,21 @@ validator=$(cast wallet address --private-key \
   "$(tr -d '\r\n' <"$validator_key_file")")
 mkdir -p "$runtime_root/hyperlane/native-deployments" \
   "$runtime_root/hyperlane/deployment-logs" "$project_root/deployments"
-jq -n '{}' >"$runtime_root/hyperlane/start-blocks.json"
-jq -n '{}' >"$runtime_root/hyperlane/end-blocks.json"
+[[ -f "$runtime_root/hyperlane/start-blocks.json" ]] ||
+  jq -n '{}' >"$runtime_root/hyperlane/start-blocks.json"
+[[ -f "$runtime_root/hyperlane/end-blocks.json" ]] ||
+  jq -n '{}' >"$runtime_root/hyperlane/end-blocks.json"
 while IFS=$'\t' read -r chain_id domain rpc_url chain_name; do
+  deployment_output="$runtime_root/hyperlane/native-deployments/$chain_id.json"
+  if [[ -s "$deployment_output" ]]; then
+    last_block=$(cast block-number --rpc-url "$rpc_url")
+    jq --arg chain "$chain_name" --argjson last "$last_block" \
+      '.[$chain] = $last' "$runtime_root/hyperlane/end-blocks.json" \
+      >"$runtime_root/hyperlane/end-blocks.json.tmp"
+    mv "$runtime_root/hyperlane/end-blocks.json.tmp" \
+      "$runtime_root/hyperlane/end-blocks.json"
+    continue
+  fi
   start=$(cast block-number --rpc-url "$rpc_url")
   project_output="$project_root/deployments/$chain_id.json"
   printf '{}\n' >"$project_output"
@@ -40,9 +52,9 @@ while IFS=$'\t' read -r chain_id domain rpc_url chain_name; do
   ) >"$runtime_root/hyperlane/deployment-logs/$chain_name.log" 2>&1
   cp -p "$project_output" \
     "$runtime_root/hyperlane/native-deployments/$chain_id.json"
-  end=$(cast block-number --rpc-url "$rpc_url")
-  jq --arg chain "$chain_name" --argjson end "$end" \
-    '.[$chain] = $end' "$runtime_root/hyperlane/end-blocks.json" \
+  last_block=$(cast block-number --rpc-url "$rpc_url")
+  jq --arg chain "$chain_name" --argjson last "$last_block" \
+    '.[$chain] = $last' "$runtime_root/hyperlane/end-blocks.json" \
     >"$runtime_root/hyperlane/end-blocks.json.tmp"
   mv "$runtime_root/hyperlane/end-blocks.json.tmp" \
     "$runtime_root/hyperlane/end-blocks.json"
