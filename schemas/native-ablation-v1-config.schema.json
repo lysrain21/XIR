@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xir.local/schemas/native-ablation-v1-config.schema.json",
+  "title": "XIR native B0-B3 ablation configuration",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "namespace",
+    "fixed_seed",
+    "profile",
+    "routes",
+    "layers",
+    "smoke_attempts_per_cell",
+    "scale_attempts_per_cell",
+    "interleave_block_sequences",
+    "concurrency",
+    "prepublication_exclusions",
+    "bootstrap"
+  ],
+  "properties": {
+    "schema_version": {"const": "xir-lab-native-ablation-v1-config"},
+    "namespace": {"const": "native-ablation-v1"},
+    "fixed_seed": {"type": "string", "minLength": 16},
+    "profile": {"type": "string", "minLength": 1},
+    "routes": {
+      "const": ["HL", "LH"]
+    },
+    "layers": {
+      "const": ["B0", "B1", "B2", "B3"]
+    },
+    "smoke_attempts_per_cell": {"type": "integer", "minimum": 1},
+    "scale_attempts_per_cell": {"type": "integer", "minimum": 1000},
+    "interleave_block_sequences": {"type": "integer", "minimum": 1},
+    "concurrency": {"type": "integer", "minimum": 1, "maximum": 64},
+    "prepublication_exclusions": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "reason", "included_in_published_denominator"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "reason": {"type": "string", "minLength": 20},
+          "included_in_published_denominator": {"const": false}
+        }
+      }
+    },
+    "bootstrap": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repetitions", "block_length", "confidence", "seed"],
+      "properties": {
+        "repetitions": {"type": "integer", "minimum": 1000},
+        "block_length": {"type": "integer", "minimum": 2},
+        "confidence": {"type": "number", "exclusiveMinimum": 0.5, "exclusiveMaximum": 1},
+        "seed": {"type": "integer", "minimum": 0}
+      }
+    }
+  }
+}

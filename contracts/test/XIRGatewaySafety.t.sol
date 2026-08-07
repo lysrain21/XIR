@@ -10,30 +10,28 @@ import {XIRTypes} from "../src/XIRTypes.sol";
 
 interface TestVm {
     function addr(uint256 privateKey) external returns (address);
-    function sign(uint256 privateKey, bytes32 digest)
-        external
-        returns (uint8 v, bytes32 r, bytes32 s);
+    function sign(uint256 privateKey, bytes32 digest) external returns (uint8 v, bytes32 r, bytes32 s);
     function warp(uint256 timestamp) external;
 }
 
 contract SafetyEvidence is IXIRCarrierAdapter {
     mapping(bytes32 => bool) public accepted;
+    mapping(bytes32 => bool) public acceptedBundles;
 
-    function set(
-        bytes32 profileHash,
-        bytes32 evidenceHash,
-        bytes32 transitionHash,
-        bool value
-    ) external {
+    function set(bytes32 profileHash, bytes32 evidenceHash, bytes32 transitionHash, bool value) external {
         accepted[keccak256(abi.encode(profileHash, evidenceHash, transitionHash))] = value;
     }
 
-    function verify(bytes32 profileHash, bytes32 evidenceHash, bytes32 transitionHash)
-        external
-        view
-        returns (bool)
-    {
+    function verify(bytes32 profileHash, bytes32 evidenceHash, bytes32 transitionHash) external view returns (bool) {
         return accepted[keccak256(abi.encode(profileHash, evidenceHash, transitionHash))];
+    }
+
+    function setBundle(bytes32 bundleCommitment, bool value) external {
+        acceptedBundles[bundleCommitment] = value;
+    }
+
+    function verifyBundle(bytes32 bundleCommitment) external view returns (bool) {
+        return acceptedBundles[bundleCommitment];
     }
 }
 
@@ -62,8 +60,7 @@ contract EncodingHarness {
 }
 
 contract XIRGatewaySafetyTest {
-    TestVm internal constant VM =
-        TestVm(address(uint160(uint256(keccak256("hevm cheat code")))));
+    TestVm internal constant VM = TestVm(address(uint160(uint256(keccak256("hevm cheat code")))));
     uint256 internal constant SIGNER_KEY = 0xA11CE;
     uint32 internal constant VERSION = 1;
     bytes32 internal constant PROFILE_AB = keccak256("hyperlane-op-arb-v1");
@@ -157,27 +154,29 @@ contract XIRGatewaySafetyTest {
     function _envelope() private returns (XIRTypes.Envelope memory envelope) {
         envelope.record = XIRTypes.Record({
             sourceGateway: idA,
-            sourceApp: XIRTypes.TypedId(
-                1, hex"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-            ),
+            sourceApp: XIRTypes.TypedId(1, hex"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"),
             destinationApp: XIRTypes.TypedId(1, abi.encodePacked(address(receiver))),
             nonce: 7,
             payloadHash: keccak256("fixed-payload")
         });
-        envelope.context = XIRTypes.VerifiedContext({
-            requiredSecurity: 2, policyHash: keccak256("policy")
-        });
+        envelope.context = XIRTypes.VerifiedContext({requiredSecurity: 2, policyHash: keccak256("policy")});
         bytes32 recordDigest = XIREncoding.recordHash(envelope.record);
         bytes32 contextDigest = XIREncoding.contextHash(envelope.context);
         bytes32 rid = XIREncoding.rootId(idA, recordDigest, contextDigest, VERSION);
         envelope.certificate = XIRTypes.RootCertificate(VERSION, _sign(rid));
         envelope.receipts = new XIRTypes.Receipt[](2);
         bytes32 prefix = XIREncoding.rootPrefix(rid);
-        envelope.receipts[0] =
-            _receipt(idA, idB, PROFILE_AB, EVIDENCE_AB, prefix, firstEvidence);
+        envelope.receipts[0] = _receipt(idA, idB, PROFILE_AB, EVIDENCE_AB, prefix, firstEvidence);
         prefix = XIREncoding.nextPrefix(prefix, XIREncoding.receiptHash(envelope.receipts[0]));
-        envelope.receipts[1] =
-            _receipt(idB, idC, PROFILE_BC, EVIDENCE_BC, prefix, secondEvidence);
+        envelope.receipts[1] = _receipt(idB, idC, PROFILE_BC, EVIDENCE_BC, prefix, secondEvidence);
+        bytes32 bundleCommitment = XIREncoding.bundleStart(envelope.receipts.length);
+        for (uint256 i = 0; i < envelope.receipts.length; i++) {
+            XIRTypes.Receipt memory receipt = envelope.receipts[i];
+            bundleCommitment = XIREncoding.bundleStep(
+                bundleCommitment, i, receipt.profileHash, receipt.evidenceHash, receipt.transitionHash
+            );
+        }
+        secondEvidence.setBundle(bundleCommitment, true);
     }
 
     function _receipt(
@@ -190,18 +189,14 @@ contract XIRGatewaySafetyTest {
     ) private returns (XIRTypes.Receipt memory receipt) {
         XIRTypes.Record memory record = XIRTypes.Record({
             sourceGateway: idA,
-            sourceApp: XIRTypes.TypedId(
-                1, hex"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-            ),
+            sourceApp: XIRTypes.TypedId(1, hex"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"),
             destinationApp: XIRTypes.TypedId(1, abi.encodePacked(address(receiver))),
             nonce: 7,
             payloadHash: keccak256("fixed-payload")
         });
-        XIRTypes.VerifiedContext memory context =
-            XIRTypes.VerifiedContext(2, keccak256("policy"));
-        bytes32 transition = XIREncoding.transitionHash(
-            XIREncoding.recordHash(record), XIREncoding.contextHash(context), src, dst
-        );
+        XIRTypes.VerifiedContext memory context = XIRTypes.VerifiedContext(2, keccak256("policy"));
+        bytes32 transition =
+            XIREncoding.transitionHash(XIREncoding.recordHash(record), XIREncoding.contextHash(context), src, dst);
         receipt = XIRTypes.Receipt(src, dst, profile, evidence, transition, prefix);
         adapter.set(profile, evidence, transition, true);
     }
@@ -229,8 +224,7 @@ contract XIRGatewaySafetyTest {
     }
 
     function _sign(bytes32 rid) private returns (bytes memory) {
-        bytes32 digest =
-            keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", rid));
+        bytes32 digest = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", rid));
         (uint8 v, bytes32 r, bytes32 s) = VM.sign(SIGNER_KEY, digest);
         return abi.encodePacked(r, s, v);
     }

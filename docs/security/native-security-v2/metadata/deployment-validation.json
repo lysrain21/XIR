@@ -1,0 +1,72 @@
+{
+  "all_deployed_code_nonempty": true,
+  "deployer": "0x864a39046640287fc5e77477e2960e48704a5064",
+  "deployment": "/vePFS-Mindverse/user/intern/lucian/xir/revisions/complete-bcra-evidence-revision/runtime/native-security-v1/native-stack-run-005/native-application-security-v2/deployment.json",
+  "deployment_sha256": "bb5bd7c54d0c87ee0fcf6691f3ac116ef3ceecb5ee9a1a0590b7ff4dcab99eb6",
+  "fixture": {
+    "address": "0x0f7124308b3d36ac6f2ed3e1fc817a7e84c4dfd2",
+    "code_bytes": 105,
+    "code_keccak": "8dc700bfae00804e93842d43a0b57362991e810ae86dc2dc84410e9665d4a7ef",
+    "not_approved": true
+  },
+  "prior_verifier_checks": [
+    {
+      "expected": "0xe78f910f8f457b52951772d6cfe8150ad03cc815",
+      "observed": "0xe78f910f8f457b52951772d6cfe8150ad03cc815",
+      "outbound": "h_xir_out",
+      "profile": "H_AB",
+      "valid": true
+    },
+    {
+      "expected": "0x3828c23b888684643a21fbcd3b20dc7c182b69b6",
+      "observed": "0x3828c23b888684643a21fbcd3b20dc7c182b69b6",
+      "outbound": "h_xir_out",
+      "profile": "L_AB",
+      "valid": true
+    },
+    {
+      "administrator": "0x864a39046640287fc5e77477e2960e48704a5064",
+      "outbound": "h_xir_out",
+      "runner": "0x80c3926751b1437102d49798e68b2de0238312dc",
+      "valid": true
+    },
+    {
+      "expected": "0xe78f910f8f457b52951772d6cfe8150ad03cc815",
+      "observed": "0xe78f910f8f457b52951772d6cfe8150ad03cc815",
+      "outbound": "l_xir_out",
+      "profile": "H_AB",
+      "valid": true
+    },
+    {
+      "expected": "0x3828c23b888684643a21fbcd3b20dc7c182b69b6",
+      "observed": "0x3828c23b888684643a21fbcd3b20dc7c182b69b6",
+      "outbound": "l_xir_out",
+      "profile": "L_AB",
+      "valid": true
+    },
+    {
+      "administrator": "0x864a39046640287fc5e77477e2960e48704a5064",
+      "outbound": "l_xir_out",
+      "runner": "0x80c3926751b1437102d49798e68b2de0238312dc",
+      "valid": true
+    }
+  ],
+  "registry_root_signer": "0x87a74ac41b90b0f2dfbe4cb113254f9b19f2f184",
+  "registry_root_signer_matches": true,
+  "root_signer": "0x87a74ac41b90b0f2dfbe4cb113254f9b19f2f184",
+  "root_signer_distinct_from_runner": true,
+  "runner": "0x80c3926751b1437102d49798e68b2de0238312dc",
+  "schema_version": "xir-lab-native-security-v2-deployment-validation-v1",
+  "source_sha256": {
+    "configs/native/native-security-v2.json": "728200d42c6fcea7b61f656d13c7762cfa8bc975dfd3974449f0b1a85f6b87b2",
+    "contracts/src/HyperlaneAdapter.sol": "1ca91fb1cb8137d7b1cfb2ef5dc21ac95f45b22defea729f1535c73d33773f18",
+    "contracts/src/LayerZeroAdapter.sol": "042fbeeb00d93ce4ec077bbeeb944daed752c16f649460c5ee2df88218c53941",
+    "contracts/src/NativeSecurityPriorVerifierFixture.sol": "1db1c74359bbabc848fe9066b2be0fce3a347a5536856ca811eac2d8cf109ebc",
+    "schemas/native-security-v2-config.schema.json": "9953d3789452ac68cf2d72d01a976313e45d2bfe271f8afc347962c854c3a7de",
+    "scripts/run_native_security_v2.py": "6ac70429c7310f7a5fe5391b0430e3a9691da9e5b66cc6c7d2d0af2b8cc955a0",
+    "src/xir_lab/native/deployer.py": "788bf7f9d929a265da3a6e00dacca9b9b97913541b0cad9f49550addc6178653",
+    "src/xir_lab/native/runner.py": "02c43d51d3604c86ac9f4059684c443a03d98878f0ccb03a7be58b18238c4c1d",
+    "src/xir_lab/native/security_v2.py": "282b30fbeba9998339549e96f1c11092e5eac2775cb74339529503391938240f"
+  },
+  "valid": true
+}

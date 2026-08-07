@@ -1,0 +1,24 @@
+{
+  "schema_version": "xir-lab-native-security-baseline-v1-config",
+  "namespace": "native-security-baseline-v1",
+  "fixed_seed": "xir-native-security-baseline-v1-20260807",
+  "required_environment_namespace": "native-ablation-v2",
+  "final_revision_source_sha256": {
+    "contracts/src/HyperlaneAdapter.sol": "1ca91fb1cb8137d7b1cfb2ef5dc21ac95f45b22defea729f1535c73d33773f18",
+    "contracts/src/LayerZeroAdapter.sol": "042fbeeb00d93ce4ec077bbeeb944daed752c16f649460c5ee2df88218c53941",
+    "src/xir_lab/native/deployer.py": "788bf7f9d929a265da3a6e00dacca9b9b97913541b0cad9f49550addc6178653",
+    "src/xir_lab/native/runner.py": "02c43d51d3604c86ac9f4059684c443a03d98878f0ccb03a7be58b18238c4c1d"
+  },
+  "profile": "configs/profiles/native-protocol-stack-v1.json",
+  "routes": ["HL", "LH"],
+  "cases": [
+    "history_absent_delivery",
+    "between_hop_payload_substitution",
+    "route_label_substitution",
+    "inactive_profile_unchecked",
+    "new_native_envelope_replay"
+  ],
+  "repetitions": 30,
+  "concurrency": 10,
+  "registry_mutation_serial": true
+}

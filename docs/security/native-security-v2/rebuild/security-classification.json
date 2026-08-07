@@ -1,0 +1,193 @@
+{
+  "cases": [
+    {
+      "application_effects": 60,
+      "case": "concurrent_replay",
+      "case_runs": 60,
+      "expected_rejection": "AlreadyConsumed",
+      "input_class": "duplicate_valid_envelope_concurrent",
+      "primary_check_stage": "atomic_message_consumption",
+      "rejection_matches": 60,
+      "target_guarantees": [
+        "G4_AT_MOST_ONCE_EFFECT"
+      ],
+      "trusted_assumption_violated": "none (A1-A4 hold)",
+      "validated": 60
+    },
+    {
+      "application_effects": 0,
+      "case": "context_tamper",
+      "case_runs": 60,
+      "expected_rejection": "InvalidRootSignature",
+      "input_class": "mutated_untrusted_context",
+      "primary_check_stage": "source_root_verification",
+      "rejection_matches": 60,
+      "target_guarantees": [
+        "G1_AUTHENTICITY",
+        "G3_POLICY_COMPLIANCE"
+      ],
+      "trusted_assumption_violated": "none (A1-A4 hold)",
+      "validated": 60
+    },
+    {
+      "application_effects": 0,
+      "case": "cross_execution_splice",
+      "case_runs": 60,
+      "expected_rejection": "BundleRejected",
+      "input_class": "cross_execution_tuple_splice",
+      "primary_check_stage": "ordered_final_bundle_verification",
+      "rejection_matches": 60,
+      "target_guarantees": [
+        "G2_TRACE_INTEGRITY"
+      ],
+      "trusted_assumption_violated": "none (A1-A4 hold)",
+      "validated": 60
+    },
+    {
+      "application_effects": 0,
+      "case": "evidence_tamper",
+      "case_runs": 60,
+      "expected_rejection": "EvidenceRejected",
+      "input_class": "mutated_native_evidence_reference",
+      "primary_check_stage": "native_evidence_verification",
+      "rejection_matches": 60,
+      "target_guarantees": [
+        "G1_AUTHENTICITY",
+        "G2_TRACE_INTEGRITY"
+      ],
+      "trusted_assumption_violated": "none (A1-A4 hold)",
+      "validated": 60
+    },
+    {
+      "application_effects": 0,
+      "case": "fake_verifier",
+      "case_runs": 60,
+      "expected_rejection": "UnapprovedPriorVerifier",
+      "input_class": "runner_selected_unapproved_verifier",
+      "primary_check_stage": "prior_verifier_binding",
+      "rejection_matches": 60,
+      "target_guarantees": [
+        "G1_AUTHENTICITY",
+        "G2_TRACE_INTEGRITY"
+      ],
+      "trusted_assumption_violated": "none (A1-A4 hold)",
+      "validated": 60
+    },
+    {
+      "application_effects": 0,
+      "case": "payload_tamper",
+      "case_runs": 60,
+      "expected_rejection": "PayloadMismatch",
+      "input_class": "mutated_untrusted_payload",
+      "primary_check_stage": "destination_payload_binding",
+      "rejection_matches": 60,
+      "target_guarantees": [
+        "G1_AUTHENTICITY"
+      ],
+      "trusted_assumption_violated": "none (A1-A4 hold)",
+      "validated": 60
+    },
+    {
+      "application_effects": 0,
+      "case": "profile_inactive",
+      "case_runs": 60,
+      "expected_rejection": "ProfileInactive",
+      "input_class": "inactive_profile_reference",
+      "primary_check_stage": "profile_activity_check",
+      "rejection_matches": 60,
+      "target_guarantees": [
+        "G3_POLICY_COMPLIANCE"
+      ],
+      "trusted_assumption_violated": "none (A1-A4 hold)",
+      "validated": 60
+    },
+    {
+      "application_effects": 0,
+      "case": "profile_substitution",
+      "case_runs": 60,
+      "expected_rejection": "ProfileInactive",
+      "input_class": "unregistered_profile_reference",
+      "primary_check_stage": "profile_resolution",
+      "rejection_matches": 60,
+      "target_guarantees": [
+        "G3_POLICY_COMPLIANCE"
+      ],
+      "trusted_assumption_violated": "none (A1-A4 hold)",
+      "validated": 60
+    },
+    {
+      "application_effects": 0,
+      "case": "receipt_delete",
+      "case_runs": 60,
+      "expected_rejection": "InvalidTrace",
+      "input_class": "receipt_sequence_omission",
+      "primary_check_stage": "receipt_prefix_verification",
+      "rejection_matches": 60,
+      "target_guarantees": [
+        "G2_TRACE_INTEGRITY"
+      ],
+      "trusted_assumption_violated": "none (A1-A4 hold)",
+      "validated": 60
+    },
+    {
+      "application_effects": 0,
+      "case": "receipt_reorder",
+      "case_runs": 60,
+      "expected_rejection": "InvalidTrace",
+      "input_class": "receipt_sequence_reordering",
+      "primary_check_stage": "receipt_prefix_verification",
+      "rejection_matches": 60,
+      "target_guarantees": [
+        "G2_TRACE_INTEGRITY"
+      ],
+      "trusted_assumption_violated": "none (A1-A4 hold)",
+      "validated": 60
+    },
+    {
+      "application_effects": 60,
+      "case": "sequential_replay",
+      "case_runs": 60,
+      "expected_rejection": "AlreadyConsumed",
+      "input_class": "duplicate_valid_envelope_sequential",
+      "primary_check_stage": "atomic_message_consumption",
+      "rejection_matches": 60,
+      "target_guarantees": [
+        "G4_AT_MOST_ONCE_EFFECT"
+      ],
+      "trusted_assumption_violated": "none (A1-A4 hold)",
+      "validated": 60
+    },
+    {
+      "application_effects": 0,
+      "case": "wrong_endpoint",
+      "case_runs": 60,
+      "expected_rejection": "UnapprovedPriorVerifier",
+      "input_class": "profile_endpoint_mismatch",
+      "primary_check_stage": "prior_verifier_binding",
+      "rejection_matches": 60,
+      "target_guarantees": [
+        "G1_AUTHENTICITY",
+        "G2_TRACE_INTEGRITY"
+      ],
+      "trusted_assumption_violated": "none (A1-A4 hold)",
+      "validated": 60
+    },
+    {
+      "application_effects": 0,
+      "case": "wrong_registry_version",
+      "case_runs": 60,
+      "expected_rejection": "RootMismatch",
+      "input_class": "unbound_registry_version_reference",
+      "primary_check_stage": "root_version_verification",
+      "rejection_matches": 60,
+      "target_guarantees": [
+        "G1_AUTHENTICITY",
+        "G3_POLICY_COMPLIANCE"
+      ],
+      "trusted_assumption_violated": "none (A1-A4 hold)",
+      "validated": 60
+    }
+  ],
+  "interpretation": "These cases mutate untrusted inputs while A1-A4 continue to hold. Trusted-component compromise is analyzed separately as security degradation.",
+  "schema_version": "xir-lab-native-security-v2-classification-v1"
+}

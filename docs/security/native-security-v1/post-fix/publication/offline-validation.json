@@ -1,0 +1,18 @@
+{
+  "alternate_runner_attempts_checked": 60,
+  "coordinate_denominator_exact": true,
+  "errors": [],
+  "expected_case_runs": 660,
+  "observed_case_runs": 660,
+  "primary_runner_attempts_checked": 660,
+  "profile_inactive_lineage_valid": true,
+  "profile_inactive_lineages_checked": 60,
+  "profile_toggle_receipts_checked": 120,
+  "raw_receipts_checked": 780,
+  "remote_preflight_sha256": "21d66a0e0a72f8da064e25e4a55286aad7a81912549f4f44bfe2e04a80b89cbf",
+  "remote_preflight_valid": true,
+  "root_signer_audits_checked": 660,
+  "schema_version": "xir-lab-native-security-v1-offline-validation-v1",
+  "unique_delivery_transactions": 780,
+  "valid": true
+}

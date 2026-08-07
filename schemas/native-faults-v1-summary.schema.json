@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xir.example/schemas/native-faults-v1-summary.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "campaign_id",
+    "config_sha256",
+    "deployment_sha256",
+    "expected_cases",
+    "observed_cases",
+    "validated_cases",
+    "failed_cases",
+    "groups",
+    "valid"
+  ],
+  "properties": {
+    "schema_version": {"const": "xir-lab-native-faults-v1-summary-v1"},
+    "campaign_id": {
+      "enum": ["native-faults-v1-smoke", "native-faults-v1-frozen"]
+    },
+    "config_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "deployment_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "expected_cases": {"type": "integer", "minimum": 1},
+    "observed_cases": {"type": "integer", "minimum": 1},
+    "validated_cases": {"type": "integer", "minimum": 1},
+    "failed_cases": {"const": 0},
+    "groups": {"type": "array", "minItems": 1, "items": {"type": "object"}},
+    "valid": {"const": true}
+  }
+}

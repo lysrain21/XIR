@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xir.example/schemas/native-security-v2-config.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "campaign_id",
+    "fixed_seed",
+    "routes",
+    "repetitions_per_route_case",
+    "cases",
+    "expected_application_effects"
+  ],
+  "properties": {
+    "schema_version": {"const": "xir-lab-native-security-v2-config-v1"},
+    "campaign_id": {"const": "native-security-v2"},
+    "fixed_seed": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "routes": {
+      "type": "array",
+      "prefixItems": [{"const": "HL"}, {"const": "LH"}],
+      "items": false
+    },
+    "repetitions_per_route_case": {"type": "integer", "minimum": 30},
+    "cases": {
+      "type": "array",
+      "prefixItems": [
+        {"const": "payload_tamper"},
+        {"const": "context_tamper"},
+        {"const": "profile_substitution"},
+        {"const": "profile_inactive"},
+        {"const": "receipt_delete"},
+        {"const": "receipt_reorder"},
+        {"const": "evidence_tamper"},
+        {"const": "wrong_registry_version"},
+        {"const": "cross_execution_splice"},
+        {"const": "sequential_replay"},
+        {"const": "concurrent_replay"},
+        {"const": "fake_verifier"},
+        {"const": "wrong_endpoint"}
+      ],
+      "items": false
+    },
+    "expected_application_effects": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "payload_tamper",
+        "context_tamper",
+        "profile_substitution",
+        "profile_inactive",
+        "receipt_delete",
+        "receipt_reorder",
+        "evidence_tamper",
+        "wrong_registry_version",
+        "cross_execution_splice",
+        "sequential_replay",
+        "concurrent_replay",
+        "fake_verifier",
+        "wrong_endpoint"
+      ],
+      "properties": {
+        "payload_tamper": {"const": 0},
+        "context_tamper": {"const": 0},
+        "profile_substitution": {"const": 0},
+        "profile_inactive": {"const": 0},
+        "receipt_delete": {"const": 0},
+        "receipt_reorder": {"const": 0},
+        "evidence_tamper": {"const": 0},
+        "wrong_registry_version": {"const": 0},
+        "cross_execution_splice": {"const": 0},
+        "sequential_replay": {"const": 1},
+        "concurrent_replay": {"const": 1},
+        "fake_verifier": {"const": 0},
+        "wrong_endpoint": {"const": 0}
+      }
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xir.example/schemas/native-latency-v2-manifest.schema.json",
+  "title": "XIR native latency v2 publication manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "namespace", "semantic_sha256", "files"],
+  "properties": {
+    "schema_version": {"const": "xir-lab-native-latency-v2-manifest-v1"},
+    "namespace": {"const": "native-latency-v2"},
+    "semantic_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "files": {
+      "type": "array",
+      "minItems": 8,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "bytes", "sha256"],
+        "properties": {
+          "path": {"type": "string", "minLength": 1},
+          "bytes": {"type": "integer", "minimum": 0},
+          "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+        }
+      }
+    }
+  }
+}

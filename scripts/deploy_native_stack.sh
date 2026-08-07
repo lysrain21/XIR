@@ -90,7 +90,8 @@ if [[ ! -f "$runtime_root/native-application/deployment.json" ]]; then
     --runtime-root "$runtime_root" \
     --profile "$profile" \
     --key-file "$key_file" \
-    --runner-key-file "$runtime_root/private/accounts/runner.key"
+    --runner-key-file "$runtime_root/private/accounts/runner.key" \
+    --root-signer-key-file "$runtime_root/private/accounts/root-signer.key"
 fi
 "$python" "$repository_root/scripts/render_hyperlane_native.py" agents \
   --profile "$profile" \

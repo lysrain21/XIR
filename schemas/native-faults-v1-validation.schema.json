@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xir.example/schemas/native-faults-v1-validation.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "campaign_id", "expected_cases", "counts", "valid"],
+  "properties": {
+    "schema_version": {"const": "xir-lab-native-faults-v1-validation-v1"},
+    "campaign_id": {
+      "enum": ["native-faults-v1-smoke", "native-faults-v1-frozen"]
+    },
+    "expected_cases": {"type": "integer", "minimum": 1},
+    "counts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "valid_results",
+        "stable_logical_attempt_id",
+        "single_nonce_lineage",
+        "single_transaction_lineage",
+        "single_raw_transaction_lineage",
+        "one_destination_effect",
+        "concurrent_recovery_cases",
+        "concurrent_recovery_shared_signed_identity",
+        "worker_recovery_cases",
+        "worker_action_recovered"
+      ],
+      "properties": {
+        "valid_results": {"type": "integer", "minimum": 1},
+        "stable_logical_attempt_id": {"type": "integer", "minimum": 1},
+        "single_nonce_lineage": {"type": "integer", "minimum": 1},
+        "single_transaction_lineage": {"type": "integer", "minimum": 1},
+        "single_raw_transaction_lineage": {"type": "integer", "minimum": 1},
+        "one_destination_effect": {"type": "integer", "minimum": 1},
+        "concurrent_recovery_cases": {"type": "integer", "minimum": 1},
+        "concurrent_recovery_shared_signed_identity": {"type": "integer", "minimum": 1},
+        "worker_recovery_cases": {"type": "integer", "minimum": 1},
+        "worker_action_recovered": {"type": "integer", "minimum": 1}
+      }
+    },
+    "valid": {"const": true}
+  }
+}

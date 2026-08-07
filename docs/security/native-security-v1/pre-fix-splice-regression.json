@@ -1,0 +1,20 @@
+{
+  "schema_version": "xir-lab-security-regression-evidence-v1",
+  "evidence_id": "native-security-v1-prefx-splice-001",
+  "repository_revision": "86f844d",
+  "command": "forge test --root contracts --match-contract SecuritySpliceRegressionTest -vvv",
+  "case": "cross_execution_accepted_evidence_splice_recomputed_prefix",
+  "expected_before_fix": "DELIVERED",
+  "actual_before_fix": "DELIVERED",
+  "application_effects": 1,
+  "test_gas": 238337,
+  "tests_passed": 1,
+  "tests_failed": 0,
+  "interpretation": "Before lineage binding, independent acceptedEvidence membership for two tuples was sufficient even when the tuples came from different bundles and the second receipt prefix was recomputed.",
+  "source_sha256": {
+    "contracts/src/HyperlaneAdapter.sol": "41c83cec54867125bb30b2be335b6912f3b30d4bf1ef6dddb3434a21c4aa7df5",
+    "contracts/src/LayerZeroAdapter.sol": "92f92f6d13fabb362c4327767d6b228268f1402c7c22ba5c1035008eafa802e4",
+    "contracts/src/XIRGateway.sol": "8a39249c5ca0f89de915bdafdf5a718e4ddbcbc893f666a15532681dbd5051f8",
+    "contracts/test/SecuritySpliceRegression.t.sol": "f84f5034075ea1ff38abc9602acf71b03f9c0f3f21c38fd66b53a8ea1697afc8"
+  }
+}

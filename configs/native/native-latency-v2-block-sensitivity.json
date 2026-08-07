@@ -1,0 +1,17 @@
+{
+  "schema_version": "xir-lab-native-latency-v2-block-sensitivity-v1",
+  "namespace": "native-latency-v2-block-sensitivity",
+  "source": {
+    "database_path": "experiment-results/native-stack-run-003/raw-evidence/runs/scale/runner.sqlite",
+    "database_sha256": "b64ccac0bafe26e6a361eca4f7fd7d530b1c4ad11d9cd282a1ff6ded2871b2c2"
+  },
+  "routes": ["HH", "LL", "HL", "LH"],
+  "attempts_per_route": 10000,
+  "metric": "median",
+  "confidence_level": 0.95,
+  "block_lengths": [32, 64, 128],
+  "repetitions": 2000,
+  "master_seed": 2026080702,
+  "primary_block_length": 64,
+  "rationale": "The primary block length equals one route's 64 attempts in each frozen 256-attempt interleaved runner batch. Lengths 32 and 128 test one-half and two batches of route-local dependence."
+}

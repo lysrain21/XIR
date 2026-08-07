@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xir.local/schemas/native-ablation-v2-manifest.schema.json",
+  "type": "object",
+  "required": ["schema_version", "namespace", "files"],
+  "properties": {
+    "schema_version": {"const": "xir-lab-native-ablation-v2-manifest"},
+    "namespace": {"const": "native-ablation-v2"},
+    "files": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["path", "bytes", "sha256"],
+        "properties": {
+          "path": {"type": "string", "minLength": 1},
+          "bytes": {"type": "integer", "minimum": 0},
+          "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+        }
+      }
+    }
+  }
+}

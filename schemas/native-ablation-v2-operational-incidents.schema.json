@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xir.local/schemas/native-ablation-v2-operational-incidents.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "namespace", "incidents", "latency_sensitivity"],
+  "properties": {
+    "schema_version": {"const": "xir-lab-native-ablation-v2-operational-incidents"},
+    "namespace": {"const": "native-ablation-v2"},
+    "incidents": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "incident_id", "phase", "observed_at_utc", "runner_pid", "resume_pid",
+          "completed_attempts_before_exit", "affected_attempt_id", "route", "layer",
+          "route_sequence", "operation", "exception_class", "exception_code",
+          "exception_message", "native_hops_committed",
+          "destination_effect_observed_before_resume", "read_only_rpc_failure",
+          "committed_stage_summary", "recovery", "polling_change",
+          "treatment_changed", "status", "attempt_in_final_denominator",
+          "runner_log_relative_path", "runner_log_sha256",
+          "pre_resume_audit_relative_path", "pre_resume_audit_sha256",
+          "post_resume_audit_relative_path", "post_resume_audit_sha256"
+        ],
+        "properties": {
+          "incident_id": {"type": "string", "minLength": 1},
+          "phase": {"enum": ["smoke", "scale"]},
+          "observed_at_utc": {"type": "string", "format": "date-time"},
+          "runner_pid": {"type": "integer", "minimum": 1},
+          "resume_pid": {"type": "integer", "minimum": 1},
+          "completed_attempts_before_exit": {"type": "integer", "minimum": 0},
+          "affected_attempt_id": {"type": "string", "minLength": 1},
+          "route": {"enum": ["HL", "LH"]},
+          "layer": {"enum": ["B0", "B1", "B2", "B3"]},
+          "route_sequence": {"type": "integer", "minimum": 0},
+          "operation": {"type": "string", "minLength": 1},
+          "exception_class": {"type": "string", "minLength": 1},
+          "exception_code": {"type": "integer"},
+          "exception_message": {"type": "string", "minLength": 1},
+          "read_only_rpc_failure": {"const": true},
+          "native_hops_committed": {"type": "integer", "minimum": 0, "maximum": 2},
+          "destination_effect_observed_before_resume": {"type": "boolean"},
+          "committed_stage_summary": {
+            "type": "array",
+            "minItems": 1,
+            "items": {"type": "string", "minLength": 1}
+          },
+          "recovery": {"type": "string", "minLength": 1},
+          "polling_change": {"type": "string", "minLength": 1},
+          "treatment_changed": {"const": false},
+          "status": {"const": "recovered"},
+          "attempt_in_final_denominator": {"const": true},
+          "runner_log_relative_path": {"type": "string", "minLength": 1},
+          "runner_log_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+          "pre_resume_audit_relative_path": {"type": "string", "minLength": 1},
+          "pre_resume_audit_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+          "post_resume_audit_relative_path": {"type": "string", "minLength": 1},
+          "post_resume_audit_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+          "pre_retry_source_relative_path": {"type": "string", "minLength": 1},
+          "pre_retry_source_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+          "resume_source_relative_path": {"type": "string", "minLength": 1},
+          "resume_source_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+        }
+      }
+    },
+    "latency_sensitivity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "phase", "rule_id", "selection_unit", "excluded_route_sequences",
+        "exclusion_reason", "full_matched_blocks", "expected_included_blocks",
+        "expected_excluded_blocks", "expected_included_attempts",
+        "expected_excluded_attempts", "expected_included_per_cell", "ordering",
+        "interval_method"
+      ],
+      "properties": {
+        "phase": {"const": "scale"},
+        "rule_id": {"const": "exclude-complete-incident-route-sequence-blocks-v1"},
+        "selection_unit": {"const": "deterministic_interleave_block"},
+        "excluded_route_sequences": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "integer", "minimum": 0}
+        },
+        "exclusion_reason": {"type": "string", "minLength": 1},
+        "full_matched_blocks": {"type": "integer", "minimum": 1},
+        "expected_included_blocks": {"type": "integer", "minimum": 1},
+        "expected_excluded_blocks": {"type": "integer", "minimum": 1},
+        "expected_included_attempts": {"type": "integer", "minimum": 1},
+        "expected_excluded_attempts": {"type": "integer", "minimum": 1},
+        "expected_included_per_cell": {"type": "integer", "minimum": 1},
+        "ordering": {"type": "string", "minLength": 1},
+        "interval_method": {"type": "string", "minLength": 1}
+      }
+    }
+  }
+}

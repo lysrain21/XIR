@@ -14,6 +14,8 @@ library XIREncoding {
     bytes internal constant TRANSITION_TAG = "XIR_TRANSITION_V1";
     bytes internal constant HOP_TAG = "XIR_HOP_V1";
     bytes internal constant PREFIX_TAG = "XIR_PREFIX_V1";
+    bytes internal constant BUNDLE_TAG = "XIR_BUNDLE_V1";
+    bytes internal constant BUNDLE_STEP_TAG = "XIR_BUNDLE_STEP_V1";
 
     function encodeTypedId(XIRTypes.TypedId memory id) internal pure returns (bytes memory) {
         uint256 expected = id.kind == XIRTypes.EVM ? 20 : id.kind == XIRTypes.SOLANA ? 32 : 0;
@@ -41,8 +43,7 @@ library XIREncoding {
     }
 
     function contextHash(XIRTypes.VerifiedContext memory context) internal pure returns (bytes32) {
-        return
-            keccak256(abi.encodePacked(CONTEXT_TAG, context.requiredSecurity, context.policyHash));
+        return keccak256(abi.encodePacked(CONTEXT_TAG, context.requiredSecurity, context.policyHash));
     }
 
     function rootId(
@@ -52,17 +53,11 @@ library XIREncoding {
         uint32 registryVersion
     ) internal pure returns (bytes32) {
         return keccak256(
-            abi.encodePacked(
-                RID_TAG, encodeTypedId(rootGateway), recordDigest, contextDigest, registryVersion
-            )
+            abi.encodePacked(RID_TAG, encodeTypedId(rootGateway), recordDigest, contextDigest, registryVersion)
         );
     }
 
-    function messageId(bytes32 rid, XIRTypes.TypedId memory destinationApp)
-        internal
-        pure
-        returns (bytes32)
-    {
+    function messageId(bytes32 rid, XIRTypes.TypedId memory destinationApp) internal pure returns (bytes32) {
         return keccak256(abi.encodePacked(MID_TAG, rid, encodeTypedId(destinationApp)));
     }
 
@@ -77,9 +72,7 @@ library XIREncoding {
         XIRTypes.TypedId memory dst
     ) internal pure returns (bytes32) {
         return keccak256(
-            abi.encodePacked(
-                TRANSITION_TAG, recordDigest, contextDigest, encodeTypedId(src), encodeTypedId(dst)
-            )
+            abi.encodePacked(TRANSITION_TAG, recordDigest, contextDigest, encodeTypedId(src), encodeTypedId(dst))
         );
     }
 
@@ -97,11 +90,34 @@ library XIREncoding {
         );
     }
 
-    function nextPrefix(bytes32 priorPrefix, bytes32 receiptDigest)
-        internal
-        pure
-        returns (bytes32)
-    {
+    function nextPrefix(bytes32 priorPrefix, bytes32 receiptDigest) internal pure returns (bytes32) {
         return keccak256(abi.encodePacked(PREFIX_TAG, priorPrefix, receiptDigest));
+    }
+
+    /// @notice Starts a length-bound commitment to an ordered receipt-tuple list.
+    function bundleStart(uint256 receiptCount) internal pure returns (bytes32) {
+        return keccak256(abi.encode(BUNDLE_TAG, receiptCount));
+    }
+
+    /// @notice Extends a bundle commitment with one index-bound receipt tuple.
+    /// Gateway identifiers and prefix hashes remain checked by XIRGateway; the
+    /// native adapter commits to the ordered evidence tuple it transported.
+    function bundleStep(
+        bytes32 prefix,
+        uint256 index,
+        bytes32 profileHash,
+        bytes32 evidenceHash,
+        bytes32 transitionDigest
+    ) internal pure returns (bytes32) {
+        return keccak256(
+            abi.encode(
+                BUNDLE_STEP_TAG,
+                prefix,
+                index,
+                profileHash,
+                evidenceHash,
+                transitionDigest
+            )
+        );
     }
 }

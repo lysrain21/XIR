@@ -1,0 +1,25 @@
+{
+  "schema_version": "xir-lab-native-ablation-v2-config",
+  "namespace": "native-ablation-v2",
+  "fixed_seed": "xir-native-ablation-v2-final-revision-run-001",
+  "profile": "configs/profiles/native-protocol-stack-v1.json",
+  "routes": ["HL", "LH"],
+  "layers": ["B0", "B1", "B2", "B3"],
+  "smoke_attempts_per_cell": 2,
+  "scale_attempts_per_cell": 1000,
+  "interleave_block_sequences": 2,
+  "concurrency": 16,
+  "prepublication_exclusions": [],
+  "final_revision_source_sha256": {
+    "contracts/src/HyperlaneAdapter.sol": "1ca91fb1cb8137d7b1cfb2ef5dc21ac95f45b22defea729f1535c73d33773f18",
+    "contracts/src/LayerZeroAdapter.sol": "042fbeeb00d93ce4ec077bbeeb944daed752c16f649460c5ee2df88218c53941",
+    "src/xir_lab/native/deployer.py": "788bf7f9d929a265da3a6e00dacca9b9b97913541b0cad9f49550addc6178653",
+    "src/xir_lab/native/runner.py": "02c43d51d3604c86ac9f4059684c443a03d98878f0ccb03a7be58b18238c4c1d"
+  },
+  "bootstrap": {
+    "repetitions": 4000,
+    "block_length": 16,
+    "confidence": 0.95,
+    "seed": 20260808
+  }
+}

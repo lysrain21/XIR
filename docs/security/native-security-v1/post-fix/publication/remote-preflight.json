@@ -1,0 +1,257 @@
+{
+  "capacity": {
+    "docker_filesystem": {
+      "available_bytes": 114274201600,
+      "path": "/ebs/docker/165536.165536",
+      "total_bytes": 134145380352
+    },
+    "memory": {
+      "memavailable_bytes": 23907848192,
+      "memtotal_bytes": 27246198784,
+      "swapfree_bytes": 0,
+      "swaptotal_bytes": 0
+    },
+    "runtime_filesystem": {
+      "available_bytes": 57896884764672,
+      "path": "/vePFS-Mindverse/user/intern/lucian/xir/revisions/complete-bcra-evidence-revision/runtime/native-security-v1/native-stack-run-005",
+      "total_bytes": 219902325555200
+    }
+  },
+  "component_provenance": {
+    "components": [
+      {
+        "build_complete": true,
+        "clean": true,
+        "commit": "5857ead81a8783d168d48d370be72de88d5fb230",
+        "component_id": "hyperlane"
+      },
+      {
+        "build_complete": true,
+        "clean": true,
+        "commit": "9c741e7f9790639537b1710a203bcdfd73b0b9ac",
+        "component_id": "layerzero-v2"
+      },
+      {
+        "build_complete": true,
+        "clean": true,
+        "commit": "4973ba8bef7b0fdf7268469abea3ea50dbd4bbd8",
+        "component_id": "layerzero-devtools"
+      }
+    ],
+    "lock_sha256": "1821732ab7b4865797f8b5ac377a6ae178af5859fad4e785d177928bd2dbc89e",
+    "path": "/vePFS-Mindverse/user/intern/lucian/xir/revisions/complete-bcra-evidence-revision/runtime/native-security-v1/native-stack-run-005/provenance/component-provenance.json",
+    "sha256": "01fa51ef5ac1967a15afaf0ebb10501e461c1448f5a3ef7d0d880f2906dc5e61"
+  },
+  "credentials_included": false,
+  "deployment": {
+    "namespace": "native-application-full-v1",
+    "path": "/vePFS-Mindverse/user/intern/lucian/xir/revisions/complete-bcra-evidence-revision/runtime/native-security-v1/native-stack-run-005/native-application-full-v1/deployment.json",
+    "sha256": "a709c358fecc8aecbf20e117eaf330a99a47c0a39c3fad3d0d5e09efa5bd9e4e"
+  },
+  "errors": [],
+  "frozen_run_003_untouched_check": {
+    "artifact_files_checked": 504113,
+    "artifact_total_bytes": 14329720317,
+    "durable_evidence_errors": [],
+    "durable_evidence_identity": true,
+    "errors": [
+      "sha256:layerzero/worker.sqlite-shm"
+    ],
+    "expected_manifest_sha256": "95aced6a135f9ccace974af1311102a5c9c9c1384ba4f1f2210bd092e6b6d119",
+    "manifest_path": "/vePFS-Mindverse/user/intern/lucian/xir/runtime/native-stack-run-003/closeout/evidence-manifest.json",
+    "manifest_sha256": "95aced6a135f9ccace974af1311102a5c9c9c1384ba4f1f2210bd092e6b6d119",
+    "prior_verification_sha256": "c2fbeb899a73646e17e6ba048c644034464746e1cc7bb7b1a621d2d29bca39e9",
+    "run_id": "native-stack-run-003",
+    "runtime_path": "/vePFS-Mindverse/user/intern/lucian/xir/runtime/native-stack-run-003",
+    "strict_byte_identity": false,
+    "strict_errors": [
+      "sha256:layerzero/worker.sqlite-shm"
+    ],
+    "transient_sqlite_errors": [
+      "sha256:layerzero/worker.sqlite-shm"
+    ],
+    "transient_sqlite_role": "SQLite shared-memory WAL index and locking state; non-durable runtime state",
+    "valid": true,
+    "validation": {
+      "durable_mismatch_count_is_zero": true,
+      "overall_mismatch_count_is_one": true,
+      "transient_path_is_exact": true
+    },
+    "verification_cache_path": "/vePFS-Mindverse/user/intern/lucian/xir/revisions/complete-bcra-evidence-revision/runtime/native-security-v1/native-stack-run-005/runs/security-full-v1/remote-preflight.run003-check.json",
+    "verification_cache_sha256": "aa2159ba5e95d439c9a9b4504bbfd20ac42e5ee33489e4c7cef7a3044bea10a1",
+    "verified_at": "2026-08-07T04:13:27.274894+00:00"
+  },
+  "healthy_validator_count": 12,
+  "host_fingerprint": {
+    "hostname_included": false,
+    "public_key_count": 3,
+    "sha256": "72439f02006a84f62b443b9a268e4fbedf78dd71fbb7e168902750377a9d5ac8",
+    "source": "ssh_host_public_key_bundle"
+  },
+  "initial_qualified_preflight": {
+    "observed_at": "2026-08-07T02:55:25.867828+00:00",
+    "path": "/vePFS-Mindverse/user/intern/lucian/xir/revisions/complete-bcra-evidence-revision/runtime/native-security-v1/preflight-qualified-run-005.json",
+    "sha256": "af10cf00ae016ff6a86e39c68c653b013dd6e70a6d90ba4c85bd2e8ca2bb2ba6",
+    "valid": true
+  },
+  "observed_at": "2026-08-07T04:15:35.681729+00:00",
+  "runtime_path": "/vePFS-Mindverse/user/intern/lucian/xir/revisions/complete-bcra-evidence-revision/runtime/native-security-v1/native-stack-run-005",
+  "schema_version": "xir-lab-native-security-v1-remote-preflight-v1",
+  "source_provenance": {
+    "files": [
+      {
+        "bytes": 886,
+        "relative_path": "configs/native/native-security-v1.json",
+        "sha256": "650a61c20f3113a4e210577a94c5cbbabd82b14b2264be8284a3decf9671a7a3"
+      },
+      {
+        "bytes": 2217,
+        "relative_path": "schemas/native-security-v1-config.schema.json",
+        "sha256": "f17521acf6422a60b77a4266b34e8b9c53518c49404fec165a6b95e2641f3de6"
+      },
+      {
+        "bytes": 4580,
+        "relative_path": "contracts/src/XIREncoding.sol",
+        "sha256": "ede785a04bb54eaa24cf2259a77e7f2b335d90fd6cb5bd18c47d6006e01cb81b"
+      },
+      {
+        "bytes": 7949,
+        "relative_path": "contracts/src/XIRGateway.sol",
+        "sha256": "eca28a1b3f0fc55d14289bab3b633122c74df2e834a756fdc2f10735fa062202"
+      },
+      {
+        "bytes": 11522,
+        "relative_path": "contracts/src/HyperlaneAdapter.sol",
+        "sha256": "0740a57a9fa9a23fc168bf8e8c7324213ef7257316042cb63f874ad10bb06279"
+      },
+      {
+        "bytes": 12359,
+        "relative_path": "contracts/src/LayerZeroAdapter.sol",
+        "sha256": "7738f3cb75d2255d1b0a88135a3d214268fc49fd16dfe16bf244590738f5a6e1"
+      },
+      {
+        "bytes": 11944,
+        "relative_path": "contracts/test/SecuritySpliceRegression.t.sol",
+        "sha256": "81cb38a52f5e5dda0d9215a39becbada4e6ef825ffcbfae2583036ebb59c6991"
+      },
+      {
+        "bytes": 11296,
+        "relative_path": "src/xir_lab/native/root_signer.py",
+        "sha256": "1bc3373a496b4880080397182ed1fa898061956ed75809d6df16d798f003036e"
+      },
+      {
+        "bytes": 43552,
+        "relative_path": "src/xir_lab/native/runner.py",
+        "sha256": "76d0e7d63c485de4548b305efb8c7d54581a42cdd415d4f8b02bdc7234b67168"
+      },
+      {
+        "bytes": 41039,
+        "relative_path": "src/xir_lab/native/security_v1.py",
+        "sha256": "b6ca3121fb240fd05cb7fb3842b4174bb2240bbf133d66b8481d45e3e67826fc"
+      }
+    ],
+    "repository_revision": "86f844d266274cfc2060706657c53d5f2c39ab78",
+    "selected_source_file_count": 10,
+    "selected_source_tree_sha256": "393ec6d3d8573c2245bea96556f20d1a4cbdce78799cc0914e91035ccb5b448b"
+  },
+  "valid": true,
+  "validator_count": 12,
+  "validators": [
+    {
+      "health": "healthy",
+      "inspect_succeeded": true,
+      "name": "xir-local-scale-local-source-v4-1",
+      "running": true,
+      "status": "running",
+      "valid": true
+    },
+    {
+      "health": "healthy",
+      "inspect_succeeded": true,
+      "name": "xir-local-scale-local-source-v3-1",
+      "running": true,
+      "status": "running",
+      "valid": true
+    },
+    {
+      "health": "healthy",
+      "inspect_succeeded": true,
+      "name": "xir-local-scale-local-source-v2-1",
+      "running": true,
+      "status": "running",
+      "valid": true
+    },
+    {
+      "health": "healthy",
+      "inspect_succeeded": true,
+      "name": "xir-local-scale-local-source-v1-1",
+      "running": true,
+      "status": "running",
+      "valid": true
+    },
+    {
+      "health": "healthy",
+      "inspect_succeeded": true,
+      "name": "xir-local-scale-local-intermediate-v4-1",
+      "running": true,
+      "status": "running",
+      "valid": true
+    },
+    {
+      "health": "healthy",
+      "inspect_succeeded": true,
+      "name": "xir-local-scale-local-intermediate-v3-1",
+      "running": true,
+      "status": "running",
+      "valid": true
+    },
+    {
+      "health": "healthy",
+      "inspect_succeeded": true,
+      "name": "xir-local-scale-local-intermediate-v2-1",
+      "running": true,
+      "status": "running",
+      "valid": true
+    },
+    {
+      "health": "healthy",
+      "inspect_succeeded": true,
+      "name": "xir-local-scale-local-intermediate-v1-1",
+      "running": true,
+      "status": "running",
+      "valid": true
+    },
+    {
+      "health": "healthy",
+      "inspect_succeeded": true,
+      "name": "xir-local-scale-local-destination-v4-1",
+      "running": true,
+      "status": "running",
+      "valid": true
+    },
+    {
+      "health": "healthy",
+      "inspect_succeeded": true,
+      "name": "xir-local-scale-local-destination-v3-1",
+      "running": true,
+      "status": "running",
+      "valid": true
+    },
+    {
+      "health": "healthy",
+      "inspect_succeeded": true,
+      "name": "xir-local-scale-local-destination-v2-1",
+      "running": true,
+      "status": "running",
+      "valid": true
+    },
+    {
+      "health": "healthy",
+      "inspect_succeeded": true,
+      "name": "xir-local-scale-local-destination-v1-1",
+      "running": true,
+      "status": "running",
+      "valid": true
+    }
+  ]
+}

@@ -14,6 +14,7 @@ def main() -> None:
     parser.add_argument("--profile", type=Path, required=True)
     parser.add_argument("--deployment", type=Path, required=True)
     parser.add_argument("--key-file", type=Path, required=True)
+    parser.add_argument("--root-signer-key-file", type=Path)
     parser.add_argument("--state", type=Path, required=True)
     parser.add_argument("--raw-root", type=Path, required=True)
     parser.add_argument("--concurrency", type=int, default=16)
@@ -26,6 +27,11 @@ def main() -> None:
         profile_path=args.profile,
         deployment_path=args.deployment,
         private_key=args.key_file.read_text(encoding="utf-8").strip(),
+        root_signer_private_key=(
+            args.root_signer_key_file.read_text(encoding="utf-8").strip()
+            if args.root_signer_key_file is not None
+            else None
+        ),
         state_path=args.state,
         raw_root=args.raw_root,
         concurrency=args.concurrency,

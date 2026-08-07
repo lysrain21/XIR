@@ -57,8 +57,11 @@ def validate_validator_inventory(rows: list[dict[str, str]]) -> None:
 def validate_distinct_role_identities(
     current_roles: dict[str, str], prior_roles: dict[str, str]
 ) -> None:
-    if set(current_roles) != set(prior_roles) or not current_roles:
-        raise LocalTopologyError("replication role identity inventory differs")
+    if not prior_roles or not set(prior_roles).issubset(current_roles):
+        raise LocalTopologyError("replication is missing a prior role identity class")
+    normalized_current = [value.lower() for value in current_roles.values()]
+    if len(normalized_current) != len(set(normalized_current)):
+        raise LocalTopologyError("replication role identities are not distinct")
     overlap = {value.lower() for value in current_roles.values()} & {
         value.lower() for value in prior_roles.values()
     }

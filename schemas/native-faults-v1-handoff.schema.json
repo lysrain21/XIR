@@ -1,0 +1,121 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xir.example/schemas/native-faults-v1-handoff.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "campaign_id",
+    "artifacts",
+    "denominator",
+    "matrix",
+    "invariants",
+    "digests",
+    "valid"
+  ],
+  "properties": {
+    "schema_version": {"const": "xir-lab-native-faults-v1-handoff-v1"},
+    "campaign_id": {"const": "native-faults-v1-frozen"},
+    "artifacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "frozen_publish",
+        "rebuild_a_publish",
+        "rebuild_b_publish",
+        "figure_directory"
+      ],
+      "properties": {
+        "frozen_publish": {"const": "frozen/publish"},
+        "rebuild_a_publish": {"const": "rebuild-a/publish"},
+        "rebuild_b_publish": {"const": "rebuild-b/publish"},
+        "figure_directory": {"const": "frozen/figure"}
+      }
+    },
+    "denominator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["expected", "observed", "validated", "failed", "exact"],
+      "properties": {
+        "expected": {"const": 60},
+        "observed": {"const": 60},
+        "validated": {"const": 60},
+        "failed": {"const": 0},
+        "exact": {"const": true}
+      }
+    },
+    "matrix": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "routes",
+        "scenario_count",
+        "group_count",
+        "repetitions_per_group",
+        "all_groups_valid"
+      ],
+      "properties": {
+        "routes": {"const": ["HL", "LH"]},
+        "scenario_count": {"const": 10},
+        "group_count": {"const": 20},
+        "repetitions_per_group": {"const": 3},
+        "all_groups_valid": {"const": true}
+      }
+    },
+    "invariants": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "stable_logical_attempt_id",
+        "single_nonce_lineage",
+        "single_transaction_lineage",
+        "single_raw_transaction_lineage",
+        "one_destination_effect",
+        "concurrent_recovery_cases",
+        "concurrent_recovery_shared_signed_identity",
+        "all_case_checks_valid"
+      ],
+      "properties": {
+        "stable_logical_attempt_id": {"const": true},
+        "single_nonce_lineage": {"const": true},
+        "single_transaction_lineage": {"const": true},
+        "single_raw_transaction_lineage": {"const": true},
+        "one_destination_effect": {"const": true},
+        "concurrent_recovery_cases": {"const": 6},
+        "concurrent_recovery_shared_signed_identity": {"const": true},
+        "all_case_checks_valid": {"const": true}
+      }
+    },
+    "digests": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_bundle_sha256",
+        "config_sha256",
+        "deployment_sha256",
+        "frozen_manifest_sha256",
+        "rebuild_a_manifest_sha256",
+        "rebuild_b_manifest_sha256",
+        "rebuilds_byte_identical",
+        "figure_pdf_sha256",
+        "figure_svg_sha256",
+        "figure_csv_sha256",
+        "figure_source_sha256"
+      ],
+      "properties": {
+        "source_bundle_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "config_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "deployment_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "frozen_manifest_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "rebuild_a_manifest_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "rebuild_b_manifest_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "rebuilds_byte_identical": {"const": true},
+        "figure_pdf_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "figure_svg_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "figure_csv_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "figure_source_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    },
+    "valid": {"const": true}
+  }
+}

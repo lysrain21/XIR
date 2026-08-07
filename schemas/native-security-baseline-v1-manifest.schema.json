@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xir.local/schemas/native-security-baseline-v1-manifest.schema.json",
+  "type": "object",
+  "required": ["schema_version", "namespace", "files"],
+  "properties": {
+    "schema_version": {"const": "xir-lab-native-security-baseline-v1-manifest"},
+    "namespace": {"const": "native-security-baseline-v1"},
+    "files": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["path", "bytes", "sha256"],
+        "properties": {
+          "path": {"type": "string"},
+          "bytes": {"type": "integer", "minimum": 0},
+          "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+        }
+      }
+    }
+  }
+}

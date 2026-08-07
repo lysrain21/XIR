@@ -13,12 +13,13 @@ from typing import Any, cast
 from eth_account import Account
 from hexbytes import HexBytes
 from web3 import Web3
-from web3.types import TxParams
+from web3.types import Nonce, TxParams, Wei
 
 from xir_lab.native.rpc import qbft_web3
 
 ROLES = (
     "runner",
+    "root-signer",
     "layerzero-worker",
     "hyperlane-validator",
     "hyperlane-relayer",
@@ -90,12 +91,12 @@ def main() -> None:
             value = TARGET_BALANCE - balance
             transaction: TxParams = {
                 "chainId": int(chain["chain_id"]),
-                "nonce": nonce,
+                "nonce": Nonce(nonce),
                 "to": address,
-                "value": value,
+                "value": Wei(value),
                 "gas": 21_000,
-                "maxFeePerGas": max(int(client.eth.gas_price) * 2, 1),
-                "maxPriorityFeePerGas": 0,
+                "maxFeePerGas": Wei(max(int(client.eth.gas_price) * 2, 1)),
+                "maxPriorityFeePerGas": Wei(0),
                 "type": 2,
             }
             action_id = hashlib.sha256(

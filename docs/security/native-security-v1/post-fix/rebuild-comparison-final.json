@@ -1,0 +1,31 @@
+{
+  "core_sha256": {
+    "REPORT.md": "2bf18918c2e57f2ad7360cfc8f5ad886dc89017fce324b63268af45e01dd8769",
+    "case-results.json": "7d2ce719e6324284d2b2cb6e52a2255b864fd25e3b71e9ffc95b16e929aaaf92",
+    "paper-table.csv": "2f6aedef07e324ecdcbf65e24fe1a72af5fb8bacf28069d0f37c347f4498c05c",
+    "summary.json": "a57afe4e2528d8e821aca4424cdbabdb0ece733f244f60030fb19680c3edc691"
+  },
+  "errors": [],
+  "online": "/vePFS-Mindverse/user/intern/lucian/xir/revisions/complete-bcra-evidence-revision/runtime/native-security-v1/native-stack-run-005/runs/security-full-v1/publish",
+  "rebuild_a": "/vePFS-Mindverse/user/intern/lucian/xir/revisions/complete-bcra-evidence-revision/runtime/native-security-v1/native-stack-run-005/runs/security-full-v1/rebuild-a3",
+  "rebuild_b": "/vePFS-Mindverse/user/intern/lucian/xir/revisions/complete-bcra-evidence-revision/runtime/native-security-v1/native-stack-run-005/runs/security-full-v1/rebuild-b3",
+  "rebuild_sha256": {
+    "REMOTE-PREFLIGHT.md": "0b814eea5ff88d96947ffde4194c3fcfb268a44bcbce9b1a08a31ac5ee5a57b6",
+    "REPORT.md": "2bf18918c2e57f2ad7360cfc8f5ad886dc89017fce324b63268af45e01dd8769",
+    "SECURITY-CLASSIFICATION.md": "e4ef46a107e1926d3cae956899559c57de3a6c4108cb6c604e37740802bffcba",
+    "SHA256SUMS": "bc8d279a061fe8580420b39137505bfc0bcd9cc16954c77ea0a2b11a1cf8cb29",
+    "case-results.json": "7d2ce719e6324284d2b2cb6e52a2255b864fd25e3b71e9ffc95b16e929aaaf92",
+    "offline-validation.json": "ba86b4dd88bc6fd4d9550e587a407808099ede06e492cb60512dc7fe887f6296",
+    "paper-classification-table.csv": "47b218d740cc274f9f478c78bc24ed1f426c34e6c9dc4d9f4fe0890f0b85ca78",
+    "paper-profile-inactive-lineage.csv": "35620c1a09488d23b35e2a2b90d12d70be072f4d5842321f762b663726cff5c9",
+    "paper-security-results.csv": "404aab04ce501a0d4751e8b91598bac39213983b6362a0711b75c0ef1eaad802",
+    "paper-table.csv": "2f6aedef07e324ecdcbf65e24fe1a72af5fb8bacf28069d0f37c347f4498c05c",
+    "profile-inactive-lineage.json": "1b5439272136e4083cf3b9d54d86478589b09ad51c299fd9c6abba5df7a34d11",
+    "remote-preflight.json": "21d66a0e0a72f8da064e25e4a55286aad7a81912549f4f44bfe2e04a80b89cbf",
+    "secret-scan.json": "e823aaba6b05e32b4908f3b3bf12405bc02d0aa93d2d8268e5872b2d00cb1657",
+    "security-classification.json": "39d71b6ef2ad2459ace7faa477f189eecc6d9fd3e945e6a4b57724d96c840ea2",
+    "summary.json": "a57afe4e2528d8e821aca4424cdbabdb0ece733f244f60030fb19680c3edc691"
+  },
+  "schema_version": "xir-lab-native-security-v1-rebuild-comparison-v1",
+  "valid": true
+}

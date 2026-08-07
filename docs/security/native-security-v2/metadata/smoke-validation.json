@@ -1,0 +1,77 @@
+{
+  "all_group_rejections_match": true,
+  "authority_cases": [
+    {
+      "actual_rejections": [
+        "UnapprovedPriorVerifier"
+      ],
+      "application_effect_delta": 0,
+      "case": "fake_verifier",
+      "gateway_consumed": false,
+      "receipt": "/vePFS-Mindverse/user/intern/lucian/xir/revisions/complete-bcra-evidence-revision/runtime/native-security-v2/native-security-v2-run-001/runs/smoke-001/native-preparation-receipts/0a70592e7a0b13bfd89cd76e3dfa41784d6a1082f1fe624f8c83eee5b80215b9.json",
+      "receipt_exists": true,
+      "receipt_sha256_matches": true,
+      "receipt_status": 0,
+      "route": "HL",
+      "submitted_prior_verifier": "0x0f7124308b3d36ac6f2ed3e1fc817a7e84c4dfd2",
+      "transaction_hash": "0a70592e7a0b13bfd89cd76e3dfa41784d6a1082f1fe624f8c83eee5b80215b9",
+      "valid": true
+    },
+    {
+      "actual_rejections": [
+        "UnapprovedPriorVerifier"
+      ],
+      "application_effect_delta": 0,
+      "case": "wrong_endpoint",
+      "gateway_consumed": false,
+      "receipt": "/vePFS-Mindverse/user/intern/lucian/xir/revisions/complete-bcra-evidence-revision/runtime/native-security-v2/native-security-v2-run-001/runs/smoke-001/native-preparation-receipts/e87e9c6c5df7d9a36debc2b05cfba8f02e0771550ffc0e17d8a10947c1e204ea.json",
+      "receipt_exists": true,
+      "receipt_sha256_matches": true,
+      "receipt_status": 0,
+      "route": "HL",
+      "submitted_prior_verifier": "0x3828c23b888684643a21fbcd3b20dc7c182b69b6",
+      "transaction_hash": "e87e9c6c5df7d9a36debc2b05cfba8f02e0771550ffc0e17d8a10947c1e204ea",
+      "valid": true
+    },
+    {
+      "actual_rejections": [
+        "UnapprovedPriorVerifier"
+      ],
+      "application_effect_delta": 0,
+      "case": "fake_verifier",
+      "gateway_consumed": false,
+      "receipt": "/vePFS-Mindverse/user/intern/lucian/xir/revisions/complete-bcra-evidence-revision/runtime/native-security-v2/native-security-v2-run-001/runs/smoke-001/native-preparation-receipts/d5ce84c1c59abe343aceda97575bf2747b3d540c30098986ae918f99f8474d71.json",
+      "receipt_exists": true,
+      "receipt_sha256_matches": true,
+      "receipt_status": 0,
+      "route": "LH",
+      "submitted_prior_verifier": "0x0f7124308b3d36ac6f2ed3e1fc817a7e84c4dfd2",
+      "transaction_hash": "d5ce84c1c59abe343aceda97575bf2747b3d540c30098986ae918f99f8474d71",
+      "valid": true
+    },
+    {
+      "actual_rejections": [
+        "UnapprovedPriorVerifier"
+      ],
+      "application_effect_delta": 0,
+      "case": "wrong_endpoint",
+      "gateway_consumed": false,
+      "receipt": "/vePFS-Mindverse/user/intern/lucian/xir/revisions/complete-bcra-evidence-revision/runtime/native-security-v2/native-security-v2-run-001/runs/smoke-001/native-preparation-receipts/8fa95021b27809f38fb7bd2742aaa258686239caa3e241b508b3992b02bebe95.json",
+      "receipt_exists": true,
+      "receipt_sha256_matches": true,
+      "receipt_status": 0,
+      "route": "LH",
+      "submitted_prior_verifier": "0xe78f910f8f457b52951772d6cfe8150ad03cc815",
+      "transaction_hash": "8fa95021b27809f38fb7bd2742aaa258686239caa3e241b508b3992b02bebe95",
+      "valid": true
+    }
+  ],
+  "expected_case_runs": 26,
+  "failed_case_runs": 0,
+  "observed_case_runs": 26,
+  "schema_version": "xir-lab-native-security-v2-smoke-validation-v1",
+  "summary_sha256": "fa43a98690a3026da3f9c40003c6b77d4083f3ef33c7323e78eef144d703a786",
+  "summary_valid": true,
+  "valid": true,
+  "validated_case_runs": 26
+}

@@ -9,7 +9,7 @@ import sqlite3
 import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
-from dataclasses import asdict
+from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, cast
 
@@ -32,6 +32,7 @@ from xir_lab.localnet.native_profile import (
 from xir_lab.localnet.topology import LocalTopologyError
 from xir_lab.native.deployer import PROFILE_HASHES, ROUTE_IDS, gateway_typed_id
 from xir_lab.native.layerzero import executor_lz_receive_options
+from xir_lab.native.root_signer import FinalizedRootSigner, Web3RootCreationSource
 from xir_lab.native.rpc import is_transient_rpc_error, qbft_web3
 from xir_lab.native.xir_trace import (
     XIRContext,
@@ -239,6 +240,21 @@ class RunnerState:
             return int(row["maximum"]) + 1
 
 
+@dataclass(frozen=True)
+class PreparedXIRDelivery:
+    """A native-carrier delivery whose evidence is ready but not yet consumed."""
+
+    attempt: NativeAttempt
+    payload: bytes
+    record: XIRRecord
+    context: XIRContext
+    rid: bytes
+    signature: bytes
+    receipts: tuple[XIRReceipt, ...]
+    envelope: tuple[Any, ...]
+    receiver_address: str
+
+
 class NativeExperimentRunner:
     def __init__(
         self,
@@ -248,6 +264,7 @@ class NativeExperimentRunner:
         profile_path: Path,
         deployment_path: Path,
         private_key: str,
+        root_signer_private_key: str | None = None,
         state_path: Path,
         raw_root: Path,
         timeout_seconds: int = 300,
@@ -275,20 +292,16 @@ class NativeExperimentRunner:
         self.concurrency = concurrency
         self.batch_attempts = batch_attempts
         self.submission_stop_file = submission_stop_file
-        self.chain_by_role = {
-            str(chain["route_role"]): chain for chain in self.profile["chains"]
-        }
+        self.chain_by_role = {str(chain["route_role"]): chain for chain in self.profile["chains"]}
         self.clients = {
-            role: qbft_web3(str(chain["rpc_url"]))
-            for role, chain in self.chain_by_role.items()
+            role: qbft_web3(str(chain["rpc_url"])) for role, chain in self.chain_by_role.items()
         }
         self.nonces = {
             role: int(client.eth.get_transaction_count(self.account.address, "pending"))
             for role, client in self.clients.items()
         }
         role_by_chain_id = {
-            int(chain["chain_id"]): role
-            for role, chain in self.chain_by_role.items()
+            int(chain["chain_id"]): role for role, chain in self.chain_by_role.items()
         }
         for pending in self.state.pending_signed_transactions():
             transaction_hash = str(pending["transaction_hash"])
@@ -306,22 +319,26 @@ class NativeExperimentRunner:
                 raise LocalTopologyError(
                     "pending signed native transaction has an unexpected chain"
                 )
-            self.nonces[role] = max(
-                self.nonces[role], int(decoded["nonce"]) + 1
-            )
+            self.nonces[role] = max(self.nonces[role], int(decoded["nonce"]) + 1)
         self.nonce_locks = {role: threading.Lock() for role in self.clients}
         self.xir_nonce_lock = threading.Lock()
         self.xir_nonce_next: int | None = None
         self.artifact_root = repository_root / "contracts" / "out"
         self.options = executor_lz_receive_options(1_500_000)
+        self.root_signer: FinalizedRootSigner | None = None
+        if root_signer_private_key is not None:
+            source_gateway = self._contract("source", "gateway", "XIRGateway.sol", "XIRGateway")
+            self.root_signer = FinalizedRootSigner(
+                source=Web3RootCreationSource(self.clients["source"], source_gateway),
+                private_key=root_signer_private_key,
+                audit_path=state_path.parent / "root-signer-audit.jsonl",
+            )
 
     def _artifact(self, source: str, contract: str) -> dict[str, Any]:
         return cast(
             dict[str, Any],
             json.loads(
-                (self.artifact_root / source / f"{contract}.json").read_text(
-                    encoding="utf-8"
-                )
+                (self.artifact_root / source / f"{contract}.json").read_text(encoding="utf-8")
             ),
         )
 
@@ -369,18 +386,12 @@ class NativeExperimentRunner:
         existing = self.state.stage(attempt_id, stage)
         client = self.clients[role]
         if existing is not None and str(existing["state"]) == "succeeded":
-            existing_detail = cast(
-                dict[str, Any], json.loads(existing["detail_json"])
-            )
+            existing_detail = cast(dict[str, Any], json.loads(existing["detail_json"]))
             existing_hash = existing["transaction_hash"]
             if existing_hash and "receipt" not in existing_detail:
-                existing_receipt = client.eth.get_transaction_receipt(
-                    HexStr(str(existing_hash))
-                )
+                existing_receipt = client.eth.get_transaction_receipt(HexStr(str(existing_hash)))
                 if int(existing_receipt["status"]) != 1:
-                    raise LocalTopologyError(
-                        f"previous native route transaction reverted: {stage}"
-                    )
+                    raise LocalTopologyError(f"previous native route transaction reverted: {stage}")
                 existing_detail = self._persist_receipt(
                     transaction_hash=str(existing_hash),
                     receipt=existing_receipt,
@@ -398,9 +409,7 @@ class NativeExperimentRunner:
         if existing is not None and existing["transaction_hash"]:
             prior_hash = str(existing["transaction_hash"])
             prior_hash_typed = HexStr(prior_hash)
-            prior_detail = cast(
-                dict[str, Any], json.loads(existing["detail_json"])
-            )
+            prior_detail = cast(dict[str, Any], json.loads(existing["detail_json"]))
             retry_lineage = list(prior_detail.get("retry_lineage", []))
             try:
                 prior_receipt = client.eth.get_transaction_receipt(prior_hash_typed)
@@ -415,16 +424,11 @@ class NativeExperimentRunner:
                         client.eth.send_raw_transaction(raw)
                     except (ValueError, Web3RPCError) as exc:
                         message = str(exc).lower()
-                        known = (
-                            "already known" in message
-                            or "known transaction" in message
-                        )
+                        known = "already known" in message or "known transaction" in message
                         nonce_consumed = (
                             "nonce too low" in message
                             and int(
-                                client.eth.get_transaction_count(
-                                    self.account.address, "latest"
-                                )
+                                client.eth.get_transaction_count(self.account.address, "latest")
                             )
                             > transaction_nonce
                         )
@@ -461,17 +465,13 @@ class NativeExperimentRunner:
                     prior_receipt = None
             if prior_receipt is not None:
                 if int(prior_receipt["status"]) != 1:
-                    raise LocalTopologyError(
-                        f"previous native route transaction reverted: {stage}"
-                    )
+                    raise LocalTopologyError(f"previous native route transaction reverted: {stage}")
                 prior_detail = self._persist_receipt(
                     transaction_hash=prior_hash,
                     receipt=prior_receipt,
                     detail=prior_detail,
                 )
-                self.state.record_stage(
-                    attempt_id, stage, "succeeded", prior_detail, prior_hash
-                )
+                self.state.record_stage(attempt_id, stage, "succeeded", prior_detail, prior_hash)
                 return prior_detail
         if preallocated_nonce is None:
             with self.nonce_locks[role]:
@@ -522,9 +522,7 @@ class NativeExperimentRunner:
             signed.hash.hex(),
         )
         tx_hash = client.eth.send_raw_transaction(raw)
-        receipt = client.eth.wait_for_transaction_receipt(
-            tx_hash, timeout=self.timeout_seconds
-        )
+        receipt = client.eth.wait_for_transaction_receipt(tx_hash, timeout=self.timeout_seconds)
         if int(receipt["status"]) != 1:
             failed_detail = self._persist_receipt(
                 transaction_hash=tx_hash.hex(),
@@ -544,9 +542,7 @@ class NativeExperimentRunner:
             receipt=receipt,
             detail=intended,
         )
-        self.state.record_stage(
-            attempt_id, stage, "succeeded", result, tx_hash.hex()
-        )
+        self.state.record_stage(attempt_id, stage, "succeeded", result, tx_hash.hex())
         return result
 
     def _wait_verify(
@@ -574,37 +570,25 @@ class NativeExperimentRunner:
     def _layerzero_guid_from_stage(self, result: dict[str, Any]) -> bytes:
         receipt = json.loads(Path(result["receipt"]).read_text(encoding="utf-8"))
         topic = (
-            "0x"
-            + keccak(
-                text="VerifiedEvidenceForwarded(bytes32,uint64,uint256)"
-            ).hex()
+            "0x" + keccak(text="VerifiedEvidenceForwarded(bytes32,uint64,uint256)").hex()
         ).lower()
         for log in receipt["logs"]:
             topics = log.get("topics", [])
             if topics and str(topics[0]).lower() == topic and len(topics) >= 2:
                 return bytes.fromhex(str(topics[1]).removeprefix("0x"))
-        raise LocalTopologyError(
-            "LayerZero adapter receipt lacks VerifiedEvidenceForwarded"
-        )
+        raise LocalTopologyError("LayerZero adapter receipt lacks VerifiedEvidenceForwarded")
 
     def run_phase(self, phase: str) -> None:
-        attempts = build_native_attempts(
-            profile_path=self.profile_path, phase=cast(Any, phase)
-        )
+        attempts = build_native_attempts(profile_path=self.profile_path, phase=cast(Any, phase))
         for offset in range(0, len(attempts), self.batch_attempts):
-            if (
-                self.submission_stop_file is not None
-                and self.submission_stop_file.exists()
-            ):
+            if self.submission_stop_file is not None and self.submission_stop_file.exists():
                 raise LocalTopologyError(
                     "native submissions stopped by the resource monitor: "
                     f"{self.submission_stop_file}"
                 )
             batch = attempts[offset : offset + self.batch_attempts]
             with ThreadPoolExecutor(max_workers=self.concurrency) as pool:
-                futures = [
-                    pool.submit(self._run_if_needed, attempt) for attempt in batch
-                ]
+                futures = [pool.submit(self._run_if_needed, attempt) for attempt in batch]
                 for future in futures:
                     future.result()
 
@@ -622,9 +606,7 @@ class NativeExperimentRunner:
                 if not is_transient_rpc_error(exc):
                     raise
                 transient_retry += 1
-                self.state.record_transient_error(
-                    attempt.attempt_id, exc, transient_retry
-                )
+                self.state.record_transient_error(attempt.attempt_id, exc, transient_retry)
                 if transient_deadline is None:
                     transient_deadline = time.monotonic() + self.timeout_seconds
                 if time.monotonic() >= transient_deadline:
@@ -651,16 +633,12 @@ class NativeExperimentRunner:
     def _run_homogeneous(self, attempt: NativeAttempt, payload: bytes) -> None:
         protocol = attempt.route[0]
         adapter_role = f"{protocol.lower()}_source"
-        source_name = (
-            "HyperlaneAdapter.sol" if protocol == "H" else "LayerZeroAdapter.sol"
-        )
+        source_name = "HyperlaneAdapter.sol" if protocol == "H" else "LayerZeroAdapter.sol"
         contract_name = "HyperlaneAdapter" if protocol == "H" else "LayerZeroAdapter"
         adapter = self._contract("source", adapter_role, source_name, contract_name)
         options = b"" if protocol == "H" else self.options
         fee = int(
-            adapter.functions.quoteBaseline(
-                ROUTE_IDS[attempt.route], payload, options
-            ).call()
+            adapter.functions.quoteBaseline(ROUTE_IDS[attempt.route], payload, options).call()
         )
         self._transact(
             attempt_id=attempt.attempt_id,
@@ -692,24 +670,43 @@ class NativeExperimentRunner:
         raise LocalTopologyError("timed out waiting for homogeneous destination effect")
 
     def _run_heterogeneous(self, attempt: NativeAttempt, payload: bytes) -> None:
+        prepared = self.prepare_heterogeneous(attempt, payload)
+        gateway = self._contract("destination", "gateway", "XIRGateway.sol", "XIRGateway")
+        self._transact(
+            attempt_id=attempt.attempt_id,
+            stage="destination_deliver",
+            role="destination",
+            function=gateway.functions.deliver(
+                prepared.envelope, prepared.payload, prepared.receiver_address
+            ),
+            detail={
+                "rid": "0x" + prepared.rid.hex(),
+                "receipt_count": len(prepared.receipts),
+                "xir_transition_count": 1,
+            },
+        )
+
+    def prepare_heterogeneous(self, attempt: NativeAttempt, payload: bytes) -> PreparedXIRDelivery:
+        """Execute both native hops and return an undelivered XIR envelope.
+
+        Security-conformance tests use this boundary to mutate only the final
+        envelope after both carrier stacks have authenticated their native
+        inputs.  The standard workload immediately submits the returned
+        envelope through :meth:`_run_heterogeneous`.
+        """
+
+        if not attempt.xir or attempt.route not in {"HL", "LH"}:
+            raise LocalTopologyError("XIR preparation requires an HL or LH attempt")
         source_id = gateway_typed_id(int(self.chain_by_role["source"]["chain_id"]))
-        intermediate_id = gateway_typed_id(
-            int(self.chain_by_role["intermediate"]["chain_id"])
-        )
-        destination_id = gateway_typed_id(
-            int(self.chain_by_role["destination"]["chain_id"])
-        )
+        intermediate_id = gateway_typed_id(int(self.chain_by_role["intermediate"]["chain_id"]))
+        destination_id = gateway_typed_id(int(self.chain_by_role["destination"]["chain_id"]))
         receiver_address = self.contracts["destination"]["receiver"]
         root_stage = self.state.stage(attempt.attempt_id, "xir_root_record")
         if root_stage is not None:
-            source_gateway_nonce = int(
-                json.loads(root_stage["detail_json"])["record_nonce"]
-            )
+            source_gateway_nonce = int(json.loads(root_stage["detail_json"])["record_nonce"])
             root_transaction_nonce = None
         else:
-            source_gateway_nonce, root_transaction_nonce = (
-                self._reserve_root_nonces()
-            )
+            source_gateway_nonce, root_transaction_nonce = self._reserve_root_nonces()
         record = XIRRecord(
             source_gateway=source_id,
             source_app=(1, bytes.fromhex(self.account.address[2:])),
@@ -719,11 +716,6 @@ class NativeExperimentRunner:
         )
         context = XIRContext(1, keccak(text="XIR_NATIVE_POLICY_V1"))
         rid = root_id(record, context, 1)
-        signature = bytes(
-            Account.sign_message(
-                encode_defunct(primitive=rid), private_key=self.private_key
-            ).signature
-        )
         self._create_record(
             attempt,
             record,
@@ -731,14 +723,28 @@ class NativeExperimentRunner:
             payload,
             preallocated_nonce=root_transaction_nonce,
         )
+        if self.root_signer is None:
+            signature = bytes(
+                Account.sign_message(
+                    encode_defunct(primitive=rid), private_key=self.private_key
+                ).signature
+            )
+        else:
+            root_stage = self.state.stage(attempt.attempt_id, "xir_root_record")
+            if root_stage is None or not root_stage["transaction_hash"]:
+                raise LocalTopologyError("root creation transaction evidence is missing")
+            signature = self.root_signer.sign(
+                transaction_hash=str(root_stage["transaction_hash"]),
+                record=record,
+                context=context,
+                registry_version=1,
+            )
         first = attempt.route[0]
         second = attempt.route[1]
         first_profile = PROFILE_HASHES[f"{first}_AB"]
         second_profile = PROFILE_HASHES[f"{second}_BC"]
         transition_one = transition_hash(record, context, source_id, intermediate_id)
-        evidence_one = self._dispatch_first_xir(
-            attempt, first, first_profile, transition_one
-        )
+        evidence_one = self._dispatch_first_xir(attempt, first, first_profile, transition_one)
         self._wait_verify(
             role="intermediate",
             adapter_role=f"{first.lower()}_in",
@@ -774,9 +780,7 @@ class NativeExperimentRunner:
             function=recorder.functions.record(payload, envelope_one, second_profile),
             detail={"outbound_profile": "0x" + second_profile.hex()},
         )
-        transition_two = transition_hash(
-            record, context, intermediate_id, destination_id
-        )
+        transition_two = transition_hash(record, context, intermediate_id, destination_id)
         evidence_two = self._dispatch_second_xir(
             attempt,
             second,
@@ -817,32 +821,23 @@ class NativeExperimentRunner:
             (1, signature),
             [receipt_tuple(receipt_one), receipt_tuple(receipt_two)],
         )
-        gateway = self._contract(
-            "destination", "gateway", "XIRGateway.sol", "XIRGateway"
-        )
-        self._transact(
-            attempt_id=attempt.attempt_id,
-            stage="destination_deliver",
-            role="destination",
-            function=gateway.functions.deliver(
-                envelope_two, payload, receiver_address
-            ),
-            detail={
-                "rid": "0x" + rid.hex(),
-                "receipt_count": 2,
-                "xir_transition_count": 1,
-            },
+        return PreparedXIRDelivery(
+            attempt=attempt,
+            payload=payload,
+            record=record,
+            context=context,
+            rid=rid,
+            signature=signature,
+            receipts=(receipt_one, receipt_two),
+            envelope=envelope_two,
+            receiver_address=receiver_address,
         )
 
     def _reserve_root_nonces(self) -> tuple[int, int]:
         with self.xir_nonce_lock:
             if self.xir_nonce_next is None:
-                gateway = self._contract(
-                    "source", "gateway", "XIRGateway.sol", "XIRGateway"
-                )
-                self.xir_nonce_next = int(
-                    gateway.functions.nextNonce(self.account.address).call()
-                )
+                gateway = self._contract("source", "gateway", "XIRGateway.sol", "XIRGateway")
+                self.xir_nonce_next = int(gateway.functions.nextNonce(self.account.address).call())
                 self.xir_nonce_next = max(
                     self.xir_nonce_next, self.state.next_reserved_root_nonce()
                 )
@@ -861,14 +856,10 @@ class NativeExperimentRunner:
         payload: bytes,
         preallocated_nonce: int | None,
     ) -> None:
-        gateway = self._contract(
-            "source", "gateway", "XIRGateway.sol", "XIRGateway"
-        )
+        gateway = self._contract("source", "gateway", "XIRGateway.sol", "XIRGateway")
         completed = self.state.stage(attempt.attempt_id, "xir_root_record")
         if completed is None or str(completed["state"]) != "succeeded":
-            current_nonce = int(
-                gateway.functions.nextNonce(self.account.address).call()
-            )
+            current_nonce = int(gateway.functions.nextNonce(self.account.address).call())
             if current_nonce == record.nonce:
                 preview = gateway.functions.createRecord(
                     record.destination_app,
@@ -878,9 +869,7 @@ class NativeExperimentRunner:
                 ).call({"from": self.account.address})
                 expected_rid = root_id(record, context, 1)
                 if bytes(preview[1]) != expected_rid:
-                    raise LocalTopologyError(
-                        "XIR root preview differs from recomputation"
-                    )
+                    raise LocalTopologyError("XIR root preview differs from recomputation")
         self._transact(
             attempt_id=attempt.attempt_id,
             stage="xir_root_record",
@@ -907,18 +896,13 @@ class NativeExperimentRunner:
     ) -> bytes:
         completed = self.state.stage(attempt.attempt_id, "first_protocol_dispatch")
         if completed is not None and str(completed["state"]) == "succeeded":
-            completed_detail = cast(
-                dict[str, Any], json.loads(completed["detail_json"])
-            )
+            completed_detail = cast(dict[str, Any], json.loads(completed["detail_json"]))
             if "evidence" in completed_detail:
-                return bytes.fromhex(
-                    str(completed_detail["evidence"]).removeprefix("0x")
-                )
+                return bytes.fromhex(str(completed_detail["evidence"]).removeprefix("0x"))
         adapter_role = f"{protocol.lower()}_source"
         if protocol == "H":
             evidence = keccak(
-                b"XIR_NATIVE_FIRST_HYPERLANE_EVIDENCE_V1"
-                + keccak(text=attempt.attempt_id)
+                b"XIR_NATIVE_FIRST_HYPERLANE_EVIDENCE_V1" + keccak(text=attempt.attempt_id)
             )
             adapter = self._contract(
                 "source", adapter_role, "HyperlaneAdapter.sol", "HyperlaneAdapter"
@@ -934,9 +918,7 @@ class NativeExperimentRunner:
                 detail={"evidence": "0x" + evidence.hex(), "native_fee": fee},
             )
             return evidence
-        adapter = self._contract(
-            "source", adapter_role, "LayerZeroAdapter.sol", "LayerZeroAdapter"
-        )
+        adapter = self._contract("source", adapter_role, "LayerZeroAdapter.sol", "LayerZeroAdapter")
         request: Any = ([], [], [], [], profile, transition, self.options)
         quote = adapter.functions.quoteForward(request).call()
         result = self._transact(
@@ -970,44 +952,34 @@ class NativeExperimentRunner:
     ) -> bytes:
         completed = self.state.stage(attempt.attempt_id, "second_protocol_dispatch")
         if completed is not None and str(completed["state"]) == "succeeded":
-            completed_detail = cast(
-                dict[str, Any], json.loads(completed["detail_json"])
-            )
+            completed_detail = cast(dict[str, Any], json.loads(completed["detail_json"]))
             if "evidence" in completed_detail:
-                return bytes.fromhex(
-                    str(completed_detail["evidence"]).removeprefix("0x")
-                )
-        adapter_role = f"{protocol.lower()}_xir_out"
-        verifier = self.contracts["intermediate"][f"{attempt.route[0].lower()}_in"]
+                return bytes.fromhex(str(completed_detail["evidence"]).removeprefix("0x"))
+        verifier = self._prior_verifier_for_second_dispatch(attempt)
+        _adapter, function, quote_function, predicted_evidence = (
+            self._second_xir_dispatch_components(
+                attempt=attempt,
+                protocol=protocol,
+                verifier=verifier,
+                prior_profile=prior_profile,
+                prior_evidence=prior_evidence,
+                prior_transition=prior_transition,
+                current_profile=current_profile,
+                current_transition=current_transition,
+            )
+        )
         if protocol == "L":
-            adapter = self._contract(
-                "intermediate",
-                adapter_role,
-                "LayerZeroAdapter.sol",
-                "LayerZeroAdapter",
-            )
-            layerzero_request = (
-                [verifier],
-                [prior_profile],
-                [prior_evidence],
-                [prior_transition],
-                current_profile,
-                current_transition,
-                self.options,
-            )
-            quote = adapter.functions.quoteForward(layerzero_request).call()
+            quote = quote_function.call()
             result = self._transact(
                 attempt_id=attempt.attempt_id,
                 stage="second_protocol_dispatch",
                 role="intermediate",
-                function=adapter.functions.sendSource(layerzero_request),
+                function=function,
                 value=int(quote[0]),
                 detail={"native_fee": int(quote[0])},
             )
             evidence = self._layerzero_guid_from_stage(result)
-            current = self.state.stage(
-                attempt.attempt_id, "second_protocol_dispatch"
-            )
+            current = self.state.stage(attempt.attempt_id, "second_protocol_dispatch")
             self.state.record_stage(
                 attempt.attempt_id,
                 "second_protocol_dispatch",
@@ -1016,13 +988,71 @@ class NativeExperimentRunner:
                 None if current is None else str(current["transaction_hash"]),
             )
             return evidence
+        if predicted_evidence is None:
+            raise LocalTopologyError("Hyperlane dispatch lacks predicted evidence")
+        evidence = predicted_evidence
+        fee = int(quote_function.call())
+        self._transact(
+            attempt_id=attempt.attempt_id,
+            stage="second_protocol_dispatch",
+            role="intermediate",
+            function=function,
+            value=fee,
+            detail={"evidence": "0x" + evidence.hex(), "native_fee": fee},
+        )
+        return evidence
+
+    def _prior_verifier_for_second_dispatch(self, attempt: NativeAttempt) -> str:
+        """Return the deployed inbound adapter authorized for the first profile."""
+
+        return self.contracts["intermediate"][f"{attempt.route[0].lower()}_in"]
+
+    def _second_xir_dispatch_components(
+        self,
+        *,
+        attempt: NativeAttempt,
+        protocol: str,
+        verifier: str,
+        prior_profile: bytes,
+        prior_evidence: bytes,
+        prior_transition: bytes,
+        current_profile: bytes,
+        current_transition: bytes,
+    ) -> tuple[Any, Any, Any, bytes | None]:
+        """Build a second-hop request without authorizing its verifier address."""
+
+        adapter_role = f"{protocol.lower()}_xir_out"
+        if protocol == "L":
+            adapter = self._contract(
+                "intermediate",
+                adapter_role,
+                "LayerZeroAdapter.sol",
+                "LayerZeroAdapter",
+            )
+            layerzero_request: Any = (
+                [verifier],
+                [prior_profile],
+                [prior_evidence],
+                [prior_transition],
+                current_profile,
+                current_transition,
+                self.options,
+            )
+            return (
+                adapter,
+                adapter.functions.sendSource(layerzero_request),
+                adapter.functions.quoteForward(layerzero_request),
+                None,
+            )
+        if protocol != "H":
+            raise LocalTopologyError(f"unsupported second-hop protocol: {protocol}")
         adapter = self._contract(
             "intermediate",
             adapter_role,
             "HyperlaneAdapter.sol",
             "HyperlaneAdapter",
         )
-        hyperlane_request = (
+        hyperlane_request: Any = (
             [verifier],
             [prior_profile],
             [prior_evidence],
@@ -1043,9 +1073,7 @@ class NativeExperimentRunner:
             ],
         )
         body = encode(["uint8", "bytes"], [3, inner])
-        sender = bytes.fromhex(
-            "00" * 12 + self.contracts["intermediate"][adapter_role][2:]
-        )
+        sender = bytes.fromhex("00" * 12 + self.contracts["intermediate"][adapter_role][2:])
         evidence = keccak(
             encode(
                 ["uint32", "bytes32", "bytes"],
@@ -1056,13 +1084,9 @@ class NativeExperimentRunner:
                 ],
             )
         )
-        fee = int(adapter.functions.quoteBundle(hyperlane_request).call())
-        self._transact(
-            attempt_id=attempt.attempt_id,
-            stage="second_protocol_dispatch",
-            role="intermediate",
-            function=adapter.functions.sendSourceBundle(hyperlane_request),
-            value=fee,
-            detail={"evidence": "0x" + evidence.hex(), "native_fee": fee},
+        return (
+            adapter,
+            adapter.functions.sendSourceBundle(hyperlane_request),
+            adapter.functions.quoteBundle(hyperlane_request),
+            evidence,
         )
-        return evidence

@@ -107,6 +107,49 @@ def next_prefix(receipt: XIRReceipt) -> bytes:
     return keccak(b"XIR_PREFIX_V1" + receipt.prior_prefix + receipt_hash(receipt))
 
 
+def bundle_start(receipt_count: int) -> bytes:
+    """Match ``XIREncoding.bundleStart`` (Solidity ``abi.encode``)."""
+
+    if receipt_count < 0:
+        raise ValueError("receipt count cannot be negative")
+    tag = b"XIR_BUNDLE_V1"
+    # abi.encode(bytes,uint256): offset, count, byte length, padded bytes.
+    tag_padding = tag + bytes((32 - len(tag) % 32) % 32)
+    return keccak(
+        (64).to_bytes(32, "big")
+        + receipt_count.to_bytes(32, "big")
+        + len(tag).to_bytes(32, "big")
+        + tag_padding
+    )
+
+
+def bundle_step(prefix: bytes, index: int, receipt: XIRReceipt) -> bytes:
+    """Match the index-bound ``XIREncoding.bundleStep`` encoding."""
+
+    if len(prefix) != 32 or index < 0:
+        raise ValueError("invalid bundle prefix or index")
+    tag = b"XIR_BUNDLE_STEP_V1"
+    tag_padding = tag + bytes((32 - len(tag) % 32) % 32)
+    # abi.encode(bytes,bytes32,uint256,bytes32,bytes32,bytes32)
+    return keccak(
+        (192).to_bytes(32, "big")
+        + prefix
+        + index.to_bytes(32, "big")
+        + receipt.profile_hash
+        + receipt.evidence_hash
+        + receipt.transition_hash
+        + len(tag).to_bytes(32, "big")
+        + tag_padding
+    )
+
+
+def bundle_commitment(receipts: list[XIRReceipt] | tuple[XIRReceipt, ...]) -> bytes:
+    prefix = bundle_start(len(receipts))
+    for index, receipt in enumerate(receipts):
+        prefix = bundle_step(prefix, index, receipt)
+    return prefix
+
+
 def record_tuple(record: XIRRecord) -> tuple[TypedId, TypedId, TypedId, int, bytes]:
     return (
         record.source_gateway,

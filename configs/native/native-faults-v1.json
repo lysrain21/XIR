@@ -1,0 +1,70 @@
+{
+  "schema_version": "xir-lab-native-faults-v1-config-v1",
+  "campaign_id": "native-faults-v1-frozen",
+  "routes": ["HL", "LH"],
+  "repetitions_per_route_scenario": 3,
+  "coordinator_stage": "destination_deliver",
+  "scenarios": [
+    {
+      "name": "pre_intent",
+      "actor": "coordinator",
+      "boundary": "pre_intent",
+      "signal": "process_exit"
+    },
+    {
+      "name": "post_intent_pre_sign",
+      "actor": "coordinator",
+      "boundary": "post_intent_pre_sign",
+      "signal": "process_exit"
+    },
+    {
+      "name": "post_sign_pre_broadcast",
+      "actor": "coordinator",
+      "boundary": "post_sign_pre_broadcast",
+      "signal": "process_exit"
+    },
+    {
+      "name": "post_broadcast_pre_acknowledgement",
+      "actor": "coordinator",
+      "boundary": "post_broadcast_pre_acknowledgement",
+      "signal": "process_exit"
+    },
+    {
+      "name": "post_acknowledgement_pre_mining",
+      "actor": "coordinator",
+      "boundary": "post_acknowledgement_pre_mining",
+      "signal": "process_exit"
+    },
+    {
+      "name": "post_mining_pre_persistence",
+      "actor": "coordinator",
+      "boundary": "post_mining_pre_persistence",
+      "signal": "process_exit"
+    },
+    {
+      "name": "post_persistence_pre_stage_commit",
+      "actor": "coordinator",
+      "boundary": "post_persistence_pre_stage_commit",
+      "signal": "process_exit"
+    },
+    {
+      "name": "worker_action_post_submit",
+      "actor": "worker",
+      "boundary": "worker_action_post_submit",
+      "signal": "process_exit",
+      "target_stage": "executor_execute"
+    },
+    {
+      "name": "transient_retry_after_broadcast",
+      "actor": "coordinator",
+      "boundary": "post_broadcast_pre_acknowledgement",
+      "signal": "transient_retry"
+    },
+    {
+      "name": "concurrent_retry",
+      "actor": "coordinator",
+      "boundary": "post_sign_pre_broadcast",
+      "signal": "concurrent_retry"
+    }
+  ]
+}

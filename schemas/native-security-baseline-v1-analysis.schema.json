@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xir.local/schemas/native-security-baseline-v1-analysis.schema.json",
+  "type": "object",
+  "required": [
+    "schema_version", "namespace", "config_sha256", "analysis_source_sha256",
+    "deployment_sha256",
+    "environment_namespace", "base_deployment_sha256",
+    "final_revision_source_sha256", "prior_verifier_bindings",
+    "onchain_prior_verifier_bindings",
+    "runner_state_sha256", "worker_state_sha256", "attempt_count",
+    "physical_transaction_count", "capability_rows", "case_summary",
+    "validation", "semantic_digest"
+  ],
+  "properties": {
+    "schema_version": {"const": "xir-lab-native-security-baseline-v1-analysis"},
+    "namespace": {"const": "native-security-baseline-v1"},
+    "config_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "analysis_source_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "deployment_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "environment_namespace": {"const": "native-ablation-v2"},
+    "base_deployment_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "final_revision_source_sha256": {"type": "object", "minProperties": 4},
+    "prior_verifier_bindings": {"type": "object", "minProperties": 2},
+    "onchain_prior_verifier_bindings": {"type": "object", "minProperties": 2},
+    "runner_state_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "worker_state_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "attempt_count": {"type": "integer", "minimum": 300},
+    "physical_transaction_count": {"type": "integer", "minimum": 1},
+    "capability_rows": {"type": "array", "minItems": 1},
+    "case_summary": {"type": "array", "minItems": 10, "maxItems": 10},
+    "validation": {"type": "object"},
+    "semantic_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

@@ -1,0 +1,98 @@
+{
+  "schema_version": "xir-lab-native-security-v1-post-fix-evidence-v1",
+  "evidence_id": "native-security-v1-postfix-lineage-001",
+  "base_repository_revision": "86f844d266274cfc2060706657c53d5f2c39ab78",
+  "source_snapshot_is_worktree_revision": true,
+  "protocol_semantics": "The final native adapter authenticates the exact ordered tuple sequence carried by one native bundle. XIRGateway separately checks receipt membership, prefix linkage, Gateway identity, and profile state.",
+  "campaign": {
+    "campaign_id": "native-security-v1",
+    "routes": [
+      "HL",
+      "LH"
+    ],
+    "cases_per_route": 11,
+    "repetitions_per_route_case": 30,
+    "expected_case_runs": 660,
+    "validated_case_runs": 660,
+    "failed_case_runs": 0,
+    "duration_seconds": 1790.669440984726,
+    "unique_delivery_transactions": 780,
+    "profile_toggle_transactions": 120,
+    "primary_runner_attempts": 660,
+    "alternate_splice_runner_attempts": 60,
+    "root_signer_audits": 660,
+    "root_signer_separated": true,
+    "rejected_transaction_application_effects": 0,
+    "initial_replay_application_effects": 120,
+    "duplicate_replay_application_effects": 0
+  },
+  "key_results": {
+    "cross_execution_splice": {
+      "runs": 60,
+      "expected_rejection": "BundleRejected",
+      "actual_rejection_matches": 60,
+      "application_effects": 0
+    },
+    "profile_inactive": {
+      "runs": 60,
+      "state_sequences_reconstructed": 60,
+      "sequence": "enabled=false -> ProfileInactive delivery -> enabled=true",
+      "application_effects": 0,
+      "gateway_consumptions": 0,
+      "receiver_consumptions": 0
+    },
+    "sequential_and_concurrent_replay": {
+      "runs": 120,
+      "first_application_effects": 120,
+      "duplicate_application_effects": 0,
+      "actual_rejection": "AlreadyConsumed"
+    }
+  },
+  "assumption_classification": "All eleven input-manipulation cases keep A1-A4 intact. Trusted-component compromise is analyzed separately.",
+  "local_validation": {
+    "forge_command": "forge test --root contracts --match-contract SecuritySpliceRegressionTest -vv",
+    "forge_tests_passed": 7,
+    "forge_tests_failed": 0,
+    "focused_python_tests_passed": 12,
+    "focused_python_tests_failed": 0,
+    "ruff": "PASS",
+    "mypy": "PASS"
+  },
+  "run_003_check": {
+    "manifest_sha256": "95aced6a135f9ccace974af1311102a5c9c9c1384ba4f1f2210bd092e6b6d119",
+    "artifact_files_checked": 504113,
+    "strict_byte_identity": false,
+    "overall_mismatch_count": 1,
+    "mismatch": "sha256:layerzero/worker.sqlite-shm",
+    "mismatch_role": "SQLite shared-memory WAL index and locking state; non-durable runtime state",
+    "durable_mismatch_count": 0,
+    "durable_evidence_identity": true
+  },
+  "source_sha256": {
+    "configs/native/native-security-v1.json": "650a61c20f3113a4e210577a94c5cbbabd82b14b2264be8284a3decf9671a7a3",
+    "contracts/src/HyperlaneAdapter.sol": "0740a57a9fa9a23fc168bf8e8c7324213ef7257316042cb63f874ad10bb06279",
+    "contracts/src/LayerZeroAdapter.sol": "7738f3cb75d2255d1b0a88135a3d214268fc49fd16dfe16bf244590738f5a6e1",
+    "contracts/src/XIREncoding.sol": "ede785a04bb54eaa24cf2259a77e7f2b335d90fd6cb5bd18c47d6006e01cb81b",
+    "contracts/src/XIRGateway.sol": "eca28a1b3f0fc55d14289bab3b633122c74df2e834a756fdc2f10735fa062202",
+    "contracts/test/SecuritySpliceRegression.t.sol": "81cb38a52f5e5dda0d9215a39becbada4e6ef825ffcbfae2583036ebb59c6991",
+    "schemas/native-security-v1-config.schema.json": "f17521acf6422a60b77a4266b34e8b9c53518c49404fec165a6b95e2641f3de6",
+    "scripts/build_native_security_remote_preflight.py": "2f543b931dec3dd71344f22a35f1183420617a6c9f345831a0da8fe3b0d25e2e",
+    "scripts/capture_native_security_profile_evidence.py": "21ab3f4cdbf34b70fa650c387202eb43da1435830fb44aca10faf9487bb3028c",
+    "src/xir_lab/native/root_signer.py": "1bc3373a496b4880080397182ed1fa898061956ed75809d6df16d798f003036e",
+    "src/xir_lab/native/security_v1.py": "b6ca3121fb240fd05cb7fb3842b4174bb2240bbf133d66b8481d45e3e67826fc",
+    "src/xir_lab/native/security_v1_profile_evidence.py": "b82a69ed13654f482211d1f42bdf35692952872a49bcc03a79565d0226c8d689",
+    "src/xir_lab/native/security_v1_rebuild.py": "881bf99b55814173ad2b7589dbf4db558bc937c0e17f8d0802aa0826b0cf5b3d"
+  },
+  "artifact_sha256": {
+    "profile-transaction-capture.json": "8e99faae1101119481d0c5ae68b1a2b25416c2fd12d020877bb0a18e5c44dafa",
+    "publication/SHA256SUMS": "bc8d279a061fe8580420b39137505bfc0bcd9cc16954c77ea0a2b11a1cf8cb29",
+    "publication/offline-validation.json": "ba86b4dd88bc6fd4d9550e587a407808099ede06e492cb60512dc7fe887f6296",
+    "publication/profile-inactive-lineage.json": "1b5439272136e4083cf3b9d54d86478589b09ad51c299fd9c6abba5df7a34d11",
+    "publication/remote-preflight.json": "21d66a0e0a72f8da064e25e4a55286aad7a81912549f4f44bfe2e04a80b89cbf",
+    "publication/summary.json": "a57afe4e2528d8e821aca4424cdbabdb0ece733f244f60030fb19680c3edc691",
+    "rebuild-comparison-final.json": "009f4b60c3466d841d31db7de8afeb449d47c3c83a346050ddf0dfffcf6a8add",
+    "remote-preflight.run003-check.json": "82f4b93e26972038c7495f7bbdb1739977198d993f2edf7a815d1fa7d889744b"
+  },
+  "pre_fix_evidence": "../pre-fix-splice-regression.json",
+  "valid": true
+}

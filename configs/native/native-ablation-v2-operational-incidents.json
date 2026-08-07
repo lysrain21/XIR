@@ -1,0 +1,58 @@
+{
+  "schema_version": "xir-lab-native-ablation-v2-operational-incidents",
+  "namespace": "native-ablation-v2",
+  "incidents": [
+    {
+      "incident_id": "scale-rpc-receipt-001",
+      "phase": "scale",
+      "observed_at_utc": "2026-08-07T13:33:53.649903Z",
+      "runner_pid": 1431775,
+      "resume_pid": 1444488,
+      "completed_attempts_before_exit": 4525,
+      "affected_attempt_id": "ablv2_e9cfbfd3b1d3cfc5c8a2b1d07c2559f9",
+      "route": "HL",
+      "layer": "B3",
+      "route_sequence": 564,
+      "operation": "read-only eth_getTransactionReceipt poll after signed destination transaction broadcast",
+      "exception_class": "ConnectionError",
+      "exception_code": -1,
+      "exception_message": "Remote end closed connection without response during destination receipt polling",
+      "read_only_rpc_failure": true,
+      "native_hops_committed": 2,
+      "destination_effect_observed_before_resume": true,
+      "committed_stage_summary": [
+        "first-hop native ingress authenticated",
+        "second-hop native ingress authenticated",
+        "XIR root and carrier-change stages committed",
+        "signed destination transaction mined with status 1",
+        "destination application effect committed"
+      ],
+      "recovery": "same plan, database, raw root, deployment, frozen configuration, signed transaction bytes, nonce, and transaction hash",
+      "polling_change": "none; durable resume reconciled the already-mined signed transaction before continuing",
+      "treatment_changed": false,
+      "status": "recovered",
+      "attempt_in_final_denominator": true,
+      "runner_log_relative_path": "native-ablation-v2/runs/scale/incidents/scale-rpc-receipt-001/runner.traceback.log",
+      "runner_log_sha256": "bfafe5b80be6bfce335caaee722595bb62a81735ce65c717828a0f718d330155",
+      "pre_resume_audit_relative_path": "native-ablation-v2/runs/scale/incidents/scale-rpc-receipt-001/pre-resume.json",
+      "pre_resume_audit_sha256": "0a1bcf317225c0d9f38df8147682198128362bed53066cc67ffc757a7de71881",
+      "post_resume_audit_relative_path": "native-ablation-v2/runs/scale/incidents/scale-rpc-receipt-001/post-resume.json",
+      "post_resume_audit_sha256": "c78045b12ed2a7a45d87fc331265355bec92dad2ee6a08d1627ecbfc141b958f"
+    }
+  ],
+  "latency_sensitivity": {
+    "phase": "scale",
+    "rule_id": "exclude-complete-incident-route-sequence-blocks-v1",
+    "selection_unit": "deterministic_interleave_block",
+    "excluded_route_sequences": [564],
+    "exclusion_reason": "process interruption overlapped this matched deterministic interleave block",
+    "full_matched_blocks": 1000,
+    "expected_included_blocks": 999,
+    "expected_excluded_blocks": 1,
+    "expected_included_attempts": 7992,
+    "expected_excluded_attempts": 8,
+    "expected_included_per_cell": 999,
+    "ordering": "retain ascending route_sequence order within each route and layer",
+    "interval_method": "paired moving-block bootstrap with the frozen experiment parameters"
+  }
+}

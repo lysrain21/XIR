@@ -1,0 +1,28 @@
+{
+  "schema_version": "xir-lab-security-pre-fix-reproduction-v1",
+  "repository_revision": "86f844d",
+  "recovered_source": "SecuritySpliceRegression.t.sol",
+  "recovered_source_sha256": "f84f5034075ea1ff38abc9602acf71b03f9c0f3f21c38fd66b53a8ea1697afc8",
+  "source_recovery": {
+    "method": "byte-for-byte extraction from the local append-only agent tool-call log",
+    "log_row_id": 12400558,
+    "log_database_published": false
+  },
+  "committed_source_sha256": {
+    "contracts/src/HyperlaneAdapter.sol": "41c83cec54867125bb30b2be335b6912f3b30d4bf1ef6dddb3434a21c4aa7df5",
+    "contracts/src/LayerZeroAdapter.sol": "92f92f6d13fabb362c4327767d6b228268f1402c7c22ba5c1035008eafa802e4",
+    "contracts/src/XIRGateway.sol": "8a39249c5ca0f89de915bdafdf5a718e4ddbcbc893f666a15532681dbd5051f8"
+  },
+  "clean_rebuild": {
+    "date_utc": "2026-08-07",
+    "solc": "0.8.28",
+    "compiled_files": 19,
+    "tests_passed": 1,
+    "tests_failed": 0,
+    "test": "testPreFixCrossExecutionSpliceIsAccepted()",
+    "gas": 238337,
+    "application_effects": 1,
+    "result": "DELIVERED"
+  },
+  "valid": true
+}

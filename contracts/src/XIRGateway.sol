@@ -15,6 +15,7 @@ contract XIRGateway {
     error ProfileInactive(uint256 index);
     error PolicyRefused(uint256 index);
     error EvidenceRejected(uint256 index);
+    error BundleRejected();
     error WrongDestination();
     error PayloadMismatch();
     error AlreadyConsumed(bytes32 mid);
@@ -27,9 +28,7 @@ contract XIRGateway {
     mapping(address => uint64) public nextNonce;
     mapping(bytes32 => bool) public consumed;
 
-    event RootCreated(
-        bytes32 indexed rid, bytes32 indexed mid, address indexed sender, uint64 nonce
-    );
+    event RootCreated(bytes32 indexed rid, bytes32 indexed mid, address indexed sender, uint64 nonce);
     event Delivered(bytes32 indexed mid, address indexed receiver, uint256 receiptCount);
 
     constructor(XIRRegistry registry_, XIRTypes.TypedId memory gatewayId_) {
@@ -57,9 +56,7 @@ contract XIRGateway {
             payloadHash: keccak256(payload)
         });
         bytes32 recordDigest = XIREncoding.recordHash(record);
-        rid = XIREncoding.rootId(
-            gatewayId, recordDigest, XIREncoding.contextHash(context), registryVersion
-        );
+        rid = XIREncoding.rootId(gatewayId, recordDigest, XIREncoding.contextHash(context), registryVersion);
         mid = XIREncoding.messageId(rid, destinationApp);
         emit RootCreated(rid, mid, msg.sender, nonce);
     }
@@ -72,10 +69,7 @@ contract XIRGateway {
         bytes32 recordDigest = XIREncoding.recordHash(envelope.record);
         bytes32 contextDigest = XIREncoding.contextHash(envelope.context);
         rid = XIREncoding.rootId(
-            envelope.record.sourceGateway,
-            recordDigest,
-            contextDigest,
-            envelope.certificate.registryVersion
+            envelope.record.sourceGateway, recordDigest, contextDigest, envelope.certificate.registryVersion
         );
         XIRRegistry.RootSnapshot memory root = registry.rootAt(envelope.certificate.registryVersion);
         if (root.gatewayHash != XIREncoding.typedIdHash(envelope.record.sourceGateway)) {
@@ -98,6 +92,8 @@ contract XIRGateway {
         bytes32 recordDigest = XIREncoding.recordHash(envelope.record);
         bytes32 contextDigest = XIREncoding.contextHash(envelope.context);
         bytes32 expectedSrc = XIREncoding.typedIdHash(envelope.record.sourceGateway);
+        bytes32 bundleCommitment = XIREncoding.bundleStart(envelope.receipts.length);
+        address bundleAdapter;
         for (uint256 i = 0; i < envelope.receipts.length; i++) {
             XIRTypes.Receipt calldata receipt = envelope.receipts[i];
             bytes32 srcHash = XIREncoding.typedIdHash(receipt.srcGateway);
@@ -109,19 +105,26 @@ contract XIRGateway {
                     || !_active(profile.enabled, profile.validAfter, profile.validUntil)
             ) revert ProfileInactive(i);
             if (profile.securityLevel < envelope.context.requiredSecurity) revert PolicyRefused(i);
-            bytes32 transition = XIREncoding.transitionHash(
-                recordDigest, contextDigest, receipt.srcGateway, receipt.dstGateway
-            );
+            bytes32 transition =
+                XIREncoding.transitionHash(recordDigest, contextDigest, receipt.srcGateway, receipt.dstGateway);
             if (receipt.transitionHash != transition) revert InvalidTrace(i);
             if (
                 receipt.evidenceHash == bytes32(0) || profile.adapter == address(0)
                     || !IXIRCarrierAdapter(profile.adapter)
                         .verify(receipt.profileHash, receipt.evidenceHash, transition)
             ) revert EvidenceRejected(i);
+            bundleCommitment = XIREncoding.bundleStep(
+                bundleCommitment, i, receipt.profileHash, receipt.evidenceHash, receipt.transitionHash
+            );
+            bundleAdapter = profile.adapter;
             prefix = XIREncoding.nextPrefix(prefix, XIREncoding.receiptHash(receipt));
             expectedSrc = dstHash;
         }
         if (expectedSrc != gatewayHash) revert WrongDestination();
+        if (
+            envelope.receipts.length != 0
+                && (bundleAdapter == address(0) || !IXIRCarrierAdapter(bundleAdapter).verifyBundle(bundleCommitment))
+        ) revert BundleRejected();
     }
 
     function deliver(XIRTypes.Envelope calldata envelope, bytes calldata payload, address receiver)
@@ -140,13 +143,8 @@ contract XIRGateway {
         emit Delivered(mid, receiver, envelope.receipts.length);
     }
 
-    function _active(bool enabled, uint64 validAfter, uint64 validUntil)
-        private
-        view
-        returns (bool)
-    {
-        return enabled && block.timestamp >= validAfter
-            && (validUntil == 0 || block.timestamp < validUntil);
+    function _active(bool enabled, uint64 validAfter, uint64 validUntil) private view returns (bool) {
+        return enabled && block.timestamp >= validAfter && (validUntil == 0 || block.timestamp < validUntil);
     }
 
     function _ethSigned(bytes32 digest) private pure returns (bytes32) {

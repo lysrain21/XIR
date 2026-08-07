@@ -1,0 +1,30 @@
+{
+  "schema_version": "xir-lab-native-ablation-v1-config",
+  "namespace": "native-ablation-v1",
+  "fixed_seed": "xir-native-ablation-v1-official-run-001",
+  "profile": "configs/profiles/native-protocol-stack-v1.json",
+  "routes": ["HL", "LH"],
+  "layers": ["B0", "B1", "B2", "B3"],
+  "smoke_attempts_per_cell": 2,
+  "scale_attempts_per_cell": 1000,
+  "interleave_block_sequences": 2,
+  "concurrency": 16,
+  "prepublication_exclusions": [
+    {
+      "id": "invalid-smoke-size-limit",
+      "reason": "B1 dynamic TypedId encoding exceeded the 1000-byte LayerZero native envelope limit before the fixed-width EVM wire representation was introduced",
+      "included_in_published_denominator": false
+    },
+    {
+      "id": "invalid-smoke-state-collision",
+      "reason": "a deterministic retry reused identifiers already committed by the first partial smoke and was rejected by the shared B3 transition state",
+      "included_in_published_denominator": false
+    }
+  ],
+  "bootstrap": {
+    "repetitions": 4000,
+    "block_length": 16,
+    "confidence": 0.95,
+    "seed": 20260807
+  }
+}

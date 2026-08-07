@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, cast
@@ -52,9 +53,7 @@ def gateway_typed_id(chain_id: int) -> tuple[int, bytes]:
 
 def typed_id_hash(identifier: tuple[int, bytes]) -> bytes:
     return keccak(
-        identifier[0].to_bytes(1, "big")
-        + len(identifier[1]).to_bytes(1, "big")
-        + identifier[1]
+        identifier[0].to_bytes(1, "big") + len(identifier[1]).to_bytes(1, "big") + identifier[1]
     )
 
 
@@ -69,6 +68,9 @@ class NativeApplicationDeployer:
         profile_path: Path,
         private_key: str,
         runner_address: str,
+        root_signer_address: str | None = None,
+        output_directory: str = "native-application",
+        include_security_v2_fixture: bool = False,
     ) -> None:
         self.repository_root = repository_root
         self.runtime_root = runtime_root
@@ -76,8 +78,12 @@ class NativeApplicationDeployer:
         self.account = Account.from_key(private_key)
         self.private_key = private_key
         self.runner_address = Web3.to_checksum_address(runner_address)
+        self.root_signer_address = Web3.to_checksum_address(root_signer_address or runner_address)
+        self.include_security_v2_fixture = include_security_v2_fixture
         self.artifact_root = repository_root / "contracts" / "out"
-        self.output_root = runtime_root / "native-application"
+        if re.fullmatch(r"[a-z0-9][a-z0-9-]{0,63}", output_directory) is None:
+            raise LocalTopologyError("invalid native application output directory")
+        self.output_root = runtime_root / output_directory
         self.raw_root = self.output_root / "receipts"
         self.signed_root = self.output_root / "private-signed-transactions"
         self.raw_root.mkdir(parents=True, exist_ok=True)
@@ -85,9 +91,7 @@ class NativeApplicationDeployer:
         os.chmod(self.signed_root, 0o700)
         self.journal_path = self.output_root / "deployment-journal.jsonl"
         self.chains = self._load_chains()
-        self.clients = {
-            role: qbft_web3(chain.rpc_url) for role, chain in self.chains.items()
-        }
+        self.clients = {role: qbft_web3(chain.rpc_url) for role, chain in self.chains.items()}
         self.nonces = {
             role: int(client.eth.get_transaction_count(self.account.address, "pending"))
             for role, client in self.clients.items()
@@ -119,10 +123,7 @@ class NativeApplicationDeployer:
             hyperlane = yaml.safe_load(registry.read_text(encoding="utf-8"))
             layerzero = json.loads(
                 (
-                    self.runtime_root
-                    / "layerzero"
-                    / "deployments"
-                    / f"{item['chain_id']}.json"
+                    self.runtime_root / "layerzero" / "deployments" / f"{item['chain_id']}.json"
                 ).read_text(encoding="utf-8")
             )
             result[role] = DeploymentChain(
@@ -132,9 +133,7 @@ class NativeApplicationDeployer:
                 layerzero_eid=int(item["layerzero_eid"]),
                 rpc_url=str(item["rpc_url"]),
                 mailbox=Web3.to_checksum_address(hyperlane["mailbox"]),
-                endpoint=Web3.to_checksum_address(
-                    layerzero["contracts"]["endpoint_v2"]
-                ),
+                endpoint=Web3.to_checksum_address(layerzero["contracts"]["endpoint_v2"]),
             )
         if set(result) != {"source", "intermediate", "destination"}:
             raise LocalTopologyError("native application requires source/intermediate/destination")
@@ -243,9 +242,7 @@ class NativeApplicationDeployer:
     ) -> ChecksumAddress:
         artifact = self._artifact(source, contract)
         client = self.clients[role]
-        factory = client.eth.contract(
-            abi=artifact["abi"], bytecode=artifact["bytecode"]["object"]
-        )
+        factory = client.eth.contract(abi=artifact["abi"], bytecode=artifact["bytecode"]["object"])
         built = factory.constructor(*args).build_transaction({"from": self.account.address})
         receipt = self._send(
             role=role,
@@ -282,6 +279,14 @@ class NativeApplicationDeployer:
     def run(self) -> dict[str, Any]:
         self._deploy_gateways()
         self._deploy_adapters()
+        if self.include_security_v2_fixture:
+            self.deploy(
+                "intermediate",
+                "security_v2_always_true_prior_verifier",
+                "NativeSecurityPriorVerifierFixture.sol",
+                "NativeSecurityPriorVerifierFixture",
+                [],
+            )
         self._deploy_route_contracts()
         self._configure_peers_and_routes()
         self._configure_registries()
@@ -293,14 +298,10 @@ class NativeApplicationDeployer:
         block_bounds = {
             role: {
                 "first": min(
-                    int(item["block_number"])
-                    for item in successful_records
-                    if item["role"] == role
+                    int(item["block_number"]) for item in successful_records if item["role"] == role
                 ),
                 "last": max(
-                    int(item["block_number"])
-                    for item in successful_records
-                    if item["role"] == role
+                    int(item["block_number"]) for item in successful_records if item["role"] == role
                 ),
             }
             for role in self.chains
@@ -309,6 +310,7 @@ class NativeApplicationDeployer:
             "schema_version": "xir-lab-native-application-deployment-v1",
             "deployer": self.account.address.lower(),
             "runner": self.runner_address.lower(),
+            "root_signer": self.root_signer_address.lower(),
             "gateway_typed_ids": {
                 role: {
                     "kind": identifier[0],
@@ -316,14 +318,27 @@ class NativeApplicationDeployer:
                     "hash": "0x" + typed_id_hash(identifier).hex(),
                 }
                 for role, identifier in (
-                    (role, gateway_typed_id(chain.chain_id))
-                    for role, chain in self.chains.items()
+                    (role, gateway_typed_id(chain.chain_id)) for role, chain in self.chains.items()
                 )
             },
-            "profile_hashes": {
-                key: "0x" + value.hex() for key, value in PROFILE_HASHES.items()
-            },
+            "profile_hashes": {key: "0x" + value.hex() for key, value in PROFILE_HASHES.items()},
             "route_ids": {key: "0x" + value.hex() for key, value in ROUTE_IDS.items()},
+            "prior_verifier_bindings": {
+                outbound: {
+                    "H_AB": self.manifest["intermediate"]["h_in"].lower(),
+                    "L_AB": self.manifest["intermediate"]["l_in"].lower(),
+                }
+                for outbound in ("h_xir_out", "l_xir_out")
+            },
+            "security_v2_fixtures": (
+                {
+                    "always_true_prior_verifier": self.manifest["intermediate"][
+                        "security_v2_always_true_prior_verifier"
+                    ].lower()
+                }
+                if self.include_security_v2_fixture
+                else {}
+            ),
             "deployment_block_bounds": block_bounds,
             "infrastructure": {
                 role: {
@@ -479,9 +494,7 @@ class NativeApplicationDeployer:
         remote: str,
         protocol: str,
     ) -> None:
-        remote_bytes32 = bytes.fromhex(
-            "00" * 12 + self.manifest[remote_role][remote][2:]
-        )
+        remote_bytes32 = bytes.fromhex("00" * 12 + self.manifest[remote_role][remote][2:])
         self.call(
             role,
             local,
@@ -525,6 +538,21 @@ class NativeApplicationDeployer:
                     "setEnforcedOptions",
                     [options],
                 )
+        for outbound in ("h_xir_out", "l_xir_out"):
+            outbound_protocol = "h" if outbound.startswith("h_") else "l"
+            for profile, inbound in (("H_AB", "h_in"), ("L_AB", "l_in")):
+                self.call(
+                    "intermediate",
+                    outbound,
+                    (
+                        "HyperlaneAdapter.sol"
+                        if outbound_protocol == "h"
+                        else "LayerZeroAdapter.sol"
+                    ),
+                    "HyperlaneAdapter" if outbound_protocol == "h" else "LayerZeroAdapter",
+                    "setPriorVerifier",
+                    [PROFILE_HASHES[profile], self.manifest["intermediate"][inbound]],
+                )
         self.call(
             "intermediate",
             "h_in",
@@ -565,7 +593,7 @@ class NativeApplicationDeployer:
             "XIRRegistry.sol",
             "XIRRegistry",
             "setRoot",
-            [1, (source_gateway_hash, self.runner_address, 0, 0, True)],
+            [1, (source_gateway_hash, self.root_signer_address, 0, 0, True)],
         )
 
     def _set_profile(
@@ -603,12 +631,8 @@ class NativeApplicationDeployer:
         }
         self._set_root("intermediate", hashes["source"])
         self._set_root("destination", hashes["source"])
-        self._set_profile(
-            "intermediate", "H_AB", hashes["source"], hashes["intermediate"], "h_in"
-        )
-        self._set_profile(
-            "intermediate", "L_AB", hashes["source"], hashes["intermediate"], "l_in"
-        )
+        self._set_profile("intermediate", "H_AB", hashes["source"], hashes["intermediate"], "h_in")
+        self._set_profile("intermediate", "L_AB", hashes["source"], hashes["intermediate"], "l_in")
         self._set_profile(
             "destination", "H_AB", hashes["source"], hashes["intermediate"], "l_xir_in"
         )

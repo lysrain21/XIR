@@ -1,0 +1,104 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xir.example/schemas/native-latency-v2-analysis.schema.json",
+  "title": "XIR native latency v2 analysis",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "namespace",
+    "source",
+    "method",
+    "primary_sample",
+    "sensitivity_sample",
+    "comparison",
+    "reconciliation",
+    "semantic_sha256"
+  ],
+  "properties": {
+    "schema_version": {"const": "xir-lab-native-latency-v2-analysis-v1"},
+    "namespace": {"const": "native-latency-v2"},
+    "source": {"type": "object"},
+    "method": {"type": "object"},
+    "primary_sample": {"$ref": "#/$defs/sample"},
+    "sensitivity_sample": {"$ref": "#/$defs/sample"},
+    "comparison": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": {"type": "object"}
+    },
+    "reconciliation": {"type": "object"},
+    "semantic_sha256": {"$ref": "#/$defs/sha256"}
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "interval": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["estimate", "lower", "upper"],
+      "properties": {
+        "estimate": {"type": "number"},
+        "lower": {"type": "number"},
+        "upper": {"type": "number"}
+      }
+    },
+    "route": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "route",
+        "included_attempts",
+        "excluded_attempts",
+        "minimum_seconds",
+        "maximum_seconds",
+        "mean",
+        "median",
+        "p95",
+        "p99",
+        "bootstrap_seed",
+        "bootstrap_replicate_sha256"
+      ],
+      "properties": {
+        "route": {"enum": ["HH", "LL", "HL", "LH"]},
+        "included_attempts": {"type": "integer", "minimum": 1},
+        "excluded_attempts": {"type": "integer", "minimum": 0},
+        "minimum_seconds": {"type": "number", "exclusiveMinimum": 0},
+        "maximum_seconds": {"type": "number", "exclusiveMinimum": 0},
+        "mean": {"$ref": "#/$defs/interval"},
+        "median": {"$ref": "#/$defs/interval"},
+        "p95": {"$ref": "#/$defs/interval"},
+        "p99": {"$ref": "#/$defs/interval"},
+        "bootstrap_seed": {"type": "integer", "minimum": 0},
+        "bootstrap_replicate_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "sample": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sample_id",
+        "role",
+        "selection_rule",
+        "included_attempts",
+        "excluded_attempts",
+        "route_balanced",
+        "per_route"
+      ],
+      "properties": {
+        "sample_id": {"enum": ["full", "clean-prefix"]},
+        "role": {"enum": ["primary", "sensitivity"]},
+        "selection_rule": {"type": "object"},
+        "included_attempts": {"type": "integer", "minimum": 1},
+        "excluded_attempts": {"type": "integer", "minimum": 0},
+        "route_balanced": {"const": true},
+        "per_route": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "items": {"$ref": "#/$defs/route"}
+        }
+      }
+    }
+  }
+}

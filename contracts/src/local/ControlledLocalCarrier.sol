@@ -3,6 +3,7 @@ pragma solidity ^0.8.28;
 
 import {IBaselineCarrier, IBaselineCarrierReceiver} from "../IBaselineCarrier.sol";
 import {IXIRCarrierAdapter} from "../IXIRCarrierAdapter.sol";
+import {XIREncoding} from "../XIREncoding.sol";
 
 /// @notice Controlled local delivery fixture. It is outside every public route.
 contract ControlledLocalCarrier is IBaselineCarrier, IXIRCarrierAdapter {
@@ -34,6 +35,7 @@ contract ControlledLocalCarrier is IBaselineCarrier, IXIRCarrierAdapter {
     mapping(bytes32 => address) public baselineReceiver;
     mapping(bytes32 => bool) public delivered;
     mapping(bytes32 => bool) private acceptedEvidence;
+    mapping(bytes32 => bool) private acceptedBundles;
 
     event LocalDispatch(
         bytes32 indexed messageId,
@@ -43,10 +45,7 @@ contract ControlledLocalCarrier is IBaselineCarrier, IXIRCarrierAdapter {
         bytes32 payloadOrTransitionHash
     );
     event LocalDelivery(
-        bytes32 indexed messageId,
-        Protocol indexed protocol,
-        address indexed sourceCarrier,
-        bytes32 evidenceHash
+        bytes32 indexed messageId, Protocol indexed protocol, address indexed sourceCarrier, bytes32 evidenceHash
     );
     event AvailabilityChanged(bool available);
 
@@ -91,10 +90,7 @@ contract ControlledLocalCarrier is IBaselineCarrier, IXIRCarrierAdapter {
         outbound = outbound_;
     }
 
-    function setBaselineReceiver(bytes32 routeId, address receiver)
-        external
-        onlyAdministrator
-    {
+    function setBaselineReceiver(bytes32 routeId, address receiver) external onlyAdministrator {
         if (baselineReceiver[routeId] != address(0) || receiver == address(0)) {
             revert ConfigurationAlreadySet();
         }
@@ -106,45 +102,39 @@ contract ControlledLocalCarrier is IBaselineCarrier, IXIRCarrierAdapter {
         emit AvailabilityChanged(available_);
     }
 
-    function quoteBaseline(bytes32, bytes calldata, bytes calldata)
-        external
-        pure
-        returns (uint256 nativeFee)
-    {
+    function quoteBaseline(bytes32, bytes calldata, bytes calldata) external pure returns (uint256 nativeFee) {
         return 0;
     }
 
-    function sendBaselineSource(
-        bytes32 routeId,
-        bytes calldata message,
-        bytes calldata
-    ) external payable returns (bytes32 protocolMessageId) {
+    function sendBaselineSource(bytes32 routeId, bytes calldata message, bytes calldata)
+        external
+        payable
+        returns (bytes32 protocolMessageId)
+    {
         return _dispatch(routeId, keccak256(message));
     }
 
-    function forwardBaseline(
-        bytes32 routeId,
-        bytes calldata message,
-        bytes calldata
-    ) external payable returns (bytes32 protocolMessageId) {
+    function forwardBaseline(bytes32 routeId, bytes calldata message, bytes calldata)
+        external
+        payable
+        returns (bytes32 protocolMessageId)
+    {
         return _dispatch(routeId, keccak256(message));
     }
 
-    function dispatchEvidence(
-        bytes32 profileHash,
-        bytes32 evidenceHash,
-        bytes32 transitionHash
-    ) external returns (bytes32 protocolMessageId) {
+    function dispatchEvidence(bytes32 profileHash, bytes32 evidenceHash, bytes32 transitionHash)
+        external
+        returns (bytes32 protocolMessageId)
+    {
         protocolMessageId = _dispatch(profileHash, transitionHash);
         emit LocalDelivery(protocolMessageId, protocol, address(this), evidenceHash);
     }
 
-    function receiveBaseline(
-        address sourceCarrier,
-        bytes32 messageId,
-        bytes32 routeId,
-        bytes calldata payload
-    ) external onLocalChain whenAvailable {
+    function receiveBaseline(address sourceCarrier, bytes32 messageId, bytes32 routeId, bytes calldata payload)
+        external
+        onLocalChain
+        whenAvailable
+    {
         _authenticateDelivery(sourceCarrier, messageId);
         address receiver = baselineReceiver[routeId];
         if (receiver == address(0)) revert UnknownRoute();
@@ -160,20 +150,19 @@ contract ControlledLocalCarrier is IBaselineCarrier, IXIRCarrierAdapter {
         bytes32 transitionHash
     ) external onLocalChain whenAvailable {
         _authenticateDelivery(sourceCarrier, messageId);
-        acceptedEvidence[
-            keccak256(abi.encode(profileHash, evidenceHash, transitionHash))
-        ] = true;
+        acceptedEvidence[keccak256(abi.encode(profileHash, evidenceHash, transitionHash))] = true;
+        bytes32 bundleCommitment =
+            XIREncoding.bundleStep(XIREncoding.bundleStart(1), 0, profileHash, evidenceHash, transitionHash);
+        acceptedBundles[bundleCommitment] = true;
         emit LocalDelivery(messageId, protocol, sourceCarrier, evidenceHash);
     }
 
-    function verify(bytes32 profileHash, bytes32 evidenceHash, bytes32 transitionHash)
-        external
-        view
-        returns (bool)
-    {
-        return acceptedEvidence[
-            keccak256(abi.encode(profileHash, evidenceHash, transitionHash))
-        ];
+    function verify(bytes32 profileHash, bytes32 evidenceHash, bytes32 transitionHash) external view returns (bool) {
+        return acceptedEvidence[keccak256(abi.encode(profileHash, evidenceHash, transitionHash))];
+    }
+
+    function verifyBundle(bytes32 bundleCommitment) external view returns (bool) {
+        return acceptedBundles[bundleCommitment];
     }
 
     function _dispatch(bytes32 routeOrProfile, bytes32 payloadOrTransitionHash)
@@ -185,22 +174,9 @@ contract ControlledLocalCarrier is IBaselineCarrier, IXIRCarrierAdapter {
         if (msg.sender != outbound) revert OnlyOutbound();
         dispatchCount++;
         messageId = keccak256(
-            abi.encode(
-                protocol,
-                localChainId,
-                remoteChainId,
-                dispatchCount,
-                routeOrProfile,
-                payloadOrTransitionHash
-            )
+            abi.encode(protocol, localChainId, remoteChainId, dispatchCount, routeOrProfile, payloadOrTransitionHash)
         );
-        emit LocalDispatch(
-            messageId,
-            protocol,
-            remoteChainId,
-            routeOrProfile,
-            payloadOrTransitionHash
-        );
+        emit LocalDispatch(messageId, protocol, remoteChainId, routeOrProfile, payloadOrTransitionHash);
     }
 
     function _authenticateDelivery(address sourceCarrier, bytes32 messageId) private {

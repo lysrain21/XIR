@@ -1,0 +1,14 @@
+case,input_class,trusted_assumption_violated,target_guarantees,primary_check_stage,expected_rejection,case_runs,validated,rejection_matches,application_effects
+concurrent_replay,duplicate_valid_envelope_concurrent,none (A1-A4 hold),G4_AT_MOST_ONCE_EFFECT,atomic_message_consumption,AlreadyConsumed,60,60,60,60
+context_tamper,mutated_untrusted_context,none (A1-A4 hold),G1_AUTHENTICITY;G3_POLICY_COMPLIANCE,source_root_verification,InvalidRootSignature,60,60,60,0
+cross_execution_splice,cross_execution_tuple_splice,none (A1-A4 hold),G2_TRACE_INTEGRITY,ordered_final_bundle_verification,BundleRejected,60,60,60,0
+evidence_tamper,mutated_native_evidence_reference,none (A1-A4 hold),G1_AUTHENTICITY;G2_TRACE_INTEGRITY,native_evidence_verification,EvidenceRejected,60,60,60,0
+fake_verifier,runner_selected_unapproved_verifier,none (A1-A4 hold),G1_AUTHENTICITY;G2_TRACE_INTEGRITY,prior_verifier_binding,UnapprovedPriorVerifier,60,60,60,0
+payload_tamper,mutated_untrusted_payload,none (A1-A4 hold),G1_AUTHENTICITY,destination_payload_binding,PayloadMismatch,60,60,60,0
+profile_inactive,inactive_profile_reference,none (A1-A4 hold),G3_POLICY_COMPLIANCE,profile_activity_check,ProfileInactive,60,60,60,0
+profile_substitution,unregistered_profile_reference,none (A1-A4 hold),G3_POLICY_COMPLIANCE,profile_resolution,ProfileInactive,60,60,60,0
+receipt_delete,receipt_sequence_omission,none (A1-A4 hold),G2_TRACE_INTEGRITY,receipt_prefix_verification,InvalidTrace,60,60,60,0
+receipt_reorder,receipt_sequence_reordering,none (A1-A4 hold),G2_TRACE_INTEGRITY,receipt_prefix_verification,InvalidTrace,60,60,60,0
+sequential_replay,duplicate_valid_envelope_sequential,none (A1-A4 hold),G4_AT_MOST_ONCE_EFFECT,atomic_message_consumption,AlreadyConsumed,60,60,60,60
+wrong_endpoint,profile_endpoint_mismatch,none (A1-A4 hold),G1_AUTHENTICITY;G2_TRACE_INTEGRITY,prior_verifier_binding,UnapprovedPriorVerifier,60,60,60,0
+wrong_registry_version,unbound_registry_version_reference,none (A1-A4 hold),G1_AUTHENTICITY;G3_POLICY_COMPLIANCE,root_version_verification,RootMismatch,60,60,60,0

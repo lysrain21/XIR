@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xir.local/schemas/native-security-baseline-v1-validation.schema.json",
+  "type": "object",
+  "required": [
+    "schema_version", "valid", "expected_attempts", "reconciled_attempts",
+    "case_counts", "effect_count", "replay_rejection_count",
+    "coordinator_retry_count", "retry_free_complete_lineage",
+    "analyzer_transaction_read_retry_count",
+    "environment_namespace_valid", "final_revision_prior_binding_valid",
+    "final_revision_source_lock_valid", "onchain_prior_binding_valid", "errors"
+  ],
+  "properties": {
+    "schema_version": {"const": "xir-lab-native-security-baseline-v1-validation"},
+    "valid": {"type": "boolean"},
+    "expected_attempts": {"type": "integer", "minimum": 300},
+    "reconciled_attempts": {"type": "integer", "minimum": 0},
+    "case_counts": {"type": "object"},
+    "effect_count": {"type": "integer", "minimum": 0},
+    "replay_rejection_count": {"type": "integer", "minimum": 0},
+    "coordinator_retry_count": {"const": 0},
+    "retry_free_complete_lineage": {"const": true},
+    "analyzer_transaction_read_retry_count": {"type": "integer", "minimum": 0},
+    "environment_namespace_valid": {"const": true},
+    "final_revision_prior_binding_valid": {"const": true},
+    "final_revision_source_lock_valid": {"const": true},
+    "onchain_prior_binding_valid": {"const": true},
+    "errors": {"type": "array"}
+  }
+}

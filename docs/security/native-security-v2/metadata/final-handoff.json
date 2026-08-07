@@ -1,0 +1,1137 @@
+{
+  "authority_expectation": {
+    "application_effects": 0,
+    "case_runs": 120,
+    "failed_runner_stage": "second_protocol_dispatch",
+    "message_id_consumed": false,
+    "revert_error": "UnapprovedPriorVerifier",
+    "revert_selector": "0x819d4ecb",
+    "status": 0
+  },
+  "authority_results": [
+    {
+      "actual_rejection_matches": 30,
+      "application_effects": 0,
+      "case": "fake_verifier",
+      "expected_rejection": "UnapprovedPriorVerifier",
+      "repetitions": 30,
+      "route": "HL",
+      "validated": 30
+    },
+    {
+      "actual_rejection_matches": 30,
+      "application_effects": 0,
+      "case": "wrong_endpoint",
+      "expected_rejection": "UnapprovedPriorVerifier",
+      "repetitions": 30,
+      "route": "HL",
+      "validated": 30
+    },
+    {
+      "actual_rejection_matches": 30,
+      "application_effects": 0,
+      "case": "fake_verifier",
+      "expected_rejection": "UnapprovedPriorVerifier",
+      "repetitions": 30,
+      "route": "LH",
+      "validated": 30
+    },
+    {
+      "actual_rejection_matches": 30,
+      "application_effects": 0,
+      "case": "wrong_endpoint",
+      "expected_rejection": "UnapprovedPriorVerifier",
+      "repetitions": 30,
+      "route": "LH",
+      "validated": 30
+    }
+  ],
+  "campaign_id": "native-security-v2",
+  "campaign_source_lock": {
+    "files": [
+      {
+        "bytes": 978,
+        "relative_path": "configs/native/native-security-v2.json",
+        "sha256": "728200d42c6fcea7b61f656d13c7762cfa8bc975dfd3974449f0b1a85f6b87b2"
+      },
+      {
+        "bytes": 2471,
+        "relative_path": "schemas/native-security-v2-config.schema.json",
+        "sha256": "9953d3789452ac68cf2d72d01a976313e45d2bfe271f8afc347962c854c3a7de"
+      },
+      {
+        "bytes": 4580,
+        "relative_path": "contracts/src/XIREncoding.sol",
+        "sha256": "ede785a04bb54eaa24cf2259a77e7f2b335d90fd6cb5bd18c47d6006e01cb81b"
+      },
+      {
+        "bytes": 7949,
+        "relative_path": "contracts/src/XIRGateway.sol",
+        "sha256": "eca28a1b3f0fc55d14289bab3b633122c74df2e834a756fdc2f10735fa062202"
+      },
+      {
+        "bytes": 12610,
+        "relative_path": "contracts/src/HyperlaneAdapter.sol",
+        "sha256": "1ca91fb1cb8137d7b1cfb2ef5dc21ac95f45b22defea729f1535c73d33773f18"
+      },
+      {
+        "bytes": 13493,
+        "relative_path": "contracts/src/LayerZeroAdapter.sol",
+        "sha256": "042fbeeb00d93ce4ec077bbeeb944daed752c16f649460c5ee2df88218c53941"
+      },
+      {
+        "bytes": 598,
+        "relative_path": "contracts/src/NativeSecurityPriorVerifierFixture.sol",
+        "sha256": "1db1c74359bbabc848fe9066b2be0fce3a347a5536856ca811eac2d8cf109ebc"
+      },
+      {
+        "bytes": 11240,
+        "relative_path": "contracts/test/RunnerAuthorityRegression.t.sol",
+        "sha256": "674c94f158fd1c2d1fb86dafa4ffcdb0c7fba41837cdd12f544b52911ad06248"
+      },
+      {
+        "bytes": 11944,
+        "relative_path": "contracts/test/SecuritySpliceRegression.t.sol",
+        "sha256": "81cb38a52f5e5dda0d9215a39becbada4e6ef825ffcbfae2583036ebb59c6991"
+      },
+      {
+        "bytes": 1794,
+        "relative_path": "scripts/deploy_native_application.py",
+        "sha256": "ed566f09b2f1f2b5b84082d29eb2d33f3ea6b176fe1990214ddb17f33a86c68c"
+      },
+      {
+        "bytes": 2562,
+        "relative_path": "scripts/run_native_security_v2.py",
+        "sha256": "6ac70429c7310f7a5fe5391b0430e3a9691da9e5b66cc6c7d2d0af2b8cc955a0"
+      },
+      {
+        "bytes": 24147,
+        "relative_path": "src/xir_lab/native/deployer.py",
+        "sha256": "788bf7f9d929a265da3a6e00dacca9b9b97913541b0cad9f49550addc6178653"
+      },
+      {
+        "bytes": 11296,
+        "relative_path": "src/xir_lab/native/root_signer.py",
+        "sha256": "1bc3373a496b4880080397182ed1fa898061956ed75809d6df16d798f003036e"
+      },
+      {
+        "bytes": 43825,
+        "relative_path": "src/xir_lab/native/runner.py",
+        "sha256": "02c43d51d3604c86ac9f4059684c443a03d98878f0ccb03a7be58b18238c4c1d"
+      },
+      {
+        "bytes": 42023,
+        "relative_path": "src/xir_lab/native/security_v1.py",
+        "sha256": "9ecdf7dad081a47808c88c92e53ba011375a69bdbfe70471809e25bb9cf420e4"
+      },
+      {
+        "bytes": 9961,
+        "relative_path": "src/xir_lab/native/security_v2.py",
+        "sha256": "6401cef49b7717aa97d7a72cc2224e695f9181f99c566ec62a014186286f5116"
+      }
+    ],
+    "repository_revision": "security-v2-final-working-tree-20260807",
+    "selected_source_file_count": 16,
+    "selected_source_tree_sha256": "fc4025c421edaa84077b93b4710a4a6dd8cabbbea468b02ccf10b364c1d8348f"
+  },
+  "comparison": {
+    "document": {
+      "core_sha256": {
+        "REPORT.md": "6d0d47fa9594684e9785def6abe4e8856d27eec51059a6de0441eedd9ea1a011",
+        "case-results.json": "3d7300dae2d35289e1c0e039b9a208b5fbab05d0128a3b1a1392d0828bc655ce",
+        "paper-table.csv": "41ef0e20376c1e0867ed7e81c51e9fc36cb36e632ee0bc3d2b297a719b91efc2",
+        "summary.json": "aa0d253e51f1b8f9056ae75d8e3251afc286c60019141a41b917ea24ff6b04bf"
+      },
+      "errors": [],
+      "online": "/vePFS-Mindverse/user/intern/lucian/xir/revisions/complete-bcra-evidence-revision/runtime/native-security-v2/native-security-v2-run-001/runs/official-780/publish",
+      "rebuild_a": "/vePFS-Mindverse/user/intern/lucian/xir/revisions/complete-bcra-evidence-revision/runtime/native-security-v2/native-security-v2-run-001/rebuild-a",
+      "rebuild_b": "/vePFS-Mindverse/user/intern/lucian/xir/revisions/complete-bcra-evidence-revision/runtime/native-security-v2/native-security-v2-run-001/rebuild-b",
+      "rebuild_sha256": {
+        "REPORT.md": "6d0d47fa9594684e9785def6abe4e8856d27eec51059a6de0441eedd9ea1a011",
+        "SECURITY-CLASSIFICATION.md": "6c3a32ad273177fb267c041852721cbd9810c54960a57c46a99f4a2294aa1fb7",
+        "SHA256SUMS": "097f3c5179cdd50a9de0bec8e7ea9d9c2fe6c127a89b26292ca2da5780fa516f",
+        "case-results.json": "3d7300dae2d35289e1c0e039b9a208b5fbab05d0128a3b1a1392d0828bc655ce",
+        "offline-validation.json": "0d8bc5ded398ee3983dd36090c613b044558f65f1b12f2e57466099fb9d50495",
+        "paper-classification-table.csv": "911738cf8dd2081ff495cc4175e06f611a733be1d0fd209f8b687ae73594d187",
+        "paper-profile-inactive-lineage.csv": "416e1b1ae1e9dced283eff5f29c61007c46837b91a8d691fddc3eb0d2638c282",
+        "paper-security-results.csv": "87491cfbfe9ade8094a8a9f9e493fe331cf4f4759ed1e02e1d846f7484aaee49",
+        "paper-table.csv": "41ef0e20376c1e0867ed7e81c51e9fc36cb36e632ee0bc3d2b297a719b91efc2",
+        "profile-inactive-lineage.json": "277e054ab09ca28a459c21cea2c2232f7471eee11aa43ed8b9269bf9a11d7a6e",
+        "secret-scan.json": "b04ee108d0e52c21dfa47afff2d3eb06367a07e726e64c8024edf894e88c2821",
+        "security-classification.json": "36339d462f65eac66df833bea99f1b8cd06f261d06f4831479890632968ed6d6",
+        "summary.json": "aa0d253e51f1b8f9056ae75d8e3251afc286c60019141a41b917ea24ff6b04bf"
+      },
+      "schema_version": "xir-lab-native-security-v2-rebuild-comparison-v1",
+      "valid": true
+    },
+    "path": "/vePFS-Mindverse/user/intern/lucian/xir/revisions/complete-bcra-evidence-revision/runtime/native-security-v2/native-security-v2-run-001/rebuild-comparison-final.json",
+    "sha256": "a2cc95b59ec62a4038f62bcf90e34223f38df00df425597ead88824edcdc3942"
+  },
+  "config": {
+    "path": "/vePFS-Mindverse/user/intern/lucian/xir/revisions/complete-bcra-evidence-revision/repo/xir-testnet-lab/configs/native/native-security-v2.json",
+    "sha256": "728200d42c6fcea7b61f656d13c7762cfa8bc975dfd3974449f0b1a85f6b87b2"
+  },
+  "deployment": {
+    "path": "/vePFS-Mindverse/user/intern/lucian/xir/revisions/complete-bcra-evidence-revision/runtime/native-security-v1/native-stack-run-005/native-application-security-v2/deployment.json",
+    "sha256": "bb5bd7c54d0c87ee0fcf6691f3ac116ef3ceecb5ee9a1a0590b7ff4dcab99eb6",
+    "validation": {
+      "all_deployed_code_nonempty": true,
+      "deployer": "0x864a39046640287fc5e77477e2960e48704a5064",
+      "deployment": "/vePFS-Mindverse/user/intern/lucian/xir/revisions/complete-bcra-evidence-revision/runtime/native-security-v1/native-stack-run-005/native-application-security-v2/deployment.json",
+      "deployment_sha256": "bb5bd7c54d0c87ee0fcf6691f3ac116ef3ceecb5ee9a1a0590b7ff4dcab99eb6",
+      "fixture": {
+        "address": "0x0f7124308b3d36ac6f2ed3e1fc817a7e84c4dfd2",
+        "code_bytes": 105,
+        "code_keccak": "8dc700bfae00804e93842d43a0b57362991e810ae86dc2dc84410e9665d4a7ef",
+        "not_approved": true
+      },
+      "prior_verifier_checks": [
+        {
+          "expected": "0xe78f910f8f457b52951772d6cfe8150ad03cc815",
+          "observed": "0xe78f910f8f457b52951772d6cfe8150ad03cc815",
+          "outbound": "h_xir_out",
+          "profile": "H_AB",
+          "valid": true
+        },
+        {
+          "expected": "0x3828c23b888684643a21fbcd3b20dc7c182b69b6",
+          "observed": "0x3828c23b888684643a21fbcd3b20dc7c182b69b6",
+          "outbound": "h_xir_out",
+          "profile": "L_AB",
+          "valid": true
+        },
+        {
+          "administrator": "0x864a39046640287fc5e77477e2960e48704a5064",
+          "outbound": "h_xir_out",
+          "runner": "0x80c3926751b1437102d49798e68b2de0238312dc",
+          "valid": true
+        },
+        {
+          "expected": "0xe78f910f8f457b52951772d6cfe8150ad03cc815",
+          "observed": "0xe78f910f8f457b52951772d6cfe8150ad03cc815",
+          "outbound": "l_xir_out",
+          "profile": "H_AB",
+          "valid": true
+        },
+        {
+          "expected": "0x3828c23b888684643a21fbcd3b20dc7c182b69b6",
+          "observed": "0x3828c23b888684643a21fbcd3b20dc7c182b69b6",
+          "outbound": "l_xir_out",
+          "profile": "L_AB",
+          "valid": true
+        },
+        {
+          "administrator": "0x864a39046640287fc5e77477e2960e48704a5064",
+          "outbound": "l_xir_out",
+          "runner": "0x80c3926751b1437102d49798e68b2de0238312dc",
+          "valid": true
+        }
+      ],
+      "registry_root_signer": "0x87a74ac41b90b0f2dfbe4cb113254f9b19f2f184",
+      "registry_root_signer_matches": true,
+      "root_signer": "0x87a74ac41b90b0f2dfbe4cb113254f9b19f2f184",
+      "root_signer_distinct_from_runner": true,
+      "runner": "0x80c3926751b1437102d49798e68b2de0238312dc",
+      "schema_version": "xir-lab-native-security-v2-deployment-validation-v1",
+      "source_sha256": {
+        "configs/native/native-security-v2.json": "728200d42c6fcea7b61f656d13c7762cfa8bc975dfd3974449f0b1a85f6b87b2",
+        "contracts/src/HyperlaneAdapter.sol": "1ca91fb1cb8137d7b1cfb2ef5dc21ac95f45b22defea729f1535c73d33773f18",
+        "contracts/src/LayerZeroAdapter.sol": "042fbeeb00d93ce4ec077bbeeb944daed752c16f649460c5ee2df88218c53941",
+        "contracts/src/NativeSecurityPriorVerifierFixture.sol": "1db1c74359bbabc848fe9066b2be0fce3a347a5536856ca811eac2d8cf109ebc",
+        "schemas/native-security-v2-config.schema.json": "9953d3789452ac68cf2d72d01a976313e45d2bfe271f8afc347962c854c3a7de",
+        "scripts/run_native_security_v2.py": "6ac70429c7310f7a5fe5391b0430e3a9691da9e5b66cc6c7d2d0af2b8cc955a0",
+        "src/xir_lab/native/deployer.py": "788bf7f9d929a265da3a6e00dacca9b9b97913541b0cad9f49550addc6178653",
+        "src/xir_lab/native/runner.py": "02c43d51d3604c86ac9f4059684c443a03d98878f0ccb03a7be58b18238c4c1d",
+        "src/xir_lab/native/security_v2.py": "282b30fbeba9998339549e96f1c11092e5eac2775cb74339529503391938240f"
+      },
+      "valid": true
+    },
+    "validation_path": "/vePFS-Mindverse/user/intern/lucian/xir/revisions/complete-bcra-evidence-revision/runtime/native-security-v2/native-security-v2-run-001/deployment-validation.json",
+    "validation_sha256": "076689f87807aa64fc97619e4fac887427df8a0f1c6d193363095fdb8e913aed"
+  },
+  "downstream_rule": "Reuse the native carrier stack, source lock, and approved prior-verifier mapping; deploy each downstream workload into a fresh isolated application namespace.",
+  "exact_denominator": 780,
+  "lease": {
+    "path": "/vePFS-Mindverse/user/intern/lucian/xir/revisions/complete-bcra-evidence-revision/runtime/native-security-v2/REMOTE-WRITE-LEASE.json",
+    "released_utc": "2026-08-07T10:01:47Z",
+    "sha256": "4291e7a831ad9bb15b880a0d4a9ce14d89cc60e2b8b46f43e0033f20532ae964",
+    "status": "RELEASED"
+  },
+  "rebuild_a": {
+    "file_count": 15,
+    "files": {
+      "REMOTE-PREFLIGHT.md": "64fdc2d5dbbe6414d6d8f8ecc64e4baa1b1033da52a72574a10be7170cde4725",
+      "REPORT.md": "6d0d47fa9594684e9785def6abe4e8856d27eec51059a6de0441eedd9ea1a011",
+      "SECURITY-CLASSIFICATION.md": "6c3a32ad273177fb267c041852721cbd9810c54960a57c46a99f4a2294aa1fb7",
+      "SHA256SUMS": "097f3c5179cdd50a9de0bec8e7ea9d9c2fe6c127a89b26292ca2da5780fa516f",
+      "case-results.json": "3d7300dae2d35289e1c0e039b9a208b5fbab05d0128a3b1a1392d0828bc655ce",
+      "offline-validation.json": "0d8bc5ded398ee3983dd36090c613b044558f65f1b12f2e57466099fb9d50495",
+      "paper-classification-table.csv": "911738cf8dd2081ff495cc4175e06f611a733be1d0fd209f8b687ae73594d187",
+      "paper-profile-inactive-lineage.csv": "416e1b1ae1e9dced283eff5f29c61007c46837b91a8d691fddc3eb0d2638c282",
+      "paper-security-results.csv": "87491cfbfe9ade8094a8a9f9e493fe331cf4f4759ed1e02e1d846f7484aaee49",
+      "paper-table.csv": "41ef0e20376c1e0867ed7e81c51e9fc36cb36e632ee0bc3d2b297a719b91efc2",
+      "profile-inactive-lineage.json": "277e054ab09ca28a459c21cea2c2232f7471eee11aa43ed8b9269bf9a11d7a6e",
+      "remote-preflight.json": "a7d3015c954cd483380fb564bfe748138b6c23fc39440d1167e0e7f883f39323",
+      "secret-scan.json": "b04ee108d0e52c21dfa47afff2d3eb06367a07e726e64c8024edf894e88c2821",
+      "security-classification.json": "36339d462f65eac66df833bea99f1b8cd06f261d06f4831479890632968ed6d6",
+      "summary.json": "aa0d253e51f1b8f9056ae75d8e3251afc286c60019141a41b917ea24ff6b04bf"
+    },
+    "manifest_errors": [],
+    "manifest_valid": true,
+    "offline_validation": {
+      "alternate_runner_attempts_checked": 60,
+      "authority_receipts_checked": 120,
+      "coordinate_denominator_exact": true,
+      "errors": [],
+      "expected_case_runs": 780,
+      "observed_case_runs": 780,
+      "primary_runner_attempts_checked": 780,
+      "profile_inactive_lineage_valid": true,
+      "profile_inactive_lineages_checked": 60,
+      "profile_toggle_receipts_checked": 120,
+      "raw_receipts_checked": 900,
+      "remote_preflight_sha256": "a7d3015c954cd483380fb564bfe748138b6c23fc39440d1167e0e7f883f39323",
+      "remote_preflight_valid": true,
+      "root_signer_audits_checked": 780,
+      "schema_version": "xir-lab-native-security-v2-offline-validation-v1",
+      "unique_delivery_transactions": 900,
+      "valid": true
+    },
+    "path": "/vePFS-Mindverse/user/intern/lucian/xir/revisions/complete-bcra-evidence-revision/runtime/native-security-v2/native-security-v2-run-001/rebuild-a",
+    "summary": {
+      "attempt_namespace": null,
+      "campaign_id": "native-security-v2",
+      "config_sha256": "728200d42c6fcea7b61f656d13c7762cfa8bc975dfd3974449f0b1a85f6b87b2",
+      "deployment_sha256": "bb5bd7c54d0c87ee0fcf6691f3ac116ef3ceecb5ee9a1a0590b7ff4dcab99eb6",
+      "expected_case_runs": 780,
+      "failed_case_runs": 0,
+      "groups": [
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 30,
+          "case": "concurrent_replay",
+          "expected_rejection": "AlreadyConsumed",
+          "repetitions": 30,
+          "route": "HL",
+          "validated": 30
+        },
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 0,
+          "case": "context_tamper",
+          "expected_rejection": "InvalidRootSignature",
+          "repetitions": 30,
+          "route": "HL",
+          "validated": 30
+        },
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 0,
+          "case": "cross_execution_splice",
+          "expected_rejection": "BundleRejected",
+          "repetitions": 30,
+          "route": "HL",
+          "validated": 30
+        },
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 0,
+          "case": "evidence_tamper",
+          "expected_rejection": "EvidenceRejected",
+          "repetitions": 30,
+          "route": "HL",
+          "validated": 30
+        },
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 0,
+          "case": "fake_verifier",
+          "expected_rejection": "UnapprovedPriorVerifier",
+          "repetitions": 30,
+          "route": "HL",
+          "validated": 30
+        },
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 0,
+          "case": "payload_tamper",
+          "expected_rejection": "PayloadMismatch",
+          "repetitions": 30,
+          "route": "HL",
+          "validated": 30
+        },
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 0,
+          "case": "profile_inactive",
+          "expected_rejection": "ProfileInactive",
+          "repetitions": 30,
+          "route": "HL",
+          "validated": 30
+        },
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 0,
+          "case": "profile_substitution",
+          "expected_rejection": "ProfileInactive",
+          "repetitions": 30,
+          "route": "HL",
+          "validated": 30
+        },
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 0,
+          "case": "receipt_delete",
+          "expected_rejection": "InvalidTrace",
+          "repetitions": 30,
+          "route": "HL",
+          "validated": 30
+        },
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 0,
+          "case": "receipt_reorder",
+          "expected_rejection": "InvalidTrace",
+          "repetitions": 30,
+          "route": "HL",
+          "validated": 30
+        },
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 30,
+          "case": "sequential_replay",
+          "expected_rejection": "AlreadyConsumed",
+          "repetitions": 30,
+          "route": "HL",
+          "validated": 30
+        },
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 0,
+          "case": "wrong_endpoint",
+          "expected_rejection": "UnapprovedPriorVerifier",
+          "repetitions": 30,
+          "route": "HL",
+          "validated": 30
+        },
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 0,
+          "case": "wrong_registry_version",
+          "expected_rejection": "RootMismatch",
+          "repetitions": 30,
+          "route": "HL",
+          "validated": 30
+        },
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 30,
+          "case": "concurrent_replay",
+          "expected_rejection": "AlreadyConsumed",
+          "repetitions": 30,
+          "route": "LH",
+          "validated": 30
+        },
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 0,
+          "case": "context_tamper",
+          "expected_rejection": "InvalidRootSignature",
+          "repetitions": 30,
+          "route": "LH",
+          "validated": 30
+        },
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 0,
+          "case": "cross_execution_splice",
+          "expected_rejection": "BundleRejected",
+          "repetitions": 30,
+          "route": "LH",
+          "validated": 30
+        },
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 0,
+          "case": "evidence_tamper",
+          "expected_rejection": "EvidenceRejected",
+          "repetitions": 30,
+          "route": "LH",
+          "validated": 30
+        },
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 0,
+          "case": "fake_verifier",
+          "expected_rejection": "UnapprovedPriorVerifier",
+          "repetitions": 30,
+          "route": "LH",
+          "validated": 30
+        },
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 0,
+          "case": "payload_tamper",
+          "expected_rejection": "PayloadMismatch",
+          "repetitions": 30,
+          "route": "LH",
+          "validated": 30
+        },
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 0,
+          "case": "profile_inactive",
+          "expected_rejection": "ProfileInactive",
+          "repetitions": 30,
+          "route": "LH",
+          "validated": 30
+        },
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 0,
+          "case": "profile_substitution",
+          "expected_rejection": "ProfileInactive",
+          "repetitions": 30,
+          "route": "LH",
+          "validated": 30
+        },
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 0,
+          "case": "receipt_delete",
+          "expected_rejection": "InvalidTrace",
+          "repetitions": 30,
+          "route": "LH",
+          "validated": 30
+        },
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 0,
+          "case": "receipt_reorder",
+          "expected_rejection": "InvalidTrace",
+          "repetitions": 30,
+          "route": "LH",
+          "validated": 30
+        },
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 30,
+          "case": "sequential_replay",
+          "expected_rejection": "AlreadyConsumed",
+          "repetitions": 30,
+          "route": "LH",
+          "validated": 30
+        },
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 0,
+          "case": "wrong_endpoint",
+          "expected_rejection": "UnapprovedPriorVerifier",
+          "repetitions": 30,
+          "route": "LH",
+          "validated": 30
+        },
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 0,
+          "case": "wrong_registry_version",
+          "expected_rejection": "RootMismatch",
+          "repetitions": 30,
+          "route": "LH",
+          "validated": 30
+        }
+      ],
+      "observed_case_runs": 780,
+      "root_signer": "0x87a74ac41b90b0f2dfbe4cb113254f9b19f2f184",
+      "root_signer_separated": true,
+      "runner": "0x80c3926751b1437102d49798e68b2de0238312dc",
+      "schema_version": "xir-lab-native-security-v2-summary-v1",
+      "valid": true,
+      "validated_case_runs": 780
+    }
+  },
+  "rebuild_b": {
+    "file_count": 15,
+    "files": {
+      "REMOTE-PREFLIGHT.md": "64fdc2d5dbbe6414d6d8f8ecc64e4baa1b1033da52a72574a10be7170cde4725",
+      "REPORT.md": "6d0d47fa9594684e9785def6abe4e8856d27eec51059a6de0441eedd9ea1a011",
+      "SECURITY-CLASSIFICATION.md": "6c3a32ad273177fb267c041852721cbd9810c54960a57c46a99f4a2294aa1fb7",
+      "SHA256SUMS": "097f3c5179cdd50a9de0bec8e7ea9d9c2fe6c127a89b26292ca2da5780fa516f",
+      "case-results.json": "3d7300dae2d35289e1c0e039b9a208b5fbab05d0128a3b1a1392d0828bc655ce",
+      "offline-validation.json": "0d8bc5ded398ee3983dd36090c613b044558f65f1b12f2e57466099fb9d50495",
+      "paper-classification-table.csv": "911738cf8dd2081ff495cc4175e06f611a733be1d0fd209f8b687ae73594d187",
+      "paper-profile-inactive-lineage.csv": "416e1b1ae1e9dced283eff5f29c61007c46837b91a8d691fddc3eb0d2638c282",
+      "paper-security-results.csv": "87491cfbfe9ade8094a8a9f9e493fe331cf4f4759ed1e02e1d846f7484aaee49",
+      "paper-table.csv": "41ef0e20376c1e0867ed7e81c51e9fc36cb36e632ee0bc3d2b297a719b91efc2",
+      "profile-inactive-lineage.json": "277e054ab09ca28a459c21cea2c2232f7471eee11aa43ed8b9269bf9a11d7a6e",
+      "remote-preflight.json": "a7d3015c954cd483380fb564bfe748138b6c23fc39440d1167e0e7f883f39323",
+      "secret-scan.json": "b04ee108d0e52c21dfa47afff2d3eb06367a07e726e64c8024edf894e88c2821",
+      "security-classification.json": "36339d462f65eac66df833bea99f1b8cd06f261d06f4831479890632968ed6d6",
+      "summary.json": "aa0d253e51f1b8f9056ae75d8e3251afc286c60019141a41b917ea24ff6b04bf"
+    },
+    "manifest_errors": [],
+    "manifest_valid": true,
+    "offline_validation": {
+      "alternate_runner_attempts_checked": 60,
+      "authority_receipts_checked": 120,
+      "coordinate_denominator_exact": true,
+      "errors": [],
+      "expected_case_runs": 780,
+      "observed_case_runs": 780,
+      "primary_runner_attempts_checked": 780,
+      "profile_inactive_lineage_valid": true,
+      "profile_inactive_lineages_checked": 60,
+      "profile_toggle_receipts_checked": 120,
+      "raw_receipts_checked": 900,
+      "remote_preflight_sha256": "a7d3015c954cd483380fb564bfe748138b6c23fc39440d1167e0e7f883f39323",
+      "remote_preflight_valid": true,
+      "root_signer_audits_checked": 780,
+      "schema_version": "xir-lab-native-security-v2-offline-validation-v1",
+      "unique_delivery_transactions": 900,
+      "valid": true
+    },
+    "path": "/vePFS-Mindverse/user/intern/lucian/xir/revisions/complete-bcra-evidence-revision/runtime/native-security-v2/native-security-v2-run-001/rebuild-b",
+    "summary": {
+      "attempt_namespace": null,
+      "campaign_id": "native-security-v2",
+      "config_sha256": "728200d42c6fcea7b61f656d13c7762cfa8bc975dfd3974449f0b1a85f6b87b2",
+      "deployment_sha256": "bb5bd7c54d0c87ee0fcf6691f3ac116ef3ceecb5ee9a1a0590b7ff4dcab99eb6",
+      "expected_case_runs": 780,
+      "failed_case_runs": 0,
+      "groups": [
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 30,
+          "case": "concurrent_replay",
+          "expected_rejection": "AlreadyConsumed",
+          "repetitions": 30,
+          "route": "HL",
+          "validated": 30
+        },
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 0,
+          "case": "context_tamper",
+          "expected_rejection": "InvalidRootSignature",
+          "repetitions": 30,
+          "route": "HL",
+          "validated": 30
+        },
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 0,
+          "case": "cross_execution_splice",
+          "expected_rejection": "BundleRejected",
+          "repetitions": 30,
+          "route": "HL",
+          "validated": 30
+        },
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 0,
+          "case": "evidence_tamper",
+          "expected_rejection": "EvidenceRejected",
+          "repetitions": 30,
+          "route": "HL",
+          "validated": 30
+        },
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 0,
+          "case": "fake_verifier",
+          "expected_rejection": "UnapprovedPriorVerifier",
+          "repetitions": 30,
+          "route": "HL",
+          "validated": 30
+        },
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 0,
+          "case": "payload_tamper",
+          "expected_rejection": "PayloadMismatch",
+          "repetitions": 30,
+          "route": "HL",
+          "validated": 30
+        },
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 0,
+          "case": "profile_inactive",
+          "expected_rejection": "ProfileInactive",
+          "repetitions": 30,
+          "route": "HL",
+          "validated": 30
+        },
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 0,
+          "case": "profile_substitution",
+          "expected_rejection": "ProfileInactive",
+          "repetitions": 30,
+          "route": "HL",
+          "validated": 30
+        },
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 0,
+          "case": "receipt_delete",
+          "expected_rejection": "InvalidTrace",
+          "repetitions": 30,
+          "route": "HL",
+          "validated": 30
+        },
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 0,
+          "case": "receipt_reorder",
+          "expected_rejection": "InvalidTrace",
+          "repetitions": 30,
+          "route": "HL",
+          "validated": 30
+        },
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 30,
+          "case": "sequential_replay",
+          "expected_rejection": "AlreadyConsumed",
+          "repetitions": 30,
+          "route": "HL",
+          "validated": 30
+        },
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 0,
+          "case": "wrong_endpoint",
+          "expected_rejection": "UnapprovedPriorVerifier",
+          "repetitions": 30,
+          "route": "HL",
+          "validated": 30
+        },
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 0,
+          "case": "wrong_registry_version",
+          "expected_rejection": "RootMismatch",
+          "repetitions": 30,
+          "route": "HL",
+          "validated": 30
+        },
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 30,
+          "case": "concurrent_replay",
+          "expected_rejection": "AlreadyConsumed",
+          "repetitions": 30,
+          "route": "LH",
+          "validated": 30
+        },
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 0,
+          "case": "context_tamper",
+          "expected_rejection": "InvalidRootSignature",
+          "repetitions": 30,
+          "route": "LH",
+          "validated": 30
+        },
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 0,
+          "case": "cross_execution_splice",
+          "expected_rejection": "BundleRejected",
+          "repetitions": 30,
+          "route": "LH",
+          "validated": 30
+        },
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 0,
+          "case": "evidence_tamper",
+          "expected_rejection": "EvidenceRejected",
+          "repetitions": 30,
+          "route": "LH",
+          "validated": 30
+        },
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 0,
+          "case": "fake_verifier",
+          "expected_rejection": "UnapprovedPriorVerifier",
+          "repetitions": 30,
+          "route": "LH",
+          "validated": 30
+        },
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 0,
+          "case": "payload_tamper",
+          "expected_rejection": "PayloadMismatch",
+          "repetitions": 30,
+          "route": "LH",
+          "validated": 30
+        },
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 0,
+          "case": "profile_inactive",
+          "expected_rejection": "ProfileInactive",
+          "repetitions": 30,
+          "route": "LH",
+          "validated": 30
+        },
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 0,
+          "case": "profile_substitution",
+          "expected_rejection": "ProfileInactive",
+          "repetitions": 30,
+          "route": "LH",
+          "validated": 30
+        },
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 0,
+          "case": "receipt_delete",
+          "expected_rejection": "InvalidTrace",
+          "repetitions": 30,
+          "route": "LH",
+          "validated": 30
+        },
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 0,
+          "case": "receipt_reorder",
+          "expected_rejection": "InvalidTrace",
+          "repetitions": 30,
+          "route": "LH",
+          "validated": 30
+        },
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 30,
+          "case": "sequential_replay",
+          "expected_rejection": "AlreadyConsumed",
+          "repetitions": 30,
+          "route": "LH",
+          "validated": 30
+        },
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 0,
+          "case": "wrong_endpoint",
+          "expected_rejection": "UnapprovedPriorVerifier",
+          "repetitions": 30,
+          "route": "LH",
+          "validated": 30
+        },
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 0,
+          "case": "wrong_registry_version",
+          "expected_rejection": "RootMismatch",
+          "repetitions": 30,
+          "route": "LH",
+          "validated": 30
+        }
+      ],
+      "observed_case_runs": 780,
+      "root_signer": "0x87a74ac41b90b0f2dfbe4cb113254f9b19f2f184",
+      "root_signer_separated": true,
+      "runner": "0x80c3926751b1437102d49798e68b2de0238312dc",
+      "schema_version": "xir-lab-native-security-v2-summary-v1",
+      "valid": true,
+      "validated_case_runs": 780
+    }
+  },
+  "remote_preflight": {
+    "credentials_included": false,
+    "healthy_validators": 12,
+    "path": "/vePFS-Mindverse/user/intern/lucian/xir/revisions/complete-bcra-evidence-revision/runtime/native-security-v2/native-security-v2-run-001/remote-preflight.json",
+    "sha256": "a7d3015c954cd483380fb564bfe748138b6c23fc39440d1167e0e7f883f39323"
+  },
+  "remote_run_root": "/vePFS-Mindverse/user/intern/lucian/xir/revisions/complete-bcra-evidence-revision/runtime/native-security-v2/native-security-v2-run-001",
+  "schema_version": "xir-lab-native-security-v2-handoff-v1",
+  "smoke": {
+    "validation_path": "/vePFS-Mindverse/user/intern/lucian/xir/revisions/complete-bcra-evidence-revision/runtime/native-security-v2/native-security-v2-run-001/runs/smoke-001/smoke-validation.json",
+    "validation_sha256": "768c6600a96ea95adcb6fe175ffbd00abced878c8a80bc6407157d696c55e2e2"
+  },
+  "source_publication": {
+    "file_count": 5,
+    "files": {
+      "REPORT.md": "6d0d47fa9594684e9785def6abe4e8856d27eec51059a6de0441eedd9ea1a011",
+      "SHA256SUMS": "693862727f8e6b9e1c533ea8a960703a7825f2bb7f96015f8127931608a10d5d",
+      "case-results.json": "3d7300dae2d35289e1c0e039b9a208b5fbab05d0128a3b1a1392d0828bc655ce",
+      "paper-table.csv": "41ef0e20376c1e0867ed7e81c51e9fc36cb36e632ee0bc3d2b297a719b91efc2",
+      "summary.json": "aa0d253e51f1b8f9056ae75d8e3251afc286c60019141a41b917ea24ff6b04bf"
+    },
+    "manifest_errors": [],
+    "manifest_valid": true,
+    "offline_validation": null,
+    "path": "/vePFS-Mindverse/user/intern/lucian/xir/revisions/complete-bcra-evidence-revision/runtime/native-security-v2/native-security-v2-run-001/runs/official-780/publish",
+    "summary": {
+      "attempt_namespace": null,
+      "campaign_id": "native-security-v2",
+      "config_sha256": "728200d42c6fcea7b61f656d13c7762cfa8bc975dfd3974449f0b1a85f6b87b2",
+      "deployment_sha256": "bb5bd7c54d0c87ee0fcf6691f3ac116ef3ceecb5ee9a1a0590b7ff4dcab99eb6",
+      "expected_case_runs": 780,
+      "failed_case_runs": 0,
+      "groups": [
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 30,
+          "case": "concurrent_replay",
+          "expected_rejection": "AlreadyConsumed",
+          "repetitions": 30,
+          "route": "HL",
+          "validated": 30
+        },
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 0,
+          "case": "context_tamper",
+          "expected_rejection": "InvalidRootSignature",
+          "repetitions": 30,
+          "route": "HL",
+          "validated": 30
+        },
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 0,
+          "case": "cross_execution_splice",
+          "expected_rejection": "BundleRejected",
+          "repetitions": 30,
+          "route": "HL",
+          "validated": 30
+        },
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 0,
+          "case": "evidence_tamper",
+          "expected_rejection": "EvidenceRejected",
+          "repetitions": 30,
+          "route": "HL",
+          "validated": 30
+        },
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 0,
+          "case": "fake_verifier",
+          "expected_rejection": "UnapprovedPriorVerifier",
+          "repetitions": 30,
+          "route": "HL",
+          "validated": 30
+        },
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 0,
+          "case": "payload_tamper",
+          "expected_rejection": "PayloadMismatch",
+          "repetitions": 30,
+          "route": "HL",
+          "validated": 30
+        },
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 0,
+          "case": "profile_inactive",
+          "expected_rejection": "ProfileInactive",
+          "repetitions": 30,
+          "route": "HL",
+          "validated": 30
+        },
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 0,
+          "case": "profile_substitution",
+          "expected_rejection": "ProfileInactive",
+          "repetitions": 30,
+          "route": "HL",
+          "validated": 30
+        },
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 0,
+          "case": "receipt_delete",
+          "expected_rejection": "InvalidTrace",
+          "repetitions": 30,
+          "route": "HL",
+          "validated": 30
+        },
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 0,
+          "case": "receipt_reorder",
+          "expected_rejection": "InvalidTrace",
+          "repetitions": 30,
+          "route": "HL",
+          "validated": 30
+        },
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 30,
+          "case": "sequential_replay",
+          "expected_rejection": "AlreadyConsumed",
+          "repetitions": 30,
+          "route": "HL",
+          "validated": 30
+        },
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 0,
+          "case": "wrong_endpoint",
+          "expected_rejection": "UnapprovedPriorVerifier",
+          "repetitions": 30,
+          "route": "HL",
+          "validated": 30
+        },
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 0,
+          "case": "wrong_registry_version",
+          "expected_rejection": "RootMismatch",
+          "repetitions": 30,
+          "route": "HL",
+          "validated": 30
+        },
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 30,
+          "case": "concurrent_replay",
+          "expected_rejection": "AlreadyConsumed",
+          "repetitions": 30,
+          "route": "LH",
+          "validated": 30
+        },
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 0,
+          "case": "context_tamper",
+          "expected_rejection": "InvalidRootSignature",
+          "repetitions": 30,
+          "route": "LH",
+          "validated": 30
+        },
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 0,
+          "case": "cross_execution_splice",
+          "expected_rejection": "BundleRejected",
+          "repetitions": 30,
+          "route": "LH",
+          "validated": 30
+        },
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 0,
+          "case": "evidence_tamper",
+          "expected_rejection": "EvidenceRejected",
+          "repetitions": 30,
+          "route": "LH",
+          "validated": 30
+        },
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 0,
+          "case": "fake_verifier",
+          "expected_rejection": "UnapprovedPriorVerifier",
+          "repetitions": 30,
+          "route": "LH",
+          "validated": 30
+        },
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 0,
+          "case": "payload_tamper",
+          "expected_rejection": "PayloadMismatch",
+          "repetitions": 30,
+          "route": "LH",
+          "validated": 30
+        },
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 0,
+          "case": "profile_inactive",
+          "expected_rejection": "ProfileInactive",
+          "repetitions": 30,
+          "route": "LH",
+          "validated": 30
+        },
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 0,
+          "case": "profile_substitution",
+          "expected_rejection": "ProfileInactive",
+          "repetitions": 30,
+          "route": "LH",
+          "validated": 30
+        },
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 0,
+          "case": "receipt_delete",
+          "expected_rejection": "InvalidTrace",
+          "repetitions": 30,
+          "route": "LH",
+          "validated": 30
+        },
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 0,
+          "case": "receipt_reorder",
+          "expected_rejection": "InvalidTrace",
+          "repetitions": 30,
+          "route": "LH",
+          "validated": 30
+        },
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 30,
+          "case": "sequential_replay",
+          "expected_rejection": "AlreadyConsumed",
+          "repetitions": 30,
+          "route": "LH",
+          "validated": 30
+        },
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 0,
+          "case": "wrong_endpoint",
+          "expected_rejection": "UnapprovedPriorVerifier",
+          "repetitions": 30,
+          "route": "LH",
+          "validated": 30
+        },
+        {
+          "actual_rejection_matches": 30,
+          "application_effects": 0,
+          "case": "wrong_registry_version",
+          "expected_rejection": "RootMismatch",
+          "repetitions": 30,
+          "route": "LH",
+          "validated": 30
+        }
+      ],
+      "observed_case_runs": 780,
+      "root_signer": "0x87a74ac41b90b0f2dfbe4cb113254f9b19f2f184",
+      "root_signer_separated": true,
+      "runner": "0x80c3926751b1437102d49798e68b2de0238312dc",
+      "schema_version": "xir-lab-native-security-v2-summary-v1",
+      "valid": true,
+      "validated_case_runs": 780
+    }
+  },
+  "validation": {
+    "authority_cases_valid": true,
+    "comparison_valid": true,
+    "deployment_valid": true,
+    "lease_released": true,
+    "official_summary_valid": true,
+    "preflight_valid": true,
+    "rebuild_a_valid": true,
+    "rebuild_b_valid": true,
+    "rebuilds_identical": true,
+    "smoke_valid": true,
+    "source_manifest_valid": true,
+    "valid": true
+  }
+}

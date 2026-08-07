@@ -1,0 +1,137 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xir.example/schemas/native-latency-v2-config.schema.json",
+  "title": "XIR native latency v2 configuration",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "$schema",
+    "schema_version",
+    "namespace",
+    "source",
+    "denominator",
+    "bootstrap",
+    "clean_prefix"
+  ],
+  "properties": {
+    "$schema": {"type": "string"},
+    "schema_version": {"const": "xir-lab-native-latency-v2-config-v1"},
+    "namespace": {"const": "native-latency-v2"},
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "run_id",
+        "database_path",
+        "database_sha256",
+        "accepted_analysis_path",
+        "accepted_analysis_sha256",
+        "accepted_semantic_sha256",
+        "reconciliation_path",
+        "reconciliation_sha256"
+      ],
+      "properties": {
+        "run_id": {"const": "native-stack-run-003"},
+        "database_path": {"type": "string", "minLength": 1},
+        "database_sha256": {"$ref": "#/$defs/sha256"},
+        "accepted_analysis_path": {"type": "string", "minLength": 1},
+        "accepted_analysis_sha256": {"$ref": "#/$defs/sha256"},
+        "accepted_semantic_sha256": {"$ref": "#/$defs/sha256"},
+        "reconciliation_path": {"type": "string", "minLength": 1},
+        "reconciliation_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "denominator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["logical_attempts", "attempts_per_route", "routes"],
+      "properties": {
+        "logical_attempts": {"const": 40000},
+        "attempts_per_route": {"const": 10000},
+        "routes": {
+          "type": "array",
+          "prefixItems": [
+            {"const": "HH"},
+            {"const": "LL"},
+            {"const": "HL"},
+            {"const": "LH"}
+          ],
+          "items": false,
+          "minItems": 4,
+          "maxItems": 4
+        }
+      }
+    },
+    "bootstrap": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "method",
+        "ordering",
+        "block_length_attempts_per_route",
+        "block_length_rationale",
+        "repetitions",
+        "confidence_level",
+        "interval_method",
+        "master_seed",
+        "metrics"
+      ],
+      "properties": {
+        "method": {"const": "route-stratified-noncircular-moving-block-bootstrap"},
+        "ordering": {
+          "type": "array",
+          "prefixItems": [
+            {"const": "started_at"},
+            {"const": "route_sequence"},
+            {"const": "attempt_id"}
+          ],
+          "items": false,
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "block_length_attempts_per_route": {"type": "integer", "minimum": 2},
+        "block_length_rationale": {"type": "string", "minLength": 80},
+        "repetitions": {"type": "integer", "minimum": 2000},
+        "confidence_level": {"type": "number", "exclusiveMinimum": 0.9, "exclusiveMaximum": 1},
+        "interval_method": {"const": "empirical-percentile-nearest-rank"},
+        "master_seed": {"type": "integer", "minimum": 0},
+        "metrics": {
+          "type": "array",
+          "prefixItems": [
+            {"const": "mean"},
+            {"const": "median"},
+            {"const": "p95"},
+            {"const": "p99"}
+          ],
+          "items": false,
+          "minItems": 4,
+          "maxItems": 4
+        }
+      }
+    },
+    "clean_prefix": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rule_id",
+        "description",
+        "boundary_utc",
+        "boundary_source_path",
+        "boundary_source_sha256"
+      ],
+      "properties": {
+        "rule_id": {"const": "matched-finished-before-first-natural-interruption-v1"},
+        "description": {"type": "string", "minLength": 80},
+        "boundary_utc": {"type": "string", "format": "date-time"},
+        "boundary_source_path": {"type": "string", "minLength": 1},
+        "boundary_source_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  }
+}

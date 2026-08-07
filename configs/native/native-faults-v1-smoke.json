@@ -1,0 +1,34 @@
+{
+  "schema_version": "xir-lab-native-faults-v1-config-v1",
+  "campaign_id": "native-faults-v1-smoke",
+  "routes": ["HL", "LH"],
+  "repetitions_per_route_scenario": 1,
+  "coordinator_stage": "destination_deliver",
+  "scenarios": [
+    {
+      "name": "pre_intent",
+      "actor": "coordinator",
+      "boundary": "pre_intent",
+      "signal": "process_exit"
+    },
+    {
+      "name": "post_broadcast_pre_acknowledgement",
+      "actor": "coordinator",
+      "boundary": "post_broadcast_pre_acknowledgement",
+      "signal": "process_exit"
+    },
+    {
+      "name": "worker_action_post_submit",
+      "actor": "worker",
+      "boundary": "worker_action_post_submit",
+      "signal": "process_exit",
+      "target_stage": "executor_execute"
+    },
+    {
+      "name": "concurrent_retry",
+      "actor": "coordinator",
+      "boundary": "post_sign_pre_broadcast",
+      "signal": "concurrent_retry"
+    }
+  ]
+}

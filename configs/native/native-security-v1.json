@@ -1,0 +1,33 @@
+{
+  "schema_version": "xir-lab-native-security-v1-config-v1",
+  "campaign_id": "native-security-v1",
+  "fixed_seed": "4a6dd6f96fd3150ccf339a122f49f84be3ea3d2a3d64cdcd90eb260beef7640c",
+  "routes": ["HL", "LH"],
+  "repetitions_per_route_case": 30,
+  "cases": [
+    "payload_tamper",
+    "context_tamper",
+    "profile_substitution",
+    "profile_inactive",
+    "receipt_delete",
+    "receipt_reorder",
+    "evidence_tamper",
+    "wrong_registry_version",
+    "cross_execution_splice",
+    "sequential_replay",
+    "concurrent_replay"
+  ],
+  "expected_application_effects": {
+    "payload_tamper": 0,
+    "context_tamper": 0,
+    "profile_substitution": 0,
+    "profile_inactive": 0,
+    "receipt_delete": 0,
+    "receipt_reorder": 0,
+    "evidence_tamper": 0,
+    "wrong_registry_version": 0,
+    "cross_execution_splice": 0,
+    "sequential_replay": 1,
+    "concurrent_replay": 1
+  }
+}

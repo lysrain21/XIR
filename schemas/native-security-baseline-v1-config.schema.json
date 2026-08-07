@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xir.local/schemas/native-security-baseline-v1-config.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "namespace", "fixed_seed", "required_environment_namespace",
+    "final_revision_source_sha256", "profile", "routes",
+    "cases", "repetitions", "concurrency", "registry_mutation_serial"
+  ],
+  "properties": {
+    "schema_version": {"const": "xir-lab-native-security-baseline-v1-config"},
+    "namespace": {"const": "native-security-baseline-v1"},
+    "fixed_seed": {"type": "string", "minLength": 1},
+    "required_environment_namespace": {"const": "native-ablation-v2"},
+    "final_revision_source_sha256": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "contracts/src/HyperlaneAdapter.sol",
+        "contracts/src/LayerZeroAdapter.sol",
+        "src/xir_lab/native/deployer.py",
+        "src/xir_lab/native/runner.py"
+      ],
+      "properties": {
+        "contracts/src/HyperlaneAdapter.sol": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "contracts/src/LayerZeroAdapter.sol": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "src/xir_lab/native/deployer.py": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "src/xir_lab/native/runner.py": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    },
+    "profile": {"type": "string", "minLength": 1},
+    "routes": {"const": ["HL", "LH"]},
+    "cases": {
+      "const": [
+        "history_absent_delivery",
+        "between_hop_payload_substitution",
+        "route_label_substitution",
+        "inactive_profile_unchecked",
+        "new_native_envelope_replay"
+      ]
+    },
+    "repetitions": {"type": "integer", "minimum": 30},
+    "concurrency": {"type": "integer", "minimum": 1, "maximum": 32},
+    "registry_mutation_serial": {"const": true}
+  }
+}

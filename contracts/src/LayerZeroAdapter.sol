@@ -5,6 +5,7 @@ import {IXIRCarrierAdapter} from "./IXIRCarrierAdapter.sol";
 import {IBaselineCarrier} from "./IBaselineCarrier.sol";
 import {IBaselineCarrierReceiver} from "./IBaselineCarrier.sol";
 import {OutboundControl} from "./OutboundControl.sol";
+import {XIREncoding} from "./XIREncoding.sol";
 
 struct MessagingParams {
     uint32 dstEid;
@@ -28,10 +29,7 @@ struct MessagingReceipt {
 interface ILayerZeroEndpointV2 {
     function setDelegate(address delegate) external;
 
-    function quote(MessagingParams calldata params, address sender)
-        external
-        view
-        returns (MessagingFee memory);
+    function quote(MessagingParams calldata params, address sender) external view returns (MessagingFee memory);
 
     function send(MessagingParams calldata params, address refundAddress)
         external
@@ -44,6 +42,7 @@ contract LayerZeroAdapter is IXIRCarrierAdapter, IBaselineCarrier, OutboundContr
     error OnlyPeer();
     error InvalidBundle();
     error InvalidPeer();
+    error UnapprovedPriorVerifier(uint256 index);
     error UnverifiedPriorEvidence(uint256 index);
     error UnknownMessageKind();
     error UnknownBaselineRoute();
@@ -79,6 +78,8 @@ contract LayerZeroAdapter is IXIRCarrierAdapter, IBaselineCarrier, OutboundContr
     bytes32 public remotePeer;
     bytes32 public enforcedOptionsHash;
     mapping(bytes32 => bool) public acceptedEvidence;
+    mapping(bytes32 => bool) public acceptedBundles;
+    mapping(bytes32 => address) public approvedPriorVerifiers;
     mapping(bytes32 => address) public baselineReceivers;
 
     uint8 private constant KIND_XIR = 1;
@@ -94,24 +95,19 @@ contract LayerZeroAdapter is IXIRCarrierAdapter, IBaselineCarrier, OutboundContr
     );
 
     event PriorEvidenceCarried(
-        bytes32 indexed guid,
-        bytes32 indexed profileHash,
-        bytes32 indexed evidenceHash,
-        bytes32 transitionHash
+        bytes32 indexed guid, bytes32 indexed profileHash, bytes32 indexed evidenceHash, bytes32 transitionHash
     );
+    event EvidenceBundleAccepted(bytes32 indexed bundleCommitment, uint256 receiptCount);
+    event PriorVerifierSet(bytes32 indexed profileHash, address indexed verifier);
     event RemotePeerSet(bytes32 indexed remotePeer);
     event VerifiedEvidenceForwarded(bytes32 indexed guid, uint64 indexed nonce, uint256 nativeFee);
     event BaselineDispatched(bytes32 indexed guid, uint64 indexed nonce, uint256 nativeFee);
     event BaselineReceiverSet(bytes32 indexed routeId, address indexed receiver);
     event EnforcedOptionsSet(bytes32 indexed optionsHash);
 
-    constructor(
-        address endpoint_,
-        uint32 remoteEid_,
-        bytes32 remotePeer_,
-        address administrator_,
-        address runner_
-    ) OutboundControl(administrator_, runner_) {
+    constructor(address endpoint_, uint32 remoteEid_, bytes32 remotePeer_, address administrator_, address runner_)
+        OutboundControl(administrator_, runner_)
+    {
         if (endpoint_ == address(0) || remotePeer_ == bytes32(0)) revert InvalidPeer();
         endpoint = endpoint_;
         remoteEid = remoteEid_;
@@ -136,12 +132,17 @@ contract LayerZeroAdapter is IXIRCarrierAdapter, IBaselineCarrier, OutboundContr
         emit BaselineReceiverSet(routeId, receiver);
     }
 
-    function quoteForward(ForwardRequest calldata request)
-        external
-        view
-        returns (MessagingFee memory)
-    {
+    /// @notice Binds a prior-hop profile to the inbound adapter authorized to
+    /// attest that profile. Setting `verifier` to zero revokes the binding.
+    function setPriorVerifier(bytes32 profileHash, address verifier) external onlyAdministrator {
+        if (profileHash == bytes32(0)) revert InvalidBundle();
+        approvedPriorVerifiers[profileHash] = verifier;
+        emit PriorVerifierSet(profileHash, verifier);
+    }
+
+    function quoteForward(ForwardRequest calldata request) external view returns (MessagingFee memory) {
         _checkBundle(request);
+        _checkPriorVerifierBindings(request);
         _checkOptions(request.options);
         return ILayerZeroEndpointV2(endpoint).quote(_params(request), address(this));
     }
@@ -152,10 +153,7 @@ contract LayerZeroAdapter is IXIRCarrierAdapter, IBaselineCarrier, OutboundContr
         returns (uint256)
     {
         _checkOptions(options);
-        return ILayerZeroEndpointV2(endpoint).quote(
-            _rawParams(routeId, message, options), address(this)
-        )
-            .nativeFee;
+        return ILayerZeroEndpointV2(endpoint).quote(_rawParams(routeId, message, options), address(this)).nativeFee;
     }
 
     /// @notice Carries evidence already authenticated on this chain to the next gateway.
@@ -180,33 +178,20 @@ contract LayerZeroAdapter is IXIRCarrierAdapter, IBaselineCarrier, OutboundContr
         return _forwardVerified(request);
     }
 
-    function _forwardVerified(ForwardRequest calldata request)
-        private
-        returns (MessagingReceipt memory receipt)
-    {
+    function _forwardVerified(ForwardRequest calldata request) private returns (MessagingReceipt memory receipt) {
         _checkBundle(request);
+        _checkPriorVerifierBindings(request);
         _checkOptions(request.options);
         for (uint256 i = 0; i < request.verifiers.length; i++) {
-            if (
-                request.verifiers[i] == address(0)
-                    || !IXIRCarrierAdapter(request.verifiers[i])
-                        .verify(
-                            request.profileHashes[i],
-                            request.evidenceHashes[i],
-                            request.transitionHashes[i]
-                        )
-            ) revert UnverifiedPriorEvidence(i);
+            address approvedVerifier = approvedPriorVerifiers[request.profileHashes[i]];
+            if (!IXIRCarrierAdapter(approvedVerifier)
+                    .verify(request.profileHashes[i], request.evidenceHashes[i], request.transitionHashes[i])) revert UnverifiedPriorEvidence(i);
         }
-        receipt =
-            ILayerZeroEndpointV2(endpoint).send{value: msg.value}(_params(request), runner);
+        receipt = ILayerZeroEndpointV2(endpoint).send{value: msg.value}(_params(request), runner);
         emit VerifiedEvidenceForwarded(receipt.guid, receipt.nonce, receipt.fee.nativeFee);
     }
 
-    function sendBaselineSource(
-        bytes32 routeId,
-        bytes calldata message,
-        bytes calldata options
-    )
+    function sendBaselineSource(bytes32 routeId, bytes calldata message, bytes calldata options)
         external
         payable
         onlyRunner
@@ -216,11 +201,7 @@ contract LayerZeroAdapter is IXIRCarrierAdapter, IBaselineCarrier, OutboundContr
         return _sendBaseline(routeId, message, options);
     }
 
-    function forwardBaseline(
-        bytes32 routeId,
-        bytes calldata message,
-        bytes calldata options
-    )
+    function forwardBaseline(bytes32 routeId, bytes calldata message, bytes calldata options)
         external
         payable
         onlyRunner
@@ -230,26 +211,18 @@ contract LayerZeroAdapter is IXIRCarrierAdapter, IBaselineCarrier, OutboundContr
         return _sendBaseline(routeId, message, options);
     }
 
-    function _sendBaseline(bytes32 routeId, bytes calldata message, bytes calldata options)
-        private
-        returns (bytes32)
-    {
+    function _sendBaseline(bytes32 routeId, bytes calldata message, bytes calldata options) private returns (bytes32) {
         _checkOptions(options);
         MessagingReceipt memory receipt =
-            ILayerZeroEndpointV2(endpoint).send{value: msg.value}(
-                _rawParams(routeId, message, options), runner
-            );
+            ILayerZeroEndpointV2(endpoint).send{value: msg.value}(_rawParams(routeId, message, options), runner);
         emit BaselineDispatched(receipt.guid, receipt.nonce, receipt.fee.nativeFee);
         return receipt.guid;
     }
 
-    function lzReceive(
-        Origin calldata origin,
-        bytes32 guid,
-        bytes calldata message,
-        address executor,
-        bytes calldata
-    ) external payable {
+    function lzReceive(Origin calldata origin, bytes32 guid, bytes calldata message, address executor, bytes calldata)
+        external
+        payable
+    {
         if (msg.sender != endpoint) revert OnlyEndpoint();
         if (remotePeer == bytes32(0) || origin.srcEid != remoteEid || origin.sender != remotePeer) {
             revert OnlyPeer();
@@ -268,23 +241,25 @@ contract LayerZeroAdapter is IXIRCarrierAdapter, IBaselineCarrier, OutboundContr
             bundle.priorProfiles.length != bundle.priorEvidence.length
                 || bundle.priorProfiles.length != bundle.priorTransitions.length
         ) revert InvalidBundle();
-        acceptedEvidence[keccak256(abi.encode(bundle.profileHash, guid, bundle.transitionHash))] =
-        true;
-        emit LayerZeroEvidence(
-            guid, bundle.profileHash, bundle.transitionHash, origin.srcEid, origin.nonce, executor
-        );
+        bytes32 bundleCommitment = XIREncoding.bundleStart(bundle.priorProfiles.length + 1);
+        acceptedEvidence[keccak256(abi.encode(bundle.profileHash, guid, bundle.transitionHash))] = true;
+        emit LayerZeroEvidence(guid, bundle.profileHash, bundle.transitionHash, origin.srcEid, origin.nonce, executor);
         for (uint256 i = 0; i < bundle.priorProfiles.length; i++) {
+            bundleCommitment = XIREncoding.bundleStep(
+                bundleCommitment, i, bundle.priorProfiles[i], bundle.priorEvidence[i], bundle.priorTransitions[i]
+            );
             acceptedEvidence[
-                keccak256(
-                    abi.encode(
-                        bundle.priorProfiles[i], bundle.priorEvidence[i], bundle.priorTransitions[i]
-                    )
-                )
+                keccak256(abi.encode(bundle.priorProfiles[i], bundle.priorEvidence[i], bundle.priorTransitions[i]))
             ] = true;
             emit PriorEvidenceCarried(
                 guid, bundle.priorProfiles[i], bundle.priorEvidence[i], bundle.priorTransitions[i]
             );
         }
+        bundleCommitment = XIREncoding.bundleStep(
+            bundleCommitment, bundle.priorProfiles.length, bundle.profileHash, guid, bundle.transitionHash
+        );
+        acceptedBundles[bundleCommitment] = true;
+        emit EvidenceBundleAccepted(bundleCommitment, bundle.priorProfiles.length + 1);
     }
 
     /// @notice LayerZero Endpoint path-initialization hook.
@@ -297,19 +272,15 @@ contract LayerZeroAdapter is IXIRCarrierAdapter, IBaselineCarrier, OutboundContr
         return 0;
     }
 
-    function verify(bytes32 profileHash, bytes32 evidenceHash, bytes32 transitionHash)
-        external
-        view
-        returns (bool)
-    {
+    function verify(bytes32 profileHash, bytes32 evidenceHash, bytes32 transitionHash) external view returns (bool) {
         return acceptedEvidence[keccak256(abi.encode(profileHash, evidenceHash, transitionHash))];
     }
 
-    function _params(ForwardRequest calldata request)
-        private
-        view
-        returns (MessagingParams memory)
-    {
+    function verifyBundle(bytes32 bundleCommitment) external view returns (bool) {
+        return acceptedBundles[bundleCommitment];
+    }
+
+    function _params(ForwardRequest calldata request) private view returns (MessagingParams memory) {
         if (remotePeer == bytes32(0)) revert InvalidPeer();
         return MessagingParams({
             dstEid: remoteEid,
@@ -352,6 +323,15 @@ contract LayerZeroAdapter is IXIRCarrierAdapter, IBaselineCarrier, OutboundContr
                 || request.verifiers.length != request.evidenceHashes.length
                 || request.verifiers.length != request.transitionHashes.length
         ) revert InvalidBundle();
+    }
+
+    function _checkPriorVerifierBindings(ForwardRequest calldata request) private view {
+        for (uint256 i = 0; i < request.verifiers.length; i++) {
+            address approvedVerifier = approvedPriorVerifiers[request.profileHashes[i]];
+            if (approvedVerifier == address(0) || request.verifiers[i] != approvedVerifier) {
+                revert UnapprovedPriorVerifier(i);
+            }
+        }
     }
 
     function _checkOptions(bytes calldata options) private view {

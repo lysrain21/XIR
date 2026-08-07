@@ -42,8 +42,16 @@ def test_replication_role_identities_must_not_be_reused() -> None:
     prior = {"runner": "0x" + "11" * 20}
     current = {"runner": "0x" + "22" * 20}
     validate_distinct_role_identities(current, prior)
+    validate_distinct_role_identities(
+        {**current, "root-signer": "0x" + "33" * 20}, prior
+    )
     with pytest.raises(LocalTopologyError, match="reuses"):
         validate_distinct_role_identities(prior, prior)
+    with pytest.raises(LocalTopologyError, match="not distinct"):
+        validate_distinct_role_identities(
+            {"runner": "0x" + "22" * 20, "root-signer": "0x" + "22" * 20},
+            prior,
+        )
 
 
 def test_replication_capacity_enforces_both_reserves() -> None:

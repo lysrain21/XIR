@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xir.example/schemas/native-latency-v2-validation.schema.json",
+  "title": "XIR native latency v2 validation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "namespace", "valid", "checks", "errors"],
+  "properties": {
+    "schema_version": {"const": "xir-lab-native-latency-v2-validation-v1"},
+    "namespace": {"const": "native-latency-v2"},
+    "valid": {"type": "boolean"},
+    "checks": {
+      "type": "object",
+      "additionalProperties": {"type": "boolean"},
+      "minProperties": 12
+    },
+    "errors": {
+      "type": "array",
+      "items": {"type": "string"}
+    }
+  }
+}

@@ -1,0 +1,23 @@
+route,case,runs,input_class,trusted_assumption_violated,target_guarantees,expected_check_stage,actual_check_stage,expected_rejection,actual_rejection_matches,rejected_runs_without_application_effect,initial_application_effects,duplicate_application_effects,validated
+HL,concurrent_replay,30,duplicate_valid_envelope_concurrent,none (A1-A4 hold),G4_AT_MOST_ONCE_EFFECT,atomic_message_consumption,atomic_message_consumption,AlreadyConsumed,30,30,30,0,30
+HL,context_tamper,30,mutated_untrusted_context,none (A1-A4 hold),G1_AUTHENTICITY;G3_POLICY_COMPLIANCE,source_root_verification,source_root_verification,InvalidRootSignature,30,30,0,0,30
+HL,cross_execution_splice,30,cross_execution_tuple_splice,none (A1-A4 hold),G2_TRACE_INTEGRITY,ordered_final_bundle_verification,ordered_final_bundle_verification,BundleRejected,30,30,0,0,30
+HL,evidence_tamper,30,mutated_native_evidence_reference,none (A1-A4 hold),G1_AUTHENTICITY;G2_TRACE_INTEGRITY,native_evidence_verification,native_evidence_verification,EvidenceRejected,30,30,0,0,30
+HL,payload_tamper,30,mutated_untrusted_payload,none (A1-A4 hold),G1_AUTHENTICITY,destination_payload_binding,destination_payload_binding,PayloadMismatch,30,30,0,0,30
+HL,profile_inactive,30,inactive_profile_reference,none (A1-A4 hold),G3_POLICY_COMPLIANCE,profile_activity_check,profile_activity_check,ProfileInactive,30,30,0,0,30
+HL,profile_substitution,30,unregistered_profile_reference,none (A1-A4 hold),G3_POLICY_COMPLIANCE,profile_resolution,profile_resolution,ProfileInactive,30,30,0,0,30
+HL,receipt_delete,30,receipt_sequence_omission,none (A1-A4 hold),G2_TRACE_INTEGRITY,receipt_prefix_verification,receipt_prefix_verification,InvalidTrace,30,30,0,0,30
+HL,receipt_reorder,30,receipt_sequence_reordering,none (A1-A4 hold),G2_TRACE_INTEGRITY,receipt_prefix_verification,receipt_prefix_verification,InvalidTrace,30,30,0,0,30
+HL,sequential_replay,30,duplicate_valid_envelope_sequential,none (A1-A4 hold),G4_AT_MOST_ONCE_EFFECT,atomic_message_consumption,atomic_message_consumption,AlreadyConsumed,30,30,30,0,30
+HL,wrong_registry_version,30,unbound_registry_version_reference,none (A1-A4 hold),G1_AUTHENTICITY;G3_POLICY_COMPLIANCE,root_version_verification,root_version_verification,RootMismatch,30,30,0,0,30
+LH,concurrent_replay,30,duplicate_valid_envelope_concurrent,none (A1-A4 hold),G4_AT_MOST_ONCE_EFFECT,atomic_message_consumption,atomic_message_consumption,AlreadyConsumed,30,30,30,0,30
+LH,context_tamper,30,mutated_untrusted_context,none (A1-A4 hold),G1_AUTHENTICITY;G3_POLICY_COMPLIANCE,source_root_verification,source_root_verification,InvalidRootSignature,30,30,0,0,30
+LH,cross_execution_splice,30,cross_execution_tuple_splice,none (A1-A4 hold),G2_TRACE_INTEGRITY,ordered_final_bundle_verification,ordered_final_bundle_verification,BundleRejected,30,30,0,0,30
+LH,evidence_tamper,30,mutated_native_evidence_reference,none (A1-A4 hold),G1_AUTHENTICITY;G2_TRACE_INTEGRITY,native_evidence_verification,native_evidence_verification,EvidenceRejected,30,30,0,0,30
+LH,payload_tamper,30,mutated_untrusted_payload,none (A1-A4 hold),G1_AUTHENTICITY,destination_payload_binding,destination_payload_binding,PayloadMismatch,30,30,0,0,30
+LH,profile_inactive,30,inactive_profile_reference,none (A1-A4 hold),G3_POLICY_COMPLIANCE,profile_activity_check,profile_activity_check,ProfileInactive,30,30,0,0,30
+LH,profile_substitution,30,unregistered_profile_reference,none (A1-A4 hold),G3_POLICY_COMPLIANCE,profile_resolution,profile_resolution,ProfileInactive,30,30,0,0,30
+LH,receipt_delete,30,receipt_sequence_omission,none (A1-A4 hold),G2_TRACE_INTEGRITY,receipt_prefix_verification,receipt_prefix_verification,InvalidTrace,30,30,0,0,30
+LH,receipt_reorder,30,receipt_sequence_reordering,none (A1-A4 hold),G2_TRACE_INTEGRITY,receipt_prefix_verification,receipt_prefix_verification,InvalidTrace,30,30,0,0,30
+LH,sequential_replay,30,duplicate_valid_envelope_sequential,none (A1-A4 hold),G4_AT_MOST_ONCE_EFFECT,atomic_message_consumption,atomic_message_consumption,AlreadyConsumed,30,30,30,0,30
+LH,wrong_registry_version,30,unbound_registry_version_reference,none (A1-A4 hold),G1_AUTHENTICITY;G3_POLICY_COMPLIANCE,root_version_verification,root_version_verification,RootMismatch,30,30,0,0,30

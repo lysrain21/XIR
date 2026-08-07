@@ -1,0 +1,251 @@
+{
+  "attempt_namespace": null,
+  "campaign_id": "native-security-v2",
+  "config_sha256": "728200d42c6fcea7b61f656d13c7762cfa8bc975dfd3974449f0b1a85f6b87b2",
+  "deployment_sha256": "bb5bd7c54d0c87ee0fcf6691f3ac116ef3ceecb5ee9a1a0590b7ff4dcab99eb6",
+  "expected_case_runs": 780,
+  "failed_case_runs": 0,
+  "groups": [
+    {
+      "actual_rejection_matches": 30,
+      "application_effects": 30,
+      "case": "concurrent_replay",
+      "expected_rejection": "AlreadyConsumed",
+      "repetitions": 30,
+      "route": "HL",
+      "validated": 30
+    },
+    {
+      "actual_rejection_matches": 30,
+      "application_effects": 0,
+      "case": "context_tamper",
+      "expected_rejection": "InvalidRootSignature",
+      "repetitions": 30,
+      "route": "HL",
+      "validated": 30
+    },
+    {
+      "actual_rejection_matches": 30,
+      "application_effects": 0,
+      "case": "cross_execution_splice",
+      "expected_rejection": "BundleRejected",
+      "repetitions": 30,
+      "route": "HL",
+      "validated": 30
+    },
+    {
+      "actual_rejection_matches": 30,
+      "application_effects": 0,
+      "case": "evidence_tamper",
+      "expected_rejection": "EvidenceRejected",
+      "repetitions": 30,
+      "route": "HL",
+      "validated": 30
+    },
+    {
+      "actual_rejection_matches": 30,
+      "application_effects": 0,
+      "case": "fake_verifier",
+      "expected_rejection": "UnapprovedPriorVerifier",
+      "repetitions": 30,
+      "route": "HL",
+      "validated": 30
+    },
+    {
+      "actual_rejection_matches": 30,
+      "application_effects": 0,
+      "case": "payload_tamper",
+      "expected_rejection": "PayloadMismatch",
+      "repetitions": 30,
+      "route": "HL",
+      "validated": 30
+    },
+    {
+      "actual_rejection_matches": 30,
+      "application_effects": 0,
+      "case": "profile_inactive",
+      "expected_rejection": "ProfileInactive",
+      "repetitions": 30,
+      "route": "HL",
+      "validated": 30
+    },
+    {
+      "actual_rejection_matches": 30,
+      "application_effects": 0,
+      "case": "profile_substitution",
+      "expected_rejection": "ProfileInactive",
+      "repetitions": 30,
+      "route": "HL",
+      "validated": 30
+    },
+    {
+      "actual_rejection_matches": 30,
+      "application_effects": 0,
+      "case": "receipt_delete",
+      "expected_rejection": "InvalidTrace",
+      "repetitions": 30,
+      "route": "HL",
+      "validated": 30
+    },
+    {
+      "actual_rejection_matches": 30,
+      "application_effects": 0,
+      "case": "receipt_reorder",
+      "expected_rejection": "InvalidTrace",
+      "repetitions": 30,
+      "route": "HL",
+      "validated": 30
+    },
+    {
+      "actual_rejection_matches": 30,
+      "application_effects": 30,
+      "case": "sequential_replay",
+      "expected_rejection": "AlreadyConsumed",
+      "repetitions": 30,
+      "route": "HL",
+      "validated": 30
+    },
+    {
+      "actual_rejection_matches": 30,
+      "application_effects": 0,
+      "case": "wrong_endpoint",
+      "expected_rejection": "UnapprovedPriorVerifier",
+      "repetitions": 30,
+      "route": "HL",
+      "validated": 30
+    },
+    {
+      "actual_rejection_matches": 30,
+      "application_effects": 0,
+      "case": "wrong_registry_version",
+      "expected_rejection": "RootMismatch",
+      "repetitions": 30,
+      "route": "HL",
+      "validated": 30
+    },
+    {
+      "actual_rejection_matches": 30,
+      "application_effects": 30,
+      "case": "concurrent_replay",
+      "expected_rejection": "AlreadyConsumed",
+      "repetitions": 30,
+      "route": "LH",
+      "validated": 30
+    },
+    {
+      "actual_rejection_matches": 30,
+      "application_effects": 0,
+      "case": "context_tamper",
+      "expected_rejection": "InvalidRootSignature",
+      "repetitions": 30,
+      "route": "LH",
+      "validated": 30
+    },
+    {
+      "actual_rejection_matches": 30,
+      "application_effects": 0,
+      "case": "cross_execution_splice",
+      "expected_rejection": "BundleRejected",
+      "repetitions": 30,
+      "route": "LH",
+      "validated": 30
+    },
+    {
+      "actual_rejection_matches": 30,
+      "application_effects": 0,
+      "case": "evidence_tamper",
+      "expected_rejection": "EvidenceRejected",
+      "repetitions": 30,
+      "route": "LH",
+      "validated": 30
+    },
+    {
+      "actual_rejection_matches": 30,
+      "application_effects": 0,
+      "case": "fake_verifier",
+      "expected_rejection": "UnapprovedPriorVerifier",
+      "repetitions": 30,
+      "route": "LH",
+      "validated": 30
+    },
+    {
+      "actual_rejection_matches": 30,
+      "application_effects": 0,
+      "case": "payload_tamper",
+      "expected_rejection": "PayloadMismatch",
+      "repetitions": 30,
+      "route": "LH",
+      "validated": 30
+    },
+    {
+      "actual_rejection_matches": 30,
+      "application_effects": 0,
+      "case": "profile_inactive",
+      "expected_rejection": "ProfileInactive",
+      "repetitions": 30,
+      "route": "LH",
+      "validated": 30
+    },
+    {
+      "actual_rejection_matches": 30,
+      "application_effects": 0,
+      "case": "profile_substitution",
+      "expected_rejection": "ProfileInactive",
+      "repetitions": 30,
+      "route": "LH",
+      "validated": 30
+    },
+    {
+      "actual_rejection_matches": 30,
+      "application_effects": 0,
+      "case": "receipt_delete",
+      "expected_rejection": "InvalidTrace",
+      "repetitions": 30,
+      "route": "LH",
+      "validated": 30
+    },
+    {
+      "actual_rejection_matches": 30,
+      "application_effects": 0,
+      "case": "receipt_reorder",
+      "expected_rejection": "InvalidTrace",
+      "repetitions": 30,
+      "route": "LH",
+      "validated": 30
+    },
+    {
+      "actual_rejection_matches": 30,
+      "application_effects": 30,
+      "case": "sequential_replay",
+      "expected_rejection": "AlreadyConsumed",
+      "repetitions": 30,
+      "route": "LH",
+      "validated": 30
+    },
+    {
+      "actual_rejection_matches": 30,
+      "application_effects": 0,
+      "case": "wrong_endpoint",
+      "expected_rejection": "UnapprovedPriorVerifier",
+      "repetitions": 30,
+      "route": "LH",
+      "validated": 30
+    },
+    {
+      "actual_rejection_matches": 30,
+      "application_effects": 0,
+      "case": "wrong_registry_version",
+      "expected_rejection": "RootMismatch",
+      "repetitions": 30,
+      "route": "LH",
+      "validated": 30
+    }
+  ],
+  "observed_case_runs": 780,
+  "root_signer": "0x87a74ac41b90b0f2dfbe4cb113254f9b19f2f184",
+  "root_signer_separated": true,
+  "runner": "0x80c3926751b1437102d49798e68b2de0238312dc",
+  "schema_version": "xir-lab-native-security-v2-summary-v1",
+  "valid": true,
+  "validated_case_runs": 780
+}

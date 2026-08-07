@@ -1,0 +1,52 @@
+{
+  "$schema": "../../schemas/native-latency-v2-config.schema.json",
+  "schema_version": "xir-lab-native-latency-v2-config-v1",
+  "namespace": "native-latency-v2",
+  "source": {
+    "run_id": "native-stack-run-003",
+    "database_path": "experiment-results/native-stack-run-003/raw-evidence/runs/scale/runner.sqlite",
+    "database_sha256": "b64ccac0bafe26e6a361eca4f7fd7d530b1c4ad11d9cd282a1ff6ded2871b2c2",
+    "accepted_analysis_path": "experiment-results/native-stack-run-003/report-and-aggregates/analysis.json",
+    "accepted_analysis_sha256": "b869eebce80687e6004c708b26fbc2ae967550be5d69e3dfa31ae13d622777ff",
+    "accepted_semantic_sha256": "dddfd174f8f6fbc608282d2a366d129abb28e72b7c917ec0cbe50081f2fe3ce7",
+    "reconciliation_path": "experiment-results/native-stack-run-003/report-and-aggregates/reconciliation.json",
+    "reconciliation_sha256": "a2636b8f7b863e611e8be1bcc52351adc2a39af6b8f67b02da8490a2bb6d2505"
+  },
+  "denominator": {
+    "logical_attempts": 40000,
+    "attempts_per_route": 10000,
+    "routes": [
+      "HH",
+      "LL",
+      "HL",
+      "LH"
+    ]
+  },
+  "bootstrap": {
+    "method": "route-stratified-noncircular-moving-block-bootstrap",
+    "ordering": [
+      "started_at",
+      "route_sequence",
+      "attempt_id"
+    ],
+    "block_length_attempts_per_route": 64,
+    "block_length_rationale": "The frozen runner submitted batches of 256 attempts with HH, LL, HL, and LH interleaved for every route sequence. One batch therefore contains 64 consecutive observations per route. Resampling 64-observation route blocks preserves within-batch concurrency, host state, and protocol-service dependence instead of treating attempts as independent.",
+    "repetitions": 5000,
+    "confidence_level": 0.95,
+    "interval_method": "empirical-percentile-nearest-rank",
+    "master_seed": 2026080701,
+    "metrics": [
+      "mean",
+      "median",
+      "p95",
+      "p99"
+    ]
+  },
+  "clean_prefix": {
+    "rule_id": "matched-finished-before-first-natural-interruption-v1",
+    "description": "Select the maximal route_sequence prefix starting at zero for which all four matched attempts finished strictly before the first documented natural-interruption boundary. Exclude attempts that straddle the boundary and all later sequences.",
+    "boundary_utc": "2026-07-31T03:49:48Z",
+    "boundary_source_path": "experiment-results/native-stack-run-003/raw-evidence/provenance/natural-interruptions/20260731T034948Z-destination-validator-restarts/event.json",
+    "boundary_source_sha256": "56272681ef2b7de07b6e1c0b04efc1af7b206b0c9238329fa048446fdb653651"
+  }
+}

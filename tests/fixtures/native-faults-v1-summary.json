@@ -1,0 +1,33 @@
+{
+  "schema_version": "xir-lab-native-faults-v1-summary-v1",
+  "campaign_id": "native-faults-v1-frozen",
+  "config_sha256": "d2a6362bf3090e7fd54879f55bc5b35064f3ee7684e336b5709009c263c97fda",
+  "deployment_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+  "expected_cases": 60,
+  "observed_cases": 60,
+  "validated_cases": 60,
+  "failed_cases": 0,
+  "groups": [
+    {"route": "HL", "scenario": "pre_intent", "boundary": "pre_intent", "repetitions": 3, "validated": 3, "faults_injected": 3, "application_events": 3, "unique_tx_lineage": 3},
+    {"route": "HL", "scenario": "post_intent_pre_sign", "boundary": "post_intent_pre_sign", "repetitions": 3, "validated": 3, "faults_injected": 3, "application_events": 3, "unique_tx_lineage": 3},
+    {"route": "HL", "scenario": "post_sign_pre_broadcast", "boundary": "post_sign_pre_broadcast", "repetitions": 3, "validated": 3, "faults_injected": 3, "application_events": 3, "unique_tx_lineage": 3},
+    {"route": "HL", "scenario": "post_broadcast_pre_acknowledgement", "boundary": "post_broadcast_pre_acknowledgement", "repetitions": 3, "validated": 3, "faults_injected": 3, "application_events": 3, "unique_tx_lineage": 3},
+    {"route": "HL", "scenario": "post_acknowledgement_pre_mining", "boundary": "post_acknowledgement_pre_mining", "repetitions": 3, "validated": 3, "faults_injected": 3, "application_events": 3, "unique_tx_lineage": 3},
+    {"route": "HL", "scenario": "post_mining_pre_persistence", "boundary": "post_mining_pre_persistence", "repetitions": 3, "validated": 3, "faults_injected": 3, "application_events": 3, "unique_tx_lineage": 3},
+    {"route": "HL", "scenario": "post_persistence_pre_stage_commit", "boundary": "post_persistence_pre_stage_commit", "repetitions": 3, "validated": 3, "faults_injected": 3, "application_events": 3, "unique_tx_lineage": 3},
+    {"route": "HL", "scenario": "worker_action_post_submit", "boundary": "worker_action_post_submit", "repetitions": 3, "validated": 3, "faults_injected": 3, "application_events": 3, "unique_tx_lineage": 3},
+    {"route": "HL", "scenario": "transient_retry_after_broadcast", "boundary": "post_broadcast_pre_acknowledgement", "repetitions": 3, "validated": 3, "faults_injected": 3, "application_events": 3, "unique_tx_lineage": 3},
+    {"route": "HL", "scenario": "concurrent_retry", "boundary": "post_sign_pre_broadcast", "repetitions": 3, "validated": 3, "faults_injected": 3, "application_events": 3, "unique_tx_lineage": 3},
+    {"route": "LH", "scenario": "pre_intent", "boundary": "pre_intent", "repetitions": 3, "validated": 3, "faults_injected": 3, "application_events": 3, "unique_tx_lineage": 3},
+    {"route": "LH", "scenario": "post_intent_pre_sign", "boundary": "post_intent_pre_sign", "repetitions": 3, "validated": 3, "faults_injected": 3, "application_events": 3, "unique_tx_lineage": 3},
+    {"route": "LH", "scenario": "post_sign_pre_broadcast", "boundary": "post_sign_pre_broadcast", "repetitions": 3, "validated": 3, "faults_injected": 3, "application_events": 3, "unique_tx_lineage": 3},
+    {"route": "LH", "scenario": "post_broadcast_pre_acknowledgement", "boundary": "post_broadcast_pre_acknowledgement", "repetitions": 3, "validated": 3, "faults_injected": 3, "application_events": 3, "unique_tx_lineage": 3},
+    {"route": "LH", "scenario": "post_acknowledgement_pre_mining", "boundary": "post_acknowledgement_pre_mining", "repetitions": 3, "validated": 3, "faults_injected": 3, "application_events": 3, "unique_tx_lineage": 3},
+    {"route": "LH", "scenario": "post_mining_pre_persistence", "boundary": "post_mining_pre_persistence", "repetitions": 3, "validated": 3, "faults_injected": 3, "application_events": 3, "unique_tx_lineage": 3},
+    {"route": "LH", "scenario": "post_persistence_pre_stage_commit", "boundary": "post_persistence_pre_stage_commit", "repetitions": 3, "validated": 3, "faults_injected": 3, "application_events": 3, "unique_tx_lineage": 3},
+    {"route": "LH", "scenario": "worker_action_post_submit", "boundary": "worker_action_post_submit", "repetitions": 3, "validated": 3, "faults_injected": 3, "application_events": 3, "unique_tx_lineage": 3},
+    {"route": "LH", "scenario": "transient_retry_after_broadcast", "boundary": "post_broadcast_pre_acknowledgement", "repetitions": 3, "validated": 3, "faults_injected": 3, "application_events": 3, "unique_tx_lineage": 3},
+    {"route": "LH", "scenario": "concurrent_retry", "boundary": "post_sign_pre_broadcast", "repetitions": 3, "validated": 3, "faults_injected": 3, "application_events": 3, "unique_tx_lineage": 3}
+  ],
+  "valid": true
+}
