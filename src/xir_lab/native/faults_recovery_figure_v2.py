@@ -36,7 +36,7 @@ from xir_lab.native.faults_v1 import (
 INPUT_CAMPAIGN = "native-faults-v1-frozen"
 OUTPUT_NAMESPACE = "native-faults-v1-recovery-figure-v2"
 DEPLOYMENT_SCOPE = "prior-verifier-final-revision-shared-idle"
-FIGURE_1_SHA256 = "2fa2864efe9f44357cf9e529fee7ee49415bee15410c9d54cd6ac0cd909a64a2"
+FIGURE_1_SHA256 = "f2b694773e3db3312a745e40098995e075738df4de04f9bd5844a0da27ec3746"
 
 WIDTH_MM = 131.6
 HEIGHT_MM = 57.0

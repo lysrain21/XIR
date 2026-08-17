@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import sqlite3
 import time
 from collections.abc import Mapping
@@ -14,6 +15,7 @@ from typing import Any, cast
 
 from eth_abi.abi import decode
 from eth_account import Account
+from eth_account.typed_transactions import TypedTransaction  # type: ignore[attr-defined]
 from hexbytes import HexBytes
 from web3 import Web3
 from web3.exceptions import Web3RPCError
@@ -28,6 +30,7 @@ from xir_lab.native.layerzero import (
     encode_dvn_execute,
     encode_executor_submission,
 )
+from xir_lab.native.multihop_process_identity import current_process_identity
 from xir_lab.native.rpc import qbft_web3
 
 STAGES = ("dvn_execute", "commit_verification", "executor_execute")
@@ -35,6 +38,16 @@ STAGES = ("dvn_execute", "commit_verification", "executor_execute")
 
 def _now() -> str:
     return datetime.now(UTC).isoformat()
+
+
+def _boot_id() -> str:
+    try:
+        value = Path("/proc/sys/kernel/random/boot_id").read_text(encoding="ascii").strip()
+    except OSError as exc:
+        raise LocalTopologyError("LayerZero worker boot identity unavailable") from exc
+    if not value:
+        raise LocalTopologyError("LayerZero worker boot identity empty")
+    return value
 
 
 @dataclass(frozen=True)
@@ -51,8 +64,13 @@ class WorkerChain:
 
 def load_worker_chains(path: Path) -> dict[int, WorkerChain]:
     document = json.loads(path.read_text(encoding="utf-8"))
+    if document.get("schema_version") != "xir-lab-layerzero-worker-config-v1":
+        raise LocalTopologyError("LayerZero worker config schema is missing or invalid")
+    items = document.get("chains")
+    if not isinstance(items, list) or len(items) not in {3, 5}:
+        raise LocalTopologyError("LayerZero worker requires exactly three or five chains")
     result: dict[int, WorkerChain] = {}
-    for item in document["chains"]:
+    for item in items:
         chain = WorkerChain(
             chain_id=int(item["chain_id"]),
             eid=int(item["eid"]),
@@ -66,8 +84,6 @@ def load_worker_chains(path: Path) -> dict[int, WorkerChain]:
         if chain.eid in result:
             raise LocalTopologyError("duplicate LayerZero worker EID")
         result[chain.eid] = chain
-    if len(result) != 3:
-        raise LocalTopologyError("LayerZero worker requires exactly three chains")
     return result
 
 
@@ -78,6 +94,9 @@ class LayerZeroWorkerState:
         path.parent.mkdir(parents=True, exist_ok=True)
         self.connection = sqlite3.connect(path)
         self.connection.row_factory = sqlite3.Row
+        self.boot_id = _boot_id()
+        runtime_root = Path(os.environ.get("XIR_LOCAL_RUNTIME_ROOT", str(path.parent.parent)))
+        self.process_identity = current_process_identity(runtime_root=runtime_root)
         self.connection.executescript(
             """
             PRAGMA journal_mode=WAL;
@@ -108,6 +127,8 @@ class LayerZeroWorkerState:
                 destination_chain_id INTEGER NOT NULL,
                 nonce INTEGER NOT NULL,
                 target TEXT NOT NULL,
+                calldata_bytes INTEGER NOT NULL,
+                calldata_hex TEXT,
                 calldata_sha256 TEXT NOT NULL,
                 raw_transaction_hex TEXT,
                 transaction_hash TEXT,
@@ -122,11 +143,64 @@ class LayerZeroWorkerState:
                 state TEXT NOT NULL,
                 raw_sha256 TEXT,
                 detail_json TEXT NOT NULL,
-                observed_at TEXT NOT NULL
+                observed_at TEXT NOT NULL,
+                utc_ns INTEGER NOT NULL,
+                monotonic_ns INTEGER NOT NULL,
+                boot_id TEXT NOT NULL,
+                process_id INTEGER NOT NULL
+                ,process_identity_sha256 TEXT
             ) STRICT;
             """
         )
+        columns = {str(row[1]) for row in self.connection.execute("PRAGMA table_info(actions)")}
+        if "calldata_bytes" not in columns:
+            self.connection.execute("ALTER TABLE actions ADD COLUMN calldata_bytes INTEGER")
+        if "calldata_hex" not in columns:
+            self.connection.execute("ALTER TABLE actions ADD COLUMN calldata_hex TEXT")
+        observation_columns = {
+            str(row[1]) for row in self.connection.execute("PRAGMA table_info(observations)")
+        }
+        for name, sql_type in (
+            ("utc_ns", "INTEGER"),
+            ("monotonic_ns", "INTEGER"),
+            ("boot_id", "TEXT"),
+            ("process_id", "INTEGER"),
+            ("process_identity_sha256", "TEXT"),
+        ):
+            if name not in observation_columns:
+                self.connection.execute(f"ALTER TABLE observations ADD COLUMN {name} {sql_type}")
         self.connection.commit()
+
+    def _record_observation(
+        self,
+        *,
+        action_id: str,
+        state: str,
+        details: dict[str, Any],
+        raw_sha256: str | None = None,
+    ) -> None:
+        public_details = dict(details)
+        public_details["_process_identity"] = self.process_identity
+        self.connection.execute(
+            """
+            INSERT INTO observations(
+              action_id,state,raw_sha256,detail_json,observed_at,
+              utc_ns,monotonic_ns,boot_id,process_id,process_identity_sha256
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                action_id,
+                state,
+                raw_sha256,
+                json.dumps(public_details, sort_keys=True),
+                _now(),
+                time.time_ns(),
+                time.monotonic_ns(),
+                self.boot_id,
+                os.getpid(),
+                self.process_identity["identity_sha256"],
+            ),
+        )
 
     def cursor(self, source_eid: int, default: int) -> int:
         row = self.connection.execute(
@@ -186,15 +260,14 @@ class LayerZeroWorkerState:
         return [
             row
             for row in rows
-            if source_heads[int(row["source_eid"])]
-            >= int(row["source_block"]) + confirmations
+            if source_heads[int(row["source_eid"])] >= int(row["source_block"]) + confirmations
         ]
 
     def action(self, guid: str, stage: str) -> sqlite3.Row | None:
         return cast(
             sqlite3.Row | None,
             self.connection.execute(
-            "SELECT * FROM actions WHERE guid = ? AND stage = ?", (guid, stage)
+                "SELECT * FROM actions WHERE guid = ? AND stage = ?", (guid, stage)
             ).fetchone(),
         )
 
@@ -213,8 +286,8 @@ class LayerZeroWorkerState:
             """
             INSERT INTO actions(
               action_id, guid, stage, destination_chain_id, nonce, target,
-              calldata_sha256, status, intended_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, 'intended', ?)
+              calldata_bytes, calldata_hex, calldata_sha256, status, intended_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'intended', ?)
             """,
             (
                 action_id,
@@ -223,17 +296,13 @@ class LayerZeroWorkerState:
                 destination_chain_id,
                 nonce,
                 target.lower(),
+                len(call_data),
+                "0x" + call_data.hex(),
                 hashlib.sha256(call_data).hexdigest(),
                 _now(),
             ),
         )
-        self.connection.execute(
-            """
-            INSERT INTO observations(action_id, state, detail_json, observed_at)
-            VALUES (?, 'intended', '{}', ?)
-            """,
-            (action_id, _now()),
-        )
+        self._record_observation(action_id=action_id, state="intended", details={})
         self.connection.commit()
         return cast(
             sqlite3.Row,
@@ -252,34 +321,20 @@ class LayerZeroWorkerState:
             """,
             (raw_hex, transaction_hash.lower(), action_id),
         )
-        self.connection.execute(
-            """
-            INSERT INTO observations(action_id, state, raw_sha256, detail_json, observed_at)
-            VALUES (?, 'signed', ?, ?, ?)
-            """,
-            (
-                action_id,
-                digest,
-                json.dumps({"transaction_hash": transaction_hash.lower()}, sort_keys=True),
-                _now(),
-            ),
+        self._record_observation(
+            action_id=action_id,
+            state="signed",
+            raw_sha256=digest,
+            details={"transaction_hash": transaction_hash.lower()},
         )
         self.connection.commit()
 
-    def observe_action(
-        self, action_id: str, state: str, details: dict[str, Any]
-    ) -> None:
+    def observe_action(self, action_id: str, state: str, details: dict[str, Any]) -> None:
         self.connection.execute(
             "UPDATE actions SET status = ? WHERE action_id = ?",
             (state, action_id),
         )
-        self.connection.execute(
-            """
-            INSERT INTO observations(action_id, state, detail_json, observed_at)
-            VALUES (?, ?, ?, ?)
-            """,
-            (action_id, state, json.dumps(details, sort_keys=True), _now()),
-        )
+        self._record_observation(action_id=action_id, state=state, details=details)
         self.connection.commit()
 
     def mark_delivered(self, guid: str) -> None:
@@ -315,10 +370,7 @@ class LayerZeroWorker:
         if batch_packets <= 0:
             raise LocalTopologyError("LayerZero worker batch size must be positive")
         self.batch_packets = batch_packets
-        self.web3 = {
-            eid: qbft_web3(chain.rpc_url, timeout=30)
-            for eid, chain in chains.items()
-        }
+        self.web3 = {eid: qbft_web3(chain.rpc_url, timeout=30) for eid, chain in chains.items()}
 
     def collect(self, maximum_block_span: int = 1000) -> None:
         topic = EVENT_TOPICS["packet_sent"]
@@ -337,9 +389,7 @@ class LayerZeroWorker:
                     }
                 )
                 for log in logs:
-                    encoded_packet, _, _ = decode(
-                        ["bytes", "bytes", "address"], bytes(log["data"])
-                    )
+                    encoded_packet, _, _ = decode(["bytes", "bytes", "address"], bytes(log["data"]))
                     packet = decode_packet(cast(bytes, encoded_packet))
                     if packet.source_eid != eid:
                         raise LocalTopologyError("LayerZero PacketSent source EID mismatch")
@@ -355,12 +405,8 @@ class LayerZeroWorker:
                 start = end + 1
 
     def process(self) -> None:
-        heads = {
-            eid: int(client.eth.block_number) for eid, client in self.web3.items()
-        }
-        ready = self.state.ready_packets(heads, self.confirmations)[
-            : self.batch_packets
-        ]
+        heads = {eid: int(client.eth.block_number) for eid, client in self.web3.items()}
+        ready = self.state.ready_packets(heads, self.confirmations)[: self.batch_packets]
         pending: list[tuple[Web3, str, str, str]] = []
         packet_guids: list[str] = []
         for row in ready:
@@ -403,13 +449,9 @@ class LayerZeroWorker:
         for client, action_id, transaction_hash, stage in pending:
             self._finalize_stage(client, action_id, transaction_hash, stage)
         for guid in packet_guids:
-            stages = [
-                self.state.action(guid, stage)
-                for stage in STAGES
-            ]
+            stages = [self.state.action(guid, stage) for stage in STAGES]
             if all(
-                action is not None and str(action["status"]) == "succeeded"
-                for action in stages
+                action is not None and str(action["status"]) == "succeeded" for action in stages
             ):
                 self.state.mark_delivered(guid)
 
@@ -436,6 +478,17 @@ class LayerZeroWorker:
                 target=target,
                 call_data=call_data,
             )
+        if (
+            int(action["destination_chain_id"]) != chain.chain_id
+            or str(action["target"]).lower() != target.lower()
+            or not str(action["calldata_hex"] or "")
+        ):
+            raise LocalTopologyError("LayerZero durable intended action identity drift")
+        frozen_call_data = bytes.fromhex(str(action["calldata_hex"])[2:])
+        if len(frozen_call_data) != int(action["calldata_bytes"]) or hashlib.sha256(
+            frozen_call_data
+        ).hexdigest() != str(action["calldata_sha256"]):
+            raise LocalTopologyError("LayerZero durable intended calldata drift")
         raw_hex = action["raw_transaction_hex"]
         transaction_hash = action["transaction_hash"]
         if raw_hex is None:
@@ -443,7 +496,7 @@ class LayerZeroWorker:
                 "chainId": chain.chain_id,
                 "nonce": int(action["nonce"]),
                 "to": target,
-                "data": call_data,
+                "data": frozen_call_data,
                 "value": 0,
                 "gas": 5_000_000,
                 "maxFeePerGas": max(client.eth.gas_price * 2, 1),
@@ -456,6 +509,19 @@ class LayerZeroWorker:
             self.state.record_signed(str(action["action_id"]), raw, transaction_hash)
         else:
             raw = bytes.fromhex(str(raw_hex)[2:])
+        decoded = TypedTransaction.from_bytes(HexBytes(raw)).as_dict()
+        decoded_target = "0x" + bytes(decoded["to"]).hex()
+        decoded_data = bytes(decoded["data"])
+        expected_hash = Web3.keccak(raw).hex().lower()
+        if (
+            Account.recover_transaction(raw).lower() != self.account.address.lower()
+            or int(decoded["chainId"]) != chain.chain_id
+            or int(decoded["nonce"]) != int(action["nonce"])
+            or decoded_target.lower() != str(action["target"]).lower()
+            or decoded_data != frozen_call_data
+            or str(transaction_hash).lower() != expected_hash
+        ):
+            raise LocalTopologyError("LayerZero durable raw transaction identity drift")
         try:
             client.eth.send_raw_transaction(raw)
         except (ValueError, Web3RPCError) as exc:
@@ -481,9 +547,7 @@ class LayerZeroWorker:
         transaction_hash: str,
         stage: str,
     ) -> None:
-        receipt = client.eth.wait_for_transaction_receipt(
-            HexBytes(transaction_hash), timeout=120
-        )
+        receipt = client.eth.wait_for_transaction_receipt(HexBytes(transaction_hash), timeout=120)
         receipt_json = Web3.to_json(cast(dict[Any, Any], receipt))
         receipt_path = self.raw_root / f"{transaction_hash}.receipt.json"
         receipt_path.write_text(receipt_json + "\n", encoding="utf-8")
@@ -500,9 +564,7 @@ class LayerZeroWorker:
             "executor_execute": EVENT_TOPICS["packet_delivered"],
         }[stage].lower()
         observed_topics = {
-            "0x" + bytes(log["topics"][0]).hex()
-            for log in receipt["logs"]
-            if log["topics"]
+            "0x" + bytes(log["topics"][0]).hex() for log in receipt["logs"] if log["topics"]
         }
         if expected_topic not in observed_topics:
             self.state.observe_action(
@@ -526,5 +588,6 @@ class LayerZeroWorker:
                 "block_number": int(receipt["blockNumber"]),
                 "gas_used": int(receipt["gasUsed"]),
                 "receipt": str(receipt_path),
+                "receipt_sha256": hashlib.sha256(receipt_path.read_bytes()).hexdigest(),
             },
         )

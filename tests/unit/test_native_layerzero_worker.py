@@ -1,9 +1,13 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
+import pytest
+
+from xir_lab.localnet.topology import LocalTopologyError
 from xir_lab.native.layerzero import decode_packet
-from xir_lab.native.layerzero_worker import LayerZeroWorkerState
+from xir_lab.native.layerzero_worker import LayerZeroWorkerState, load_worker_chains
 
 
 def _packet() -> bytes:
@@ -17,6 +21,19 @@ def _packet() -> bytes:
         + bytes.fromhex("33" * 32)
         + b"payload"
     )
+
+
+@pytest.mark.parametrize("schema_version", (None, "wrong-schema-v1"))
+def test_worker_config_loader_rejects_missing_or_wrong_schema(
+    tmp_path: Path, schema_version: str | None
+) -> None:
+    document: dict[str, object] = {"chains": [{} for _ in range(5)]}
+    if schema_version is not None:
+        document["schema_version"] = schema_version
+    path = tmp_path / "worker-config.json"
+    path.write_text(json.dumps(document) + "\n", encoding="utf-8")
+    with pytest.raises(LocalTopologyError, match="config schema is missing or invalid"):
+        load_worker_chains(path)
 
 
 def test_worker_state_is_resumable_and_intent_precedes_signature(tmp_path: Path) -> None:
@@ -39,6 +56,7 @@ def test_worker_state_is_resumable_and_intent_precedes_signature(tmp_path: Path)
         target="0x" + "44" * 20,
         call_data=b"call",
     )
+    assert action["calldata_bytes"] == 4
     state.record_signed(str(action["action_id"]), b"signed", "0xdead")
     observations = state.connection.execute(
         "SELECT state FROM observations ORDER BY observation_id"

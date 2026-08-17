@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xir.local/schemas/native-multihop-switching-v1-profile.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "profile_id", "environment", "fixed_seed", "component_lock", "chains", "protocol", "payload"],
+  "properties": {
+    "schema_version": {"const": "xir-lab-native-multihop-five-chain-profile-v1"},
+    "profile_id": {"const": "native-multihop-five-chain-v1"},
+    "environment": {"const": "controlled-local-five-chain-qbft-native-stacks"},
+    "fixed_seed": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "component_lock": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["relative_path", "sha256"],
+      "properties": {
+        "relative_path": {"const": "toolchain/native-protocol-stack.lock.json"},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    },
+    "chains": {
+      "type": "array",
+      "minItems": 5,
+      "maxItems": 5,
+      "items": {"$ref": "#/$defs/chain"}
+    },
+    "protocol": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["H", "L"],
+      "properties": {
+        "H": {"$ref": "#/$defs/protocol"},
+        "L": {"$ref": "#/$defs/protocol"}
+      }
+    },
+    "payload": {"$ref": "#/$defs/payload"}
+  },
+  "$defs": {
+    "chain": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["label", "network_id", "chain_id", "rpc_url", "hyperlane_domain", "layerzero_eid", "validator_count"],
+      "properties": {
+        "label": {"enum": ["A", "B", "C", "D", "E"]},
+        "network_id": {"type": "string", "pattern": "^local-chain-[a-e]$"},
+        "chain_id": {"type": "integer", "minimum": 1000000, "maximum": 4294967295},
+        "rpc_url": {"type": "string", "pattern": "^http://127\\.0\\.0\\.1:[0-9]+$"},
+        "hyperlane_domain": {"type": "integer", "minimum": 1, "maximum": 4294967295},
+        "layerzero_eid": {"type": "integer", "minimum": 1, "maximum": 4294967295},
+        "validator_count": {"const": 4}
+      }
+    },
+    "protocol": {
+      "type": "object",
+      "required": ["name", "physical_delivery_transactions_per_hop"],
+      "properties": {
+        "name": {"enum": ["hyperlane", "layerzero-v2"]},
+        "physical_delivery_transactions_per_hop": {"enum": [1, 3]},
+        "validator_threshold": {"type": "integer", "minimum": 1},
+        "validators_per_origin": {"type": "integer", "minimum": 1},
+        "relayer_count": {"type": "integer", "minimum": 1},
+        "required_dvns": {"type": "integer", "minimum": 1},
+        "dvn_quorum": {"type": "integer", "minimum": 1},
+        "executor_count": {"type": "integer", "minimum": 1}
+      },
+      "additionalProperties": false
+    },
+    "payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["minimum_bytes", "size_step_bytes", "size_bucket_count"],
+      "properties": {
+        "minimum_bytes": {"type": "integer", "minimum": 1},
+        "size_step_bytes": {"type": "integer", "minimum": 1},
+        "size_bucket_count": {"type": "integer", "minimum": 1}
+      }
+    }
+  }
+}

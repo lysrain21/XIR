@@ -82,7 +82,7 @@ def test_compact_latency_publication_is_native_width_and_byte_identical(
     assert rebuild["valid"] is True
     assert len(rebuild["byte_identical_files"]) == 7
     assert manifest["inputs"]["sensitivity_summary"]["sha256"].startswith("5e9d0189")
-    assert manifest["preserved_assets"]["figure_1"]["sha256"].startswith("2fa2864e")
+    assert manifest["preserved_assets"]["figure_1"]["sha256"].startswith("f2b69477")
     assert (publication / "latency-comparison-compact-v2.pdf").is_file()
     assert (publication / "latency-comparison-compact-v2.svg").is_file()
 

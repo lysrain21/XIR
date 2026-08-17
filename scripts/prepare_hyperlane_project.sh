@@ -23,26 +23,39 @@ expected_commit=$(jq -r \
   echo "dirty Hyperlane checkout rejected before dependency install" >&2
   exit 1
 }
-command -v npm >/dev/null || {
-  echo "pinned Node npm executable is missing" >&2
+command -v forge >/dev/null || {
+  echo "forge executable is missing" >&2
   exit 1
 }
-dependency_root="$runtime_root/tools/hyperlane-solidity-deps"
-mkdir -p "$dependency_root"
-npm install --prefix "$dependency_root" --ignore-scripts --no-audit --no-fund \
-  @openzeppelin/contracts@4.9.6 \
-  @openzeppelin/contracts-upgradeable@4.9.6
-[[ "$(jq -r '.version' \
-  "$dependency_root/node_modules/@openzeppelin/contracts/package.json")" = 4.9.6 ]]
-[[ "$(jq -r '.version' \
-  "$dependency_root/node_modules/@openzeppelin/contracts-upgradeable/package.json")" = 4.9.6 ]]
-mkdir -p "$official_root/solidity/node_modules"
-ln -sfn "$dependency_root/node_modules/@openzeppelin" \
-  "$official_root/solidity/node_modules/@openzeppelin"
-[[ -d "$official_root/solidity/node_modules/@openzeppelin/contracts" ]] || {
-  echo "locked Hyperlane OpenZeppelin dependencies are missing" >&2
+
+# Materialize Soldeer dependencies in official_root/solidity/dependencies
+cd "$official_root/solidity"
+forge soldeer install
+
+# Verify all expected dependencies are materialized
+expected_deps=(
+  "@openzeppelin-contracts-4.9.3"
+  "@openzeppelin-contracts-upgradeable-4.9.3"
+  "@arbitrum-nitro-contracts-1.2.1"
+  "@chainlink-contracts-ccip-1.5.0"
+  "@eth-optimism-contracts-0.6.0"
+  "@predicate-contracts-2.2.2"
+  "forge-std-1.9.2"
+  "permit2-1.0.0"
+)
+for dep in "${expected_deps[@]}"; do
+  [[ -d "$official_root/solidity/dependencies/$dep" ]] || {
+    echo "Soldeer dependency $dep was not materialized" >&2
+    exit 1
+  }
+done
+
+# Verify OpenZeppelin contracts subdirectory structure
+[[ -d "$official_root/solidity/dependencies/@openzeppelin-contracts-4.9.3/contracts" ]] || {
+  echo "OpenZeppelin contracts subdirectory missing" >&2
   exit 1
 }
+
 mkdir -p "$project_root/lib"
 ln -sfn "$official_root" "$project_root/lib/hyperlane"
 forge build --root "$project_root" \

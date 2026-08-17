@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xir.local/schemas/native-multihop-local-topology-v1.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "topology_id", "project_name", "besu_image", "validator_data_storage", "validator_runtime_user", "runtime_root_environment_variable", "allowed_rpc_hosts", "rpc_http_apis", "public_chain_id_denylist", "networks", "resource_policy"],
+  "properties": {
+    "schema_version": {"const": "xir-lab-multihop-local-topology-v1"},
+    "topology_id": {"const": "five-chain-four-validator-qbft-remote-v1"},
+    "project_name": {"const": "xir-native-multihop-v1"},
+    "besu_image": {"type": "string", "pattern": "^hyperledger/besu@sha256:[0-9a-f]{64}$"},
+    "validator_data_storage": {"const": "docker-volume"},
+    "validator_runtime_user": {"const": "1000:1000"},
+    "runtime_root_environment_variable": {"const": "XIR_LOCAL_RUNTIME_ROOT"},
+    "allowed_rpc_hosts": {"const": ["127.0.0.1", "localhost"]},
+    "rpc_http_apis": {"const": ["ETH", "NET", "QBFT", "WEB3", "DEBUG", "TRACE"]},
+    "public_chain_id_denylist": {"type": "array", "minItems": 3, "uniqueItems": true, "items": {"type": "integer", "minimum": 1}},
+    "networks": {"type": "array", "minItems": 5, "maxItems": 5, "items": {"$ref": "#/$defs/network"}},
+    "resource_policy": {"$ref": "#/$defs/resourcePolicy"}
+  },
+  "$defs": {
+    "network": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["network_id", "route_role", "chain_id", "host_rpc_port", "subnet", "validator_count", "block_period_seconds", "request_timeout_seconds", "gas_limit"],
+      "properties": {
+        "network_id": {"type": "string", "pattern": "^local-chain-[a-e]$"},
+        "route_role": {"enum": ["chain_a", "chain_b", "chain_c", "chain_d", "chain_e"]},
+        "chain_id": {"type": "integer", "minimum": 1000000},
+        "host_rpc_port": {"type": "integer", "minimum": 1024, "maximum": 65535},
+        "subnet": {"type": "string", "pattern": "^172\\.28\\.[0-9]{1,3}\\.0/24$"},
+        "validator_count": {"const": 4},
+        "block_period_seconds": {"type": "integer", "minimum": 1},
+        "request_timeout_seconds": {"type": "integer", "minimum": 2},
+        "gas_limit": {"type": "string", "pattern": "^0x[0-9a-f]+$"}
+      }
+    },
+    "thresholds": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["minimum_logical_cpus", "minimum_memory_bytes", "minimum_disk_available_bytes"],
+      "properties": {
+        "minimum_logical_cpus": {"type": "integer", "minimum": 1},
+        "minimum_memory_bytes": {"type": "integer", "minimum": 1},
+        "minimum_disk_available_bytes": {"type": "integer", "minimum": 1}
+      }
+    },
+    "resourcePolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["render", "smoke", "scale", "validator_memory_bytes", "validator_cpu_limit"],
+      "properties": {
+        "render": {"$ref": "#/$defs/thresholds"},
+        "smoke": {"$ref": "#/$defs/thresholds"},
+        "scale": {"$ref": "#/$defs/thresholds"},
+        "validator_memory_bytes": {"type": "integer", "minimum": 536870912},
+        "validator_cpu_limit": {"type": "number", "exclusiveMinimum": 0}
+      }
+    }
+  }
+}

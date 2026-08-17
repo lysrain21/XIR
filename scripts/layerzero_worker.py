@@ -15,6 +15,7 @@ from xir_lab.native.layerzero_worker import (
     LayerZeroWorkerState,
     load_worker_chains,
 )
+from xir_lab.native.multihop_execution import verify_multihop_profile_write_authority
 from xir_lab.native.rpc import is_transient_rpc_error
 
 
@@ -27,7 +28,45 @@ def main() -> None:
     parser.add_argument("--raw-root", type=Path, required=True)
     parser.add_argument("--poll-seconds", type=float, default=1.0)
     parser.add_argument("--batch-packets", type=int, default=100)
+    parser.add_argument("--runtime-root", type=Path)
+    parser.add_argument("--workspace-root", type=Path)
+    parser.add_argument("--repository-root", type=Path)
+    parser.add_argument("--preregistration", type=Path)
+    parser.add_argument("--review-gate", type=Path)
+    parser.add_argument("--lease", type=Path)
+    parser.add_argument("--lease-token", type=Path)
     args = parser.parse_args()
+    runtime_root = args.runtime_root
+    multihop_profile = False
+    if runtime_root is not None:
+        profile_path = runtime_root / "profile.json"
+        if profile_path.is_file():
+            profile = json.loads(profile_path.read_text(encoding="utf-8"))
+            multihop_profile = (
+                profile.get("schema_version") == "xir-lab-native-multihop-five-chain-profile-v1"
+            )
+            verify_multihop_profile_write_authority(
+                profile=profile,
+                workspace_root=args.workspace_root,
+                repository_root=args.repository_root,
+                runtime_root=runtime_root,
+                preregistration_path=args.preregistration,
+                review_gate_path=args.review_gate,
+                lease_path=args.lease,
+                lease_token_path=args.lease_token,
+            )
+    config = json.loads(args.config.read_text(encoding="utf-8"))
+    config_chains = config.get("chains")
+    five_chain_config = isinstance(config_chains, list) and len(config_chains) == 5
+    if five_chain_config:
+        if config.get("schema_version") != "xir-lab-layerzero-worker-config-v1":
+            raise RuntimeError("five-chain multihop worker config schema is missing or invalid")
+        if runtime_root is None:
+            raise RuntimeError(
+                "five-chain multihop worker requires review closure and live lease authority"
+            )
+        if not multihop_profile:
+            raise RuntimeError("five-chain multihop worker profile is unavailable")
     private_key = args.key_file.read_text(encoding="utf-8").strip()
     worker = LayerZeroWorker(
         chains=load_worker_chains(args.config),

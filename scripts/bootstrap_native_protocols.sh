@@ -10,6 +10,7 @@ usage() {
 mode=$1
 runtime_root=$2
 lock_path=${3:-toolchain/native-protocol-stack.lock.json}
+repository_root=$(cd "$(dirname "$0")/.." && pwd)
 
 case "$mode" in
   fetch|build|all|verify) ;;
@@ -32,6 +33,23 @@ protocol_root="$runtime_root/protocols"
 evidence_root="$runtime_root/provenance"
 log_root="$evidence_root/build-logs"
 mkdir -p "$protocol_root" "$log_root"
+
+if [[ "$mode" = fetch || "$mode" = build || "$mode" = all ]]; then
+  "$repository_root/.venv/bin/python" \
+    "$repository_root/scripts/preflight_native_toolchain.py" \
+    --output "$evidence_root/toolchain-preflight.json" >/dev/null
+  export LIBCLANG_PATH
+  LIBCLANG_PATH=$("$repository_root/.venv/bin/python" - \
+    "$evidence_root/toolchain-preflight.json" <<'PY'
+import json
+import pathlib
+import sys
+
+document = json.loads(pathlib.Path(sys.argv[1]).read_text(encoding="utf-8"))
+print(document["libclang_directory"])
+PY
+  )
+fi
 
 canonical_repo_url() {
   local value=$1

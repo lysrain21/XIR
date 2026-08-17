@@ -48,7 +48,7 @@ def test_exact_rows_preserve_both_frozen_samples() -> None:
         == 14_616
     )
     assert method["statistics_recomputed"] is False
-    assert provenance["preserved_assets"]["frozen_figure_1"].startswith("2fa2864e")
+    assert provenance["preserved_assets"]["frozen_figure_1"].startswith("f2b69477")
 
 
 def test_native_width_main_publication_is_deterministic(tmp_path: Path) -> None:

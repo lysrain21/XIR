@@ -61,7 +61,7 @@ def render_compose(
                 "--rpc-http-enabled=true",
                 "--rpc-http-host=0.0.0.0",
                 "--rpc-http-port=8545",
-                "--rpc-http-api=ETH,NET,QBFT,WEB3",
+                f"--rpc-http-api={','.join(topology.rpc_http_apis)}",
                 "--host-allowlist=localhost,127.0.0.1",
                 "--min-gas-price=0",
                 "--sync-mode=FULL",
@@ -125,6 +125,8 @@ def render_compose(
                     "org.xir.identity-manifest-sha256": manifest.payload_sha256,
                 },
             }
+            if topology.validator_runtime_user is not None:
+                service["user"] = topology.validator_runtime_user
             if validator_index == 1:
                 service["ports"] = [
                     f"127.0.0.1:{network.host_rpc_port}:8545"

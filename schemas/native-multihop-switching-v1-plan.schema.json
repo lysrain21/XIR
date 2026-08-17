@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xir.local/schemas/native-multihop-switching-v1-plan.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "namespace", "phase", "config_sha256", "profile_sha256", "plan_sha256", "route_counts", "logical_attempts", "expected_application_effects", "generation"],
+  "properties": {
+    "schema_version": {"const": "xir-lab-native-multihop-switching-plan-v1"},
+    "namespace": {"const": "native-multihop-switching-v1"},
+    "phase": {"enum": ["smoke", "publication_smoke", "scale"]},
+    "config_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "profile_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "plan_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "route_counts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["H", "L", "HH", "HHH", "HHHH", "HL", "HLH", "HLHL", "LHLH", "HHL", "HHHL"],
+      "properties": {
+        "H": {"type": "integer", "minimum": 1}, "L": {"type": "integer", "minimum": 1},
+        "HH": {"type": "integer", "minimum": 1}, "HHH": {"type": "integer", "minimum": 1},
+        "HHHH": {"type": "integer", "minimum": 1}, "HL": {"type": "integer", "minimum": 1},
+        "HLH": {"type": "integer", "minimum": 1}, "HLHL": {"type": "integer", "minimum": 1},
+        "LHLH": {"type": "integer", "minimum": 1}, "HHL": {"type": "integer", "minimum": 1},
+        "HHHL": {"type": "integer", "minimum": 1}
+      }
+    },
+    "logical_attempts": {"type": "integer", "minimum": 11},
+    "expected_application_effects": {"type": "integer", "minimum": 11},
+    "generation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ordering", "route_order", "route_sequence_start", "route_sequence_stop_exclusive", "attempt_id_derivation", "payload_matching_unit"],
+      "properties": {
+        "ordering": {"const": "route_sequence_then_rotated_frozen_route_order"},
+        "route_order": {"const": ["H", "L", "HH", "HHH", "HHHH", "HL", "HLH", "HLHL", "LHLH", "HHL", "HHHL"]},
+        "route_sequence_start": {"const": 0},
+        "route_sequence_stop_exclusive": {"type": "integer", "minimum": 1},
+        "attempt_id_derivation": {"const": "sha256-rfc8785-namespace-phase-route-sequence-prefix32"},
+        "payload_matching_unit": {"const": "same-phase-and-route-sequence"}
+      }
+    }
+  }
+}

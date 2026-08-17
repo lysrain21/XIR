@@ -11,6 +11,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import threading
 import time
 from collections.abc import Mapping
 from dataclasses import dataclass
@@ -191,8 +192,21 @@ class FinalizedRootSigner:
         self.source = source
         self.account = Account.from_key(private_key)
         self.audit_path = audit_path
+        self.audit_lock = threading.Lock()
+        self.audit_rows: dict[str, dict[str, Any]] = {}
         if audit_path is not None:
             audit_path.parent.mkdir(parents=True, exist_ok=True)
+            if audit_path.is_file():
+                for line in audit_path.read_text(encoding="utf-8").splitlines():
+                    if not line.strip():
+                        continue
+                    row = json.loads(line)
+                    transaction_hash = str(row.get("transaction_hash", "")).lower()
+                    if not transaction_hash or transaction_hash in self.audit_rows:
+                        raise LocalTopologyError(
+                            "root signer audit contains duplicate or invalid transactions"
+                        )
+                    self.audit_rows[transaction_hash] = row
 
     @property
     def address(self) -> str:
@@ -251,7 +265,7 @@ class FinalizedRootSigner:
     ) -> None:
         if self.audit_path is None:
             return
-        row = {
+        row: dict[str, Any] = {
             "schema_version": "xir-lab-finalized-root-signature-audit-v1",
             "transaction_hash": observed.transaction_hash,
             "block_number": observed.block_number,
@@ -265,10 +279,24 @@ class FinalizedRootSigner:
             "checks": checks,
             "signed": signed,
         }
-        with self.audit_path.open("a", encoding="utf-8") as stream:
-            stream.write(json.dumps(row, sort_keys=True) + "\n")
-            stream.flush()
-            os.fsync(stream.fileno())
+        with self.audit_lock:
+            transaction_hash = observed.transaction_hash.lower()
+            existing = self.audit_rows.get(transaction_hash)
+            if existing == row:
+                return
+            if existing is not None:
+                immutable_existing = dict(existing)
+                immutable_row = dict(row)
+                prior_finalized = int(immutable_existing.pop("finalized_block_number"))
+                current_finalized = int(immutable_row.pop("finalized_block_number"))
+                if immutable_existing == immutable_row and current_finalized >= prior_finalized:
+                    return
+                raise LocalTopologyError("root signer audit conflicts for an existing transaction")
+            with self.audit_path.open("a", encoding="utf-8") as stream:
+                stream.write(json.dumps(row, sort_keys=True) + "\n")
+                stream.flush()
+                os.fsync(stream.fileno())
+            self.audit_rows[transaction_hash] = row
 
 
 def _evm_address(identifier: tuple[int, bytes]) -> str:

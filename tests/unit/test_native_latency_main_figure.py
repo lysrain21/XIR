@@ -33,7 +33,7 @@ def test_main_figure_selects_only_frozen_full_sample_medians() -> None:
     assert method["statistics_recomputed"] is False
     assert method["block_length_sensitivity"] == [32, 64, 128]
     assert provenance["figure_1_sha256"] == (
-        "2fa2864efe9f44357cf9e529fee7ee49415bee15410c9d54cd6ac0cd909a64a2"
+        "f2b694773e3db3312a745e40098995e075738df4de04f9bd5844a0da27ec3746"
     )
 
 

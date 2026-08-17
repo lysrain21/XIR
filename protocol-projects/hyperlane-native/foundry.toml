@@ -15,6 +15,10 @@ cbor_metadata = false
 fs_permissions = [{ access = "read-write", path = "./deployments" }]
 
 remappings = [
-  "@openzeppelin/contracts/=lib/hyperlane/solidity/node_modules/@openzeppelin/contracts/",
-  "@openzeppelin/contracts-upgradeable/=lib/hyperlane/solidity/node_modules/@openzeppelin/contracts-upgradeable/",
+  "@openzeppelin/contracts/=lib/hyperlane/solidity/dependencies/@openzeppelin-contracts-4.9.3/contracts/",
+  "@openzeppelin/contracts-upgradeable/=lib/hyperlane/solidity/dependencies/@openzeppelin-contracts-upgradeable-4.9.3/contracts/",
+  "@arbitrum/nitro-contracts/src/=lib/hyperlane/solidity/dependencies/@arbitrum-nitro-contracts-1.2.1/src/",
+  "@chainlink/contracts-ccip/src/v0.8/=lib/hyperlane/solidity/dependencies/@chainlink-contracts-ccip-1.5.0/contracts/src/v0.8/",
+  "@eth-optimism/contracts/=lib/hyperlane/solidity/dependencies/@eth-optimism-contracts-0.6.0/packages/contracts/contracts/",
+  "forge-std/=lib/hyperlane/solidity/dependencies/forge-std-1.9.2/src/",
 ]

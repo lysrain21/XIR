@@ -1,0 +1,78 @@
+{
+  "schema_version": "xir-lab-native-multihop-five-chain-profile-v1",
+  "profile_id": "native-multihop-five-chain-v1",
+  "environment": "controlled-local-five-chain-qbft-native-stacks",
+  "fixed_seed": "835c9aa68653f06f88e9eedfa28ceb8f9ac1f242c158aa69edb8a887061c3d7b",
+  "component_lock": {
+    "relative_path": "toolchain/native-protocol-stack.lock.json",
+    "sha256": "1821732ab7b4865797f8b5ac377a6ae178af5859fad4e785d177928bd2dbc89e"
+  },
+  "chains": [
+    {
+      "label": "A",
+      "network_id": "local-chain-a",
+      "chain_id": 3133701,
+      "rpc_url": "http://127.0.0.1:18545",
+      "hyperlane_domain": 3133701,
+      "layerzero_eid": 49001,
+      "validator_count": 4
+    },
+    {
+      "label": "B",
+      "network_id": "local-chain-b",
+      "chain_id": 3133702,
+      "rpc_url": "http://127.0.0.1:28545",
+      "hyperlane_domain": 3133702,
+      "layerzero_eid": 49002,
+      "validator_count": 4
+    },
+    {
+      "label": "C",
+      "network_id": "local-chain-c",
+      "chain_id": 3133703,
+      "rpc_url": "http://127.0.0.1:38545",
+      "hyperlane_domain": 3133703,
+      "layerzero_eid": 49003,
+      "validator_count": 4
+    },
+    {
+      "label": "D",
+      "network_id": "local-chain-d",
+      "chain_id": 3133704,
+      "rpc_url": "http://127.0.0.1:48545",
+      "hyperlane_domain": 3133704,
+      "layerzero_eid": 49004,
+      "validator_count": 4
+    },
+    {
+      "label": "E",
+      "network_id": "local-chain-e",
+      "chain_id": 3133705,
+      "rpc_url": "http://127.0.0.1:58545",
+      "hyperlane_domain": 3133705,
+      "layerzero_eid": 49005,
+      "validator_count": 4
+    }
+  ],
+  "protocol": {
+    "H": {
+      "name": "hyperlane",
+      "validator_threshold": 1,
+      "validators_per_origin": 1,
+      "relayer_count": 1,
+      "physical_delivery_transactions_per_hop": 1
+    },
+    "L": {
+      "name": "layerzero-v2",
+      "required_dvns": 1,
+      "dvn_quorum": 1,
+      "executor_count": 1,
+      "physical_delivery_transactions_per_hop": 3
+    }
+  },
+  "payload": {
+    "minimum_bytes": 32,
+    "size_step_bytes": 32,
+    "size_bucket_count": 4
+  }
+}

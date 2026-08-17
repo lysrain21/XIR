@@ -16,6 +16,7 @@ from hexbytes import HexBytes
 from web3 import Web3
 from web3.types import TxParams
 
+from xir_lab.native.multihop_execution import verify_multihop_profile_write_authority
 from xir_lab.native.rpc import qbft_web3
 
 ADMIN_ROLE = keccak(text="ADMIN_ROLE")
@@ -56,14 +57,30 @@ def main() -> None:
     parser.add_argument("--profile", type=Path, required=True)
     parser.add_argument("--deployer-key-file", type=Path, required=True)
     parser.add_argument("--worker-key-file", type=Path, required=True)
+    parser.add_argument("--workspace-root", type=Path)
+    parser.add_argument("--repository-root", type=Path)
+    parser.add_argument("--preregistration", type=Path)
+    parser.add_argument("--review-gate", type=Path)
+    parser.add_argument("--lease", type=Path)
+    parser.add_argument("--lease-token", type=Path)
     args = parser.parse_args()
+    profile = json.loads(args.profile.read_text(encoding="utf-8"))
+    verify_multihop_profile_write_authority(
+        profile=profile,
+        workspace_root=args.workspace_root,
+        repository_root=args.repository_root,
+        runtime_root=args.runtime_root,
+        preregistration_path=args.preregistration,
+        review_gate_path=args.review_gate,
+        lease_path=args.lease,
+        lease_token_path=args.lease_token,
+    )
     deployer = Account.from_key(
         args.deployer_key_file.read_text(encoding="ascii").strip()
     )
     worker = Account.from_key(
         args.worker_key_file.read_text(encoding="ascii").strip()
     )
-    profile = json.loads(args.profile.read_text(encoding="utf-8"))
     root = args.runtime_root / "layerzero" / "worker-role-configuration"
     receipt_root = root / "receipts"
     signed_root = root / "private-signed-transactions"

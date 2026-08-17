@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import pytest
@@ -122,3 +123,27 @@ def test_import_only_project_does_not_vendor_upstream_implementation() -> None:
         "ProjectMarker.sol",
         "DeployLayerZeroNative.s.sol",
     }
+
+
+def test_five_chain_deployer_passes_every_frozen_profile_eid_to_forge() -> None:
+    repository = Path(__file__).parents[2]
+    profile = json.loads(
+        (repository / "configs/profiles/native-multihop-five-chain-v1.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert [chain["layerzero_eid"] for chain in profile["chains"]] == [
+        49001,
+        49002,
+        49003,
+        49004,
+        49005,
+    ]
+    deployer = (repository / "scripts/deploy_layerzero_native.sh").read_text(
+        encoding="utf-8"
+    )
+    for role in "ABCDE":
+        assert f'export LZ_EID_{role}=' in deployer
+    assert "LayerZero deployment requires exactly five profile EIDs" in deployer
+    assert "LayerZero profile EIDs must be unique" in deployer
+    assert '[[ ${lz_labels[*]} == "A B C D E" ]]' in deployer

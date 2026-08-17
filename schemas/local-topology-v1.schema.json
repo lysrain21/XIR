@@ -30,6 +30,12 @@
       "type": "array",
       "const": ["127.0.0.1", "localhost"]
     },
+    "rpc_http_apis": {
+      "type": "array",
+      "items": {"enum": ["ETH", "NET", "QBFT", "WEB3", "DEBUG", "TRACE"]},
+      "minItems": 1,
+      "uniqueItems": true
+    },
     "public_chain_id_denylist": {
       "type": "array",
       "items": {"type": "integer", "minimum": 1},

@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xir.local/schemas/native-multihop-switching-v1-config.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "namespace", "fixed_seed", "profile", "route_order", "experiments", "attempts_per_route", "scheduling", "concurrency", "payload_schedule", "bootstrap", "equivalence_bounds", "incident_policy", "result_roles", "source_sha256"],
+  "properties": {
+    "schema_version": {"const": "xir-lab-native-multihop-switching-config-v1"},
+    "namespace": {"const": "native-multihop-switching-v1"},
+    "fixed_seed": {"type": "string", "minLength": 32},
+    "profile": {"const": "configs/profiles/native-multihop-five-chain-v1.json"},
+    "route_order": {"const": ["H", "L", "HH", "HHH", "HHHH", "HL", "HLH", "HLHL", "LHLH", "HHL", "HHHL"]},
+    "experiments": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["switch_count_scalability", "final_hop_switching"],
+      "properties": {
+        "switch_count_scalability": {"const": ["H", "HH", "HHH", "HHHH", "HL", "HLH", "HLHL", "LHLH"]},
+        "final_hop_switching": {"const": ["L", "HH", "HHH", "HHHH", "HL", "HHL", "HHHL"]}
+      }
+    },
+    "attempts_per_route": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["smoke", "publication_smoke", "scale"],
+      "properties": {
+        "smoke": {"const": 1},
+        "publication_smoke": {"const": 2},
+        "scale": {"const": 10000}
+      }
+    },
+    "scheduling": {
+      "const": {
+        "matching_unit": "one_attempt_per_route_at_same_route_sequence",
+        "route_ordering": "base_order_rotated_left_by_route_sequence_modulo_11",
+        "retries_in_designated_denominator": false
+      }
+    },
+    "concurrency": {"type": "integer", "minimum": 1, "maximum": 64},
+    "payload_schedule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["minimum_bytes", "size_step_bytes", "size_bucket_count"],
+      "properties": {
+        "minimum_bytes": {"type": "integer", "minimum": 1},
+        "size_step_bytes": {"type": "integer", "minimum": 1},
+        "size_bucket_count": {"type": "integer", "minimum": 1}
+      }
+    },
+    "bootstrap": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repetitions", "block_length", "confidence", "seed"],
+      "properties": {
+        "repetitions": {"type": "integer", "minimum": 1000},
+        "block_length": {"type": "integer", "minimum": 2},
+        "confidence": {"type": "number", "exclusiveMinimum": 0.5, "exclusiveMaximum": 1},
+        "seed": {"type": "integer", "minimum": 0}
+      }
+    },
+    "equivalence_bounds": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["latency_seconds_per_prefix_receipt", "gas_per_prefix_receipt", "calldata_bytes_per_prefix_receipt", "confidence"],
+      "properties": {
+        "latency_seconds_per_prefix_receipt": {"const": 0.5},
+        "gas_per_prefix_receipt": {"const": 15000},
+        "calldata_bytes_per_prefix_receipt": {"const": 64},
+        "confidence": {"const": 0.90}
+      }
+    },
+    "incident_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["primary_denominator", "latency_sensitivity_selection_unit", "eligible_sensitivity_reasons", "prepublication_exclusions"],
+      "properties": {
+        "primary_denominator": {"const": "all_110000_validated_effects"},
+        "latency_sensitivity_selection_unit": {"const": "complete_11_route_sequence_block"},
+        "eligible_sensitivity_reasons": {"const": ["host_process_interruption", "host_boot_change", "layerzero_worker_process_or_boot_change", "hyperlane_relayer_process_or_boot_change"]},
+        "prepublication_exclusions": {"type": "array", "maxItems": 0}
+      }
+    },
+    "result_roles": {
+      "const": {
+        "smoke": "development_gate_only",
+        "publication_smoke": "publication_gate_not_formal_estimate",
+        "scale": "formal_measurement",
+        "gateway_analysis": "frozen_graph_analysis"
+      }
+    },
+    "source_sha256": {
+      "type": "object",
+      "minProperties": 6,
+      "additionalProperties": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+    }
+  }
+}

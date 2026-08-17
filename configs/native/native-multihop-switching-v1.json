@@ -1,0 +1,71 @@
+{
+  "schema_version": "xir-lab-native-multihop-switching-config-v1",
+  "namespace": "native-multihop-switching-v1",
+  "fixed_seed": "xir-native-multihop-switching-v1-official-run-001",
+  "profile": "configs/profiles/native-multihop-five-chain-v1.json",
+  "route_order": [
+    "H",
+    "L",
+    "HH",
+    "HHH",
+    "HHHH",
+    "HL",
+    "HLH",
+    "HLHL",
+    "LHLH",
+    "HHL",
+    "HHHL"
+  ],
+  "experiments": {
+    "switch_count_scalability": ["H", "HH", "HHH", "HHHH", "HL", "HLH", "HLHL", "LHLH"],
+    "final_hop_switching": ["L", "HH", "HHH", "HHHH", "HL", "HHL", "HHHL"]
+  },
+  "attempts_per_route": {
+    "smoke": 1,
+    "publication_smoke": 2,
+    "scale": 10000
+  },
+  "scheduling": {
+    "matching_unit": "one_attempt_per_route_at_same_route_sequence",
+    "route_ordering": "base_order_rotated_left_by_route_sequence_modulo_11",
+    "retries_in_designated_denominator": false
+  },
+  "concurrency": 16,
+  "payload_schedule": {
+    "minimum_bytes": 32,
+    "size_step_bytes": 32,
+    "size_bucket_count": 4
+  },
+  "bootstrap": {
+    "repetitions": 4000,
+    "block_length": 16,
+    "confidence": 0.95,
+    "seed": 20260812
+  },
+  "equivalence_bounds": {
+    "latency_seconds_per_prefix_receipt": 0.5,
+    "gas_per_prefix_receipt": 15000,
+    "calldata_bytes_per_prefix_receipt": 64,
+    "confidence": 0.90
+  },
+  "incident_policy": {
+    "primary_denominator": "all_110000_validated_effects",
+    "latency_sensitivity_selection_unit": "complete_11_route_sequence_block",
+    "eligible_sensitivity_reasons": ["host_process_interruption", "host_boot_change", "layerzero_worker_process_or_boot_change", "hyperlane_relayer_process_or_boot_change"],
+    "prepublication_exclusions": []
+  },
+  "result_roles": {
+    "smoke": "development_gate_only",
+    "publication_smoke": "publication_gate_not_formal_estimate",
+    "scale": "formal_measurement",
+    "gateway_analysis": "frozen_graph_analysis"
+  },
+  "source_sha256": {
+    "contracts/src/HyperlaneAdapter.sol": "1ca91fb1cb8137d7b1cfb2ef5dc21ac95f45b22defea729f1535c73d33773f18",
+    "contracts/src/LayerZeroAdapter.sol": "042fbeeb00d93ce4ec077bbeeb944daed752c16f649460c5ee2df88218c53941",
+    "contracts/src/XIRGateway.sol": "eca28a1b3f0fc55d14289bab3b633122c74df2e834a756fdc2f10735fa062202",
+    "contracts/src/XIRRegistry.sol": "35a2473fb877ce1d71b02cf88854081babd76b7d47c3b8eb6931e571b0f54f6e",
+    "src/xir_lab/native/runner.py": "02c43d51d3604c86ac9f4059684c443a03d98878f0ccb03a7be58b18238c4c1d",
+    "src/xir_lab/native/deployer.py": "788bf7f9d929a265da3a6e00dacca9b9b97913541b0cad9f49550addc6178653"
+  }
+}

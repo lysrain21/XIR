@@ -83,6 +83,32 @@ def test_distinct_root_signer_validates_finalized_event_before_signing(
     assert '"signed": true' in (tmp_path / "root-audit.jsonl").read_text()
 
 
+def test_root_signer_audit_is_idempotent_across_durable_resume(
+    tmp_path: Path,
+) -> None:
+    record, context, creation = fixture()
+    audit_path = tmp_path / "root-audit.jsonl"
+    signer = FinalizedRootSigner(
+        source=StaticRootSource(creation),
+        private_key="0x" + "66" * 32,
+        audit_path=audit_path,
+    )
+    first = signer.sign(
+        transaction_hash=creation.transaction_hash,
+        record=record,
+        context=context,
+        registry_version=1,
+    )
+    second = signer.sign(
+        transaction_hash=creation.transaction_hash,
+        record=record,
+        context=context,
+        registry_version=1,
+    )
+    assert first == second
+    assert len(audit_path.read_text(encoding="utf-8").splitlines()) == 1
+
+
 def test_root_signer_rejects_unfinalized_or_mismatched_creation(tmp_path: Path) -> None:
     record, context, creation = fixture()
     creation = FinalizedRootCreation(

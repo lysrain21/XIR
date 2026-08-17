@@ -61,6 +61,8 @@ class LocalTopology:
     public_chain_id_denylist: frozenset[int]
     networks: tuple[LocalNetwork, ...]
     resource_policy: ResourcePolicy
+    rpc_http_apis: tuple[str, ...] = ("ETH", "NET", "QBFT", "WEB3")
+    validator_runtime_user: str | None = None
 
 
 @dataclass(frozen=True)
@@ -169,6 +171,12 @@ def load_topology(path: Path) -> LocalTopology:
             scale=_thresholds(cast(dict[str, Any], policy["scale"])),
             validator_memory_bytes=cast(int, policy["validator_memory_bytes"]),
             validator_cpu_limit=float(policy["validator_cpu_limit"]),
+        ),
+        rpc_http_apis=tuple(
+            cast(
+                list[str],
+                document.get("rpc_http_apis", ["ETH", "NET", "QBFT", "WEB3"]),
+            )
         ),
     )
 
