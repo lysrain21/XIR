@@ -15,6 +15,7 @@ from xir_lab.native.multihop_process_identity import process_identity_sha256
 from xir_lab.native.multihop_publication import (
     _freeze_private_raw_evidence,
     _validate_phase_authority,
+    _write_public_identity_manifest,
     compare_multihop_rebuilds,
     freeze_multihop_sources,
     verify_prior_phase_handoffs,
@@ -217,6 +218,43 @@ def _process_identity(pid: int, label: str) -> dict[str, object]:
     }
     document["identity_sha256"] = process_identity_sha256(document)
     return document
+
+
+def test_public_identity_manifest_removes_only_private_path_locators(
+    tmp_path: Path,
+) -> None:
+    validators = [
+        {
+            "address": f"0x{index + 1:040x}",
+            "enode": f"enode://{index}",
+            "private_key_path": f"private/validators/chain/v{index}/key",
+        }
+        for index in range(20)
+    ]
+    source = _file(
+        tmp_path / "identity.json",
+        {
+            "schema_version": "fixture",
+            "payload": {
+                "networks": [
+                    {"validators": validators[offset : offset + 4]}
+                    for offset in range(0, 20, 4)
+                ]
+            },
+        },
+    )
+    output = tmp_path / "public.json"
+    _write_public_identity_manifest(source, output)
+    document = json.loads(output.read_text(encoding="utf-8"))
+    public_validators = [
+        validator
+        for network in document["payload"]["networks"]
+        for validator in network["validators"]
+    ]
+    assert len(public_validators) == 20
+    assert all("private_key_path" not in row for row in public_validators)
+    assert all(row["address"].startswith("0x") and row["enode"].startswith("enode://") for row in public_validators)
+    assert document["publication_redaction"]["removed_private_path_locator_count"] == 20
 
 
 def test_freeze_uses_sqlite_backups_and_exact_smoke_denominator(tmp_path: Path) -> None:
@@ -645,6 +683,11 @@ def test_freeze_uses_sqlite_backups_and_exact_smoke_denominator(tmp_path: Path) 
         "traces": "ok",
     }
     assert manifest["root_signer_audit_count"] == 11
+    for name in ("runner.sqlite", "worker.sqlite", "traces.sqlite"):
+        with sqlite3.connect(output / name) as connection:
+            assert connection.execute("PRAGMA journal_mode").fetchone()[0] == "delete"
+        assert not Path(str(output / name) + "-shm").exists()
+        assert not Path(str(output / name) + "-wal").exists()
     assert (output / "component-lock.json").is_file()
     assert (output / "source-locks/locked/source.json").is_file()
     assert (output / "resource-samples.jsonl").is_file()

@@ -879,6 +879,8 @@ def verify_execution_authority(
         repository_root=repository_root,
         preregistration_path=preregistration_path,
     )
+    if not review_gate_path.is_file():
+        raise LocalTopologyError("independent review closure has not enabled execution")
     persisted_gate = _load(review_gate_path)
     if persisted_gate != gate:
         raise LocalTopologyError("predeployment review gate differs from current review state")

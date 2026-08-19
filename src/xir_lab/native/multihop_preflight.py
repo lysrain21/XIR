@@ -35,6 +35,11 @@ from xir_lab.native.multihop_deployer import (
     REGISTRY_VERSION,
     adapter_key,
 )
+from xir_lab.native.multihop_identity import (
+    DEPLOYMENT_NAMESPACE,
+    config_identity,
+    evidence_namespace,
+)
 from xir_lab.native.multihop_scalability import ROUTE_ORDER, load_multihop_config
 from xir_lab.native.rpc import (
     BESU_RAW_TRANSACTION_RPC_METHOD,
@@ -303,7 +308,7 @@ def run_multihop_preflight(
         raise LocalTopologyError("preflight config/profile differs from preregistration")
     source_manifest = cast(dict[str, str], preregistration["implementation_source_sha256"])
     if (
-        deployment.get("namespace") != "native-multihop-switching-v1"
+        deployment.get("namespace") != DEPLOYMENT_NAMESPACE
         or deployment.get("profile_sha256") != _sha(profile_path)
         or deployment.get("runner") == deployment.get("root_signer")
     ):
@@ -567,7 +572,7 @@ def run_multihop_preflight(
         raise LocalTopologyError("native carrier processes are not all alive")
     document: dict[str, Any] = {
         "schema_version": "xir-lab-native-multihop-preflight-v1",
-        "namespace": "native-multihop-switching-v1",
+        "namespace": config_identity(config).evidence_namespace,
         "valid": True,
         "credentials_included": False,
         "topology_sha256": topology.source_sha256,
@@ -682,7 +687,7 @@ def verify_multihop_preflight_document(
     runtime_disk = cast(dict[str, Any], host.get("runtime_disk", {}))
     expected: dict[str, bool] = {
         "schema": document.get("schema_version") == "xir-lab-native-multihop-preflight-v1",
-        "namespace": document.get("namespace") == "native-multihop-switching-v1",
+        "namespace": document.get("namespace") == evidence_namespace(config),
         "valid": document.get("valid") is True,
         "credentials_excluded": document.get("credentials_included") is False,
         "semantic": document.get("semantic_sha256") == _semantic_sha256(document),
@@ -719,7 +724,7 @@ def verify_multihop_preflight_document(
         == review_gate["implementation_source_manifest_sha256"],
         "source_count": int(document.get("source_file_count", -1))
         == int(review_gate["source_file_count"]),
-        "deployment_namespace": deployment.get("namespace") == "native-multihop-switching-v1",
+        "deployment_namespace": deployment.get("namespace") == DEPLOYMENT_NAMESPACE,
         "signer_separation": document.get("signer_roles_distinct") is True
         and deployment.get("runner") != deployment.get("root_signer"),
         "route_hops": int(document.get("route_hop_checks", -1)) == expected_hops,

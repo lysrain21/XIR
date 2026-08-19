@@ -35,6 +35,7 @@ from xir_lab.native.multihop_deployer import (
     multihop_profile_hash,
 )
 from xir_lab.native.multihop_execution import heartbeat_writer_lease
+from xir_lab.native.multihop_identity import DEPLOYMENT_NAMESPACE
 from xir_lab.native.multihop_preflight import verify_multihop_preflight_document
 from xir_lab.native.multihop_process_identity import current_process_identity
 from xir_lab.native.multihop_scalability import (
@@ -515,7 +516,7 @@ class NativeMultihopRunner:
         self.preregistration_path = preregistration_path
         self.lease_path = lease_path
         self.lease_token_path = lease_token_path
-        if self.deployment.get("namespace") != "native-multihop-switching-v1":
+        if self.deployment.get("namespace") != DEPLOYMENT_NAMESPACE:
             raise LocalTopologyError("multihop runner rejects another deployment namespace")
         self.contracts = cast(dict[str, dict[str, str]], self.deployment["chains"])
         self.account = Account.from_key(private_key)

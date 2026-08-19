@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 import sqlite3
+import time
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
@@ -51,6 +52,18 @@ def _rpc(url: str, method: str, params: list[Any]) -> Any:
     if not isinstance(document, dict) or document.get("error") is not None:
         raise LocalTopologyError(f"Besu trace RPC returned an error: {method}")
     return document.get("result")
+
+
+def _trace_with_retry(url: str, transaction_hash: str, *, attempts: int = 8) -> Any:
+    """Retry only an empty Besu TRACE result from a finalized receipt."""
+
+    for attempt in range(attempts):
+        result = _rpc(url, "trace_transaction", [transaction_hash])
+        if isinstance(result, list) and result:
+            return result
+        if attempt + 1 < attempts:
+            time.sleep(min(2.0 ** attempt, 15.0))
+    return None
 
 
 def _quantity(value: Any) -> int:
@@ -543,6 +556,12 @@ def capture_multihop_traces(
         if (role, transaction_hash) not in state.existing()
     ]
 
+    config_document = json.loads(config_path.read_text(encoding="utf-8"))
+    pilot_trace_fallback = (
+        isinstance(config_document, dict)
+        and config_document.get("result_roles", {}).get("scale") == "pilot_diagnostic_only"
+    )
+
     def fetch(item: tuple[str, str, int]) -> dict[str, Any]:
         role, transaction_hash, receipt_gas = item
         receipt = _rpc(role_rpc[role], "eth_getTransactionReceipt", [transaction_hash])
@@ -561,7 +580,37 @@ def capture_multihop_traces(
             expected_chain_id=role_chain_id[role],
         )
         process_binding = process_bindings.get((role, transaction_hash))
-        trace = normalize_transaction_trace(
+        trace_result = _trace_with_retry(
+            role_rpc[role],
+            transaction_hash,
+            attempts=1 if pilot_trace_fallback else 8,
+        )
+        if trace_result is None and pilot_trace_fallback:
+            trace = {
+                "schema_version": "xir-lab-native-multihop-trace-unavailable-v1",
+                "trace_unavailable": True,
+                "trace_unavailable_reason": "besu_trace_transaction_empty_after_bounded_retries",
+                "chain_role": role,
+                "transaction_hash": transaction_hash,
+                "receipt_gas": receipt_gas,
+                "status": 1,
+                "raw_transaction_hex": "0x" + raw.hex(),
+                "raw_sha256": hashlib.sha256(raw).hexdigest(),
+                "sender": str(raw_document["sender"]),
+                "target": str(raw_document["target"]),
+                "nonce": int(raw_document["nonce"]),
+                "chain_id": int(raw_document["chain_id"]),
+                "calldata_sha256": str(raw_document["calldata_sha256"]),
+                "block_number": int(str(receipt["blockNumber"]), 16),
+                "block_hash": _canonical_hash(str(receipt["blockHash"])),
+                "transaction_index": int(str(receipt["transactionIndex"]), 16),
+                "traces": [],
+                "top_level_execution_gas": None,
+                "receipt_minus_trace_gas": None,
+                "internal_call_count": None,
+            }
+        else:
+            trace = normalize_transaction_trace(
             chain_role=role,
             transaction_hash=transaction_hash,
             receipt_gas=receipt_gas,
@@ -573,9 +622,9 @@ def capture_multihop_traces(
             expected_hyperlane_default_ism=(
                 process_binding[1] if process_binding is not None else None
             ),
-            trace_result=_rpc(role_rpc[role], "trace_transaction", [transaction_hash]),
-            labels=labels,
-        )
+                trace_result=trace_result,
+                labels=labels,
+            )
         trace.update(raw_document)
         trace["status"] = 1
         trace["block_number"] = int(str(receipt["blockNumber"]), 16)
@@ -583,7 +632,9 @@ def capture_multihop_traces(
         trace["transaction_index"] = int(str(receipt["transactionIndex"]), 16)
         semantic = dict(trace)
         semantic.pop("semantic_sha256", None)
-        trace["semantic_sha256"] = hashlib.sha256(rfc8785.dumps(semantic)).hexdigest()
+        trace["semantic_sha256"] = hashlib.sha256(
+            rfc8785.dumps(cast(Any, semantic))
+        ).hexdigest()
         return trace
 
     with ThreadPoolExecutor(max_workers=concurrency) as pool:

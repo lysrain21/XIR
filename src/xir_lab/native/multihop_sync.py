@@ -49,24 +49,32 @@ def _verify_phase_tree(runtime_root: Path, phase: str) -> dict[str, object]:
 
 
 def _verify_nested_phase_chain(
-    runtime_root: Path, phase_handoffs: dict[str, dict[str, object]]
+    runtime_root: Path,
+    phase_handoffs: dict[str, dict[str, object]],
+    *,
+    expected_namespace: str = "native-multihop-switching-v1",
 ) -> dict[str, dict[str, str]]:
     """Recompute smoke -> publication-smoke -> scale predecessor bindings."""
 
     smoke_path = runtime_root / "runs/smoke/final-handoff.json"
     publication_smoke_path = runtime_root / "runs/publication_smoke/final-handoff.json"
     smoke_prior = verify_prior_phase_handoffs(
-        phase="smoke", smoke_handoff_path=None, publication_smoke_handoff_path=None
+        phase="smoke",
+        smoke_handoff_path=None,
+        publication_smoke_handoff_path=None,
+        expected_namespace=expected_namespace,
     )
     publication_smoke_prior = verify_prior_phase_handoffs(
         phase="publication_smoke",
         smoke_handoff_path=smoke_path,
         publication_smoke_handoff_path=None,
+        expected_namespace=expected_namespace,
     )
     scale_prior = verify_prior_phase_handoffs(
         phase="scale",
         smoke_handoff_path=smoke_path,
         publication_smoke_handoff_path=publication_smoke_path,
+        expected_namespace=expected_namespace,
     )
     expected = {
         "smoke": smoke_prior,

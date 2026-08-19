@@ -25,6 +25,9 @@ from xir_lab.native.multihop_scalability import (
 
 ROOT = Path(__file__).resolve().parents[2]
 CONFIG = ROOT / "configs" / "native" / "native-multihop-switching-v1.json"
+PILOT_CONFIG = (
+    ROOT / "configs" / "native" / "native-multihop-switching-pilot-v1.json"
+)
 PROFILE = ROOT / "configs" / "profiles" / "native-multihop-five-chain-v1.json"
 
 
@@ -155,6 +158,31 @@ def test_scale_plan_has_exact_preregistered_denominator() -> None:
     assert first.route_sequence == 0
     assert last.route_sequence == 9_999
     assert first.attempt_id != last.attempt_id
+
+
+def test_pilot_plan_is_1100_and_identity_isolated_from_formal() -> None:
+    pilot_plan = build_multihop_plan(config_path=PILOT_CONFIG, phase="scale")
+    assert pilot_plan["namespace"] == "native-multihop-switching-pilot-v1"
+    assert pilot_plan["logical_attempts"] == 1_100
+    assert pilot_plan["expected_application_effects"] == 1_100
+    assert set(pilot_plan["route_counts"].values()) == {100}
+    pilot_config, _ = load_multihop_config(PILOT_CONFIG)
+    formal_config, _ = load_multihop_config(CONFIG)
+    pilot_attempt = build_multihop_attempt(
+        config=pilot_config, phase="scale", route_sequence=0, route="H"
+    )
+    formal_attempt = build_multihop_attempt(
+        config=formal_config, phase="scale", route_sequence=0, route="H"
+    )
+    assert pilot_attempt.attempt_id != formal_attempt.attempt_id
+
+
+def test_pilot_plan_rejects_formal_config_binding(tmp_path: Path) -> None:
+    pilot = build_multihop_plan(config_path=PILOT_CONFIG, phase="scale")
+    path = tmp_path / "pilot.json"
+    write_multihop_plan(path, pilot)
+    with pytest.raises(LocalTopologyError, match="differs from config"):
+        load_multihop_plan(path=path, config_path=CONFIG, phase="scale")
 
 
 def test_invalid_route_fails_closed() -> None:

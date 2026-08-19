@@ -475,6 +475,39 @@ def test_figure8_family_is_byte_identical_and_vector_only(tmp_path: Path) -> Non
     ]
 
 
+def test_formal_figure8_rejects_pilot_analysis(tmp_path: Path) -> None:
+    analysis = _analysis()
+    analysis["namespace"] = "native-multihop-switching-pilot-v1"
+    analysis["attempt_count"] = 1_100
+    analysis["result_role"] = "pilot_diagnostic_only"
+    analysis["claim_eligible"] = False
+    analysis_path = _frozen_input(
+        tmp_path / "pilot-analysis",
+        name="analysis.json",
+        document=analysis,
+        validation_schema="xir-lab-native-multihop-analysis-validation-v1",
+        manifest_schema="xir-lab-native-multihop-analysis-manifest-v1",
+    )
+    gateway_path = _frozen_input(
+        tmp_path / "gateway-source",
+        name="gateway-analysis.json",
+        document=_gateway(),
+        validation_schema="xir-lab-gateway-deployment-validation-v1",
+        manifest_schema="xir-lab-gateway-deployment-manifest-v1",
+    )
+    multihop_comparison, gateway_comparison = _comparisons(
+        tmp_path, analysis_path, gateway_path
+    )
+    with pytest.raises(LocalTopologyError, match="non-final multihop analysis"):
+        build_figure8_family(
+            analysis_path=analysis_path,
+            gateway_path=gateway_path,
+            multihop_comparison_path=multihop_comparison,
+            gateway_comparison_path=gateway_comparison,
+            output_root=tmp_path / "output",
+        )
+
+
 def test_figure8_rejects_theoretical_fallback(tmp_path: Path) -> None:
     analysis = _analysis()
     analysis.pop("transaction_summary")

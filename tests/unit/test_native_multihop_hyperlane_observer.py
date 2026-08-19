@@ -323,12 +323,11 @@ def test_pending_transactions_use_besu_standard_pending_block(
     "result",
     [None, [], {}, {"transactions": None}, {"transactions": ["0x01"]}],
 )
-def test_pending_transactions_reject_malformed_besu_block(
+def test_pending_transactions_treat_malformed_besu_block_as_empty_poll(
     result: object, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     monkeypatch.setattr(
         "xir_lab.native.multihop_hyperlane_observer._rpc",
         lambda _url, _method, _params: result,
     )
-    with pytest.raises(LocalTopologyError, match="pending (block|row)"):
-        _pending_transactions("http://besu")
+    assert _pending_transactions("http://besu") == []

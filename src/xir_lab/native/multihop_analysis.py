@@ -29,6 +29,7 @@ from xir_lab.native.multihop_deployer import (
 )
 from xir_lab.native.multihop_effects import _expected_effect_lineage, validate_effect_audit
 from xir_lab.native.multihop_hyperlane_observer import load_hyperlane_observer_events
+from xir_lab.native.multihop_identity import config_identity, phase_role
 from xir_lab.native.multihop_process_identity import process_identity_sha256
 from xir_lab.native.multihop_scalability import (
     ROUTE_ORDER,
@@ -1172,6 +1173,7 @@ def reconstruct_attempt_metrics(
         json.loads(effective_profile_path.read_text(encoding="utf-8")),
     )
     deployment = cast(dict[str, Any], json.loads(deployment_path.read_text(encoding="utf-8")))
+    identity = config_identity(config)
     if deployment.get("namespace") != config["namespace"]:
         raise LocalTopologyError("analysis deployment namespace differs from config")
     chain_role_by_id = {
@@ -1480,9 +1482,18 @@ def reconstruct_attempt_metrics(
                     or str(trace["transaction_hash"]) != transaction_hash
                 ):
                     raise LocalTopologyError("frozen trace reconciliation failed")
-                item["trace_top_level_execution_gas"] = int(trace["top_level_execution_gas"])
-                item["trace_receipt_minus_execution_gas"] = int(trace["receipt_minus_trace_gas"])
-                item["trace_internal_call_count"] = int(trace["internal_call_count"])
+                if trace.get("trace_unavailable") is True:
+                    if not (identity.evidence_namespace == "native-multihop-switching-pilot-v1"):
+                        raise LocalTopologyError("trace unavailable is forbidden for formal evidence")
+                    item["trace_unavailable"] = True
+                    item["trace_unavailable_reason"] = str(trace["trace_unavailable_reason"])
+                    item["trace_top_level_execution_gas"] = None
+                    item["trace_receipt_minus_execution_gas"] = None
+                    item["trace_internal_call_count"] = None
+                else:
+                    item["trace_top_level_execution_gas"] = int(trace["top_level_execution_gas"])
+                    item["trace_receipt_minus_execution_gas"] = int(trace["receipt_minus_trace_gas"])
+                    item["trace_internal_call_count"] = int(trace["internal_call_count"])
                 item["sender"] = str(trace["sender"]).lower()
                 item["target"] = str(trace["target"]).lower()
                 item["nonce"] = int(trace["nonce"])
@@ -1700,7 +1711,13 @@ def reconstruct_attempt_metrics(
                     "trace_component_calls_json": "[]",
                     "trace_internal_gas_is_inclusive_non_additive": True,
                 }
-            complete = all("trace_top_level_execution_gas" in row for row in selected)
+            unavailable = [row for row in selected if row.get("trace_unavailable") is True]
+            available = [
+                row for row in selected
+                if row.get("trace_unavailable") is not True
+                and row.get("trace_top_level_execution_gas") is not None
+            ]
+            complete = len(available) + len(unavailable) == len(selected)
             if traces is not None and not complete:
                 raise LocalTopologyError("stage trace attribution is incomplete")
             component_calls = [
@@ -1712,12 +1729,13 @@ def reconstruct_attempt_metrics(
                 if "trace_component_calls_json" in row
             ]
             return {
-                "trace_transaction_count": len(selected) if complete else 0,
+                "trace_transaction_count": len(available),
+                "trace_unavailable_transaction_count": len(unavailable),
                 "trace_top_level_execution_gas": sum(
-                    int(row.get("trace_top_level_execution_gas", 0)) for row in selected
+                    int(row.get("trace_top_level_execution_gas") or 0) for row in available
                 ),
                 "trace_internal_call_count": sum(
-                    int(row.get("trace_internal_call_count", 0)) for row in selected
+                    int(row.get("trace_internal_call_count") or 0) for row in available
                 ),
                 "trace_component_calls_json": json.dumps(
                     component_calls, sort_keys=True, separators=(",", ":")
@@ -1996,7 +2014,7 @@ def reconstruct_attempt_metrics(
             switch_dispatch_gas += int(dispatch_detail["gas_used"])
             switch_dispatch_calldata += int(dispatch_detail["calldata_bytes"])
             dispatch_physical = next(row for row in rows if row["stage"] == dispatch_name)
-            if traces is not None:
+            if traces is not None and dispatch_physical.get("trace_unavailable") is not True:
                 expected_component = adapter_key(attempt.route, next_hop - 1, "in")
                 component_calls = cast(
                     list[dict[str, Any]],
@@ -2035,7 +2053,11 @@ def reconstruct_attempt_metrics(
         if len(final_delivery_physical) != 1:
             raise LocalTopologyError("final delivery physical transaction is not unique")
         final_delivery_row = final_delivery_physical[0]
-        if traces is not None and "trace_top_level_execution_gas" not in final_delivery_row:
+        if (
+            traces is not None
+            and final_delivery_row.get("trace_unavailable") is not True
+            and "trace_top_level_execution_gas" not in final_delivery_row
+        ):
             raise LocalTopologyError("final delivery trace gas is missing")
         final_trace_components = {
             "gateway_exclusive_residual_gas": 0,
@@ -2043,7 +2065,7 @@ def reconstruct_attempt_metrics(
             "receiver_subcall_gas": 0,
             "other_direct_subcall_gas": 0,
         }
-        if traces is not None:
+        if traces is not None and final_delivery_row.get("trace_unavailable") is not True:
             component_calls = cast(
                 list[dict[str, Any]],
                 json.loads(str(final_delivery_row["trace_component_calls_json"])),
@@ -2095,8 +2117,10 @@ def reconstruct_attempt_metrics(
                     encoded_envelope_bytes - previous_envelope_bytes
                 ),
                 "final_delivery_calldata_bytes": int(final_delivery_row["calldata_bytes"]),
-                "final_trace_execution_gas": int(
-                    final_delivery_row.get("trace_top_level_execution_gas", 0)
+                "final_trace_execution_gas": (
+                    None
+                    if final_delivery_row.get("trace_unavailable") is True
+                    else int(final_delivery_row.get("trace_top_level_execution_gas") or 0)
                 ),
                 "final_gateway_exclusive_residual_gas": final_trace_components[
                     "gateway_exclusive_residual_gas"
@@ -2582,6 +2606,7 @@ def publish_multihop_analysis(
             "profile_sha256": hashlib.sha256(effective_profile_path.read_bytes()).hexdigest(),
             "deployment_sha256": hashlib.sha256(deployment_path.read_bytes()).hexdigest(),
         },
+        expected_namespace=config_identity(config).evidence_namespace,
     )
     incidents = cast(dict[str, Any], json.loads(incident_path.read_text(encoding="utf-8")))
     if (
@@ -2596,10 +2621,15 @@ def publish_multihop_analysis(
     if hashlib.sha256(rfc8785.dumps(incident_semantic)).hexdigest() != incident_digest:
         raise LocalTopologyError("incident inventory semantic digest drift")
     incident_sequences = {int(value) for value in cast(list[int], incidents["excluded_sequences"])}
+    identity = config_identity(config)
+    result_role = phase_role(config, phase)
+    claim_eligible = identity.claim_eligible and phase == "scale"
     analysis = {
         "schema_version": "xir-lab-native-multihop-analysis-v1",
-        "namespace": config["namespace"],
+        "namespace": identity.evidence_namespace,
         "phase": phase,
+        "result_role": result_role,
+        "claim_eligible": claim_eligible,
         "attempt_count": len(metrics),
         "tail_latency_reporting": tail_latency_reporting,
         **(
@@ -2754,17 +2784,26 @@ def publish_multihop_analysis(
         )
     _write_json(output_root / "analysis.json", analysis)
     expected_physical = sum(int(row["physical_transactions"]) for row in metrics)
-    validation = {
+    validation_unavailable_count = sum(
+        row.get("trace_unavailable") is True for row in physical
+    )
+    validation: dict[str, Any] = {
         "schema_version": "xir-lab-native-multihop-analysis-validation-v1",
-        "namespace": config["namespace"],
+        "namespace": identity.evidence_namespace,
         "phase": phase,
+        "result_role": result_role,
+        "claim_eligible": claim_eligible,
         "attempt_count": len(metrics),
         "physical_transaction_count": len(physical),
         "receipt_count": len(receipt_lineage),
         "event_count": len(event_rows),
         "expected_physical_transaction_count": expected_physical,
         "trace_reconciled_transaction_count": sum(
-            "trace_top_level_execution_gas" in row for row in physical
+            "trace_top_level_execution_gas" in row and row.get("trace_unavailable") is not True
+            for row in physical
+        ),
+        "trace_unavailable_transaction_count": sum(
+            row.get("trace_unavailable") is True for row in physical
         ),
         "exact_effect_denominator": len(metrics),
         "complete_block_range_effect_audit": True,
@@ -2785,7 +2824,18 @@ def publish_multihop_analysis(
             len(physical) == expected_physical
             and sum(int(row["receipt_count"]) for row in metrics) == len(receipt_lineage)
             and len(event_rows) > len(metrics)
-            and sum("trace_top_level_execution_gas" in row for row in physical) == len(physical)
+            and (
+                sum(
+                    "trace_top_level_execution_gas" in row
+                    or row.get("trace_unavailable") is True
+                    for row in physical
+                )
+                == len(physical)
+            )
+            and (
+                validation_unavailable_count == 0
+                or (identity.evidence_namespace == "native-multihop-switching-pilot-v1" and not claim_eligible)
+            )
             and analysis.get("tail_latency_reporting") == TAIL_LATENCY_REPORTING
             and all(
                 row.get("tail_point_estimates_role") == "descriptive"
@@ -2861,8 +2911,10 @@ def publish_multihop_analysis(
     _write_json(output_root / "secret-scan.json", secret_scan)
     manifest: dict[str, Any] = {
         "schema_version": "xir-lab-native-multihop-analysis-manifest-v1",
-        "namespace": config["namespace"],
+        "namespace": identity.evidence_namespace,
         "phase": phase,
+        "result_role": result_role,
+        "claim_eligible": claim_eligible,
         "config_sha256": config_sha256,
         "profile_sha256": _sha256_path(effective_profile_path),
         "component_lock_sha256": cast(dict[str, str], effective_profile["component_lock"])[

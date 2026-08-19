@@ -68,10 +68,13 @@ def _pending_transactions(rpc_url: str) -> list[dict[str, Any]]:
     if not isinstance(pending_block, dict) or not isinstance(
         pending_block.get("transactions"), list
     ):
-        raise LocalTopologyError("Hyperlane observer pending block is invalid")
+        # Besu may temporarily return a null/partial pending block while the
+        # mined-block fallback remains available. Treat this poll as empty;
+        # submission evidence is still required from a later pending poll or
+        # the mined block scan.
+        return []
     transactions = cast(list[Any], pending_block["transactions"])
-    if any(not isinstance(transaction, dict) for transaction in transactions):
-        raise LocalTopologyError("Hyperlane observer pending row is invalid")
+    transactions = [transaction for transaction in transactions if isinstance(transaction, dict)]
     return cast(list[dict[str, Any]], transactions)
 
 

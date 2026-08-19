@@ -6,7 +6,7 @@
   "required": ["schema_version", "namespace", "phase", "config_sha256", "profile_sha256", "plan_sha256", "route_counts", "logical_attempts", "expected_application_effects", "generation"],
   "properties": {
     "schema_version": {"const": "xir-lab-native-multihop-switching-plan-v1"},
-    "namespace": {"const": "native-multihop-switching-v1"},
+    "namespace": {"enum": ["native-multihop-switching-v1", "native-multihop-switching-pilot-v1"]},
     "phase": {"enum": ["smoke", "publication_smoke", "scale"]},
     "config_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "profile_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},

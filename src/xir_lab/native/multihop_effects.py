@@ -14,7 +14,12 @@ from web3 import Web3
 
 from xir_lab.localnet.topology import LocalTopologyError
 from xir_lab.native.multihop_deployer import CHAIN_ROLES
-from xir_lab.native.multihop_scalability import MultihopPhase, iter_multihop_attempts
+from xir_lab.native.multihop_identity import config_identity
+from xir_lab.native.multihop_scalability import (
+    MultihopPhase,
+    iter_multihop_attempts,
+    load_multihop_config,
+)
 from xir_lab.native.rpc import qbft_web3
 
 EFFECT_LOG_BLOCK_WINDOW = 2_000
@@ -69,6 +74,13 @@ def capture_effect_baseline(
 
     profile = _load(profile_path)
     deployment = _load(deployment_path)
+    raw_config = _load(config_path)
+    evidence_namespace = (
+        "native-multihop-switching-pilot-v1"
+        if cast(dict[str, Any], raw_config.get("result_roles", {})).get("scale")
+        == "pilot_diagnostic_only"
+        else "native-multihop-switching-v1"
+    )
     abi = _artifact(repository_root)["abi"]
     chains = _profile_chains_by_role(profile)
     rows: list[dict[str, Any]] = []
@@ -92,7 +104,7 @@ def capture_effect_baseline(
     document = _semantic(
         {
             "schema_version": "xir-lab-native-multihop-effect-baseline-v1",
-            "namespace": "native-multihop-switching-v1",
+            "namespace": evidence_namespace,
             "phase": phase,
             "config_sha256": hashlib.sha256(config_path.read_bytes()).hexdigest(),
             "profile_sha256": hashlib.sha256(profile_path.read_bytes()).hexdigest(),
@@ -244,6 +256,7 @@ def validate_effect_audit(
     phase: MultihopPhase,
     expected_effects: dict[str, dict[str, Any]],
     expected_bindings: dict[str, str],
+    expected_namespace: str = "native-multihop-switching-v1",
 ) -> None:
     """Validate a frozen exact-one audit without network access."""
 
@@ -258,7 +271,7 @@ def validate_effect_audit(
     for row in effects:
         effects_by_role[str(row.get("chain_role", ""))].append(row)
     valid = (
-        document.get("namespace") == "native-multihop-switching-v1"
+        document.get("namespace") == expected_namespace
         and document.get("phase") == phase
         and all(document.get(key) == value for key, value in expected_bindings.items())
         and document.get("valid") is True
@@ -325,6 +338,8 @@ def reconcile_effects(
     """Scan every receiver event from its frozen start block through the final head."""
 
     profile = _load(profile_path)
+    config, _ = load_multihop_config(config_path)
+    evidence_namespace = config_identity(config).evidence_namespace
     baseline = _load(baseline_path)
     _validate_semantic(baseline, schema="xir-lab-native-multihop-effect-baseline-v1")
     if (
@@ -432,7 +447,7 @@ def reconcile_effects(
     document = _semantic(
         {
             "schema_version": "xir-lab-native-multihop-effect-reconciliation-v1",
-            "namespace": "native-multihop-switching-v1",
+            "namespace": evidence_namespace,
             "phase": phase,
             "baseline_sha256": hashlib.sha256(baseline_path.read_bytes()).hexdigest(),
             "config_sha256": hashlib.sha256(config_path.read_bytes()).hexdigest(),
@@ -457,6 +472,7 @@ def reconcile_effects(
             "profile_sha256": hashlib.sha256(profile_path.read_bytes()).hexdigest(),
             "deployment_sha256": hashlib.sha256(deployment_path.read_bytes()).hexdigest(),
         },
+        expected_namespace=evidence_namespace,
     )
     _write(output_path, document)
     return document

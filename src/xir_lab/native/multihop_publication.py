@@ -22,6 +22,12 @@ from xir_lab.native.multihop_analysis import publish_multihop_analysis
 from xir_lab.native.multihop_deployer import CHAIN_ROLES
 from xir_lab.native.multihop_effects import _expected_effect_lineage, validate_effect_audit
 from xir_lab.native.multihop_hyperlane_observer import load_hyperlane_observer_events
+from xir_lab.native.multihop_identity import (
+    config_identity,
+    evidence_namespace,
+    phase_attempt_count,
+    phase_role,
+)
 from xir_lab.native.multihop_scalability import (
     MultihopPhase,
     load_multihop_config,
@@ -42,6 +48,52 @@ def _copy(source: Path, destination: Path) -> None:
         raise LocalTopologyError(f"freeze source is missing: {source}")
     destination.parent.mkdir(parents=True, exist_ok=True)
     shutil.copyfile(source, destination)
+
+
+def _write_public_identity_manifest(source: Path, destination: Path) -> None:
+    """Remove private path locators while preserving public chain identities."""
+
+    document = cast(dict[str, Any], json.loads(source.read_text(encoding="utf-8")))
+    payload = document.get("payload")
+    networks = payload.get("networks") if isinstance(payload, dict) else None
+    if not isinstance(networks, list):
+        encoded = json.dumps(document, sort_keys=True).lower()
+        if "private_key" in encoded or "mnemonic" in encoded:
+            raise LocalTopologyError("identity manifest network inventory is invalid")
+        _copy(source, destination)
+        return
+    redacted = 0
+    for network in networks:
+        validators = network.get("validators") if isinstance(network, dict) else None
+        if not isinstance(validators, list):
+            raise LocalTopologyError("identity manifest validator inventory is invalid")
+        for validator in validators:
+            if not isinstance(validator, dict) or "private_key_path" not in validator:
+                raise LocalTopologyError("identity manifest private path inventory is invalid")
+            del validator["private_key_path"]
+            redacted += 1
+    if redacted != 20:
+        raise LocalTopologyError("identity manifest private path count is not 20")
+    document["publication_redaction"] = {
+        "schema_version": "xir-lab-public-identity-redaction-v1",
+        "source_sha256": _sha(source),
+        "removed_private_path_locator_count": redacted,
+        "public_addresses_and_enodes_preserved": True,
+    }
+    _write(destination, document)
+
+
+def _normalize_frozen_sqlite(path: Path) -> None:
+    """Verify one closed backup and remove any runtime sidecars."""
+
+    for suffix in ("-shm", "-wal"):
+        sidecar = Path(str(path) + suffix)
+        if sidecar.exists():
+            sidecar.unlink()
+    with sqlite3.connect(f"file:{path}?mode=ro", uri=True, timeout=30) as connection:
+        connection.execute("PRAGMA busy_timeout=30000")
+        if connection.execute("PRAGMA quick_check").fetchone()[0] != "ok":
+            raise LocalTopologyError(f"frozen SQLite quick check failed: {path.name}")
 
 
 def _canonical_hash(value: str) -> str:
@@ -205,10 +257,17 @@ def _validate_phase_authority(
         journal_path=validator_volume_journal_path,
     )
     toolchain = verify_toolchain_preflight(toolchain_preflight_path)
+    try:
+        config, _ = load_multihop_config(config_path)
+        evidence_name = config_identity(config).evidence_namespace
+    except LocalTopologyError:
+        config = cast(dict[str, Any], json.loads(config_path.read_text(encoding="utf-8")))
+        evidence_name = evidence_namespace(config)
     expected_prior = verify_prior_phase_handoffs(
         phase=phase,
         smoke_handoff_path=smoke_handoff_path,
         publication_smoke_handoff_path=publication_smoke_handoff_path,
+        expected_namespace=evidence_name,
     )
     expected_bindings = {
         "review_gate_sha256": _sha(review_gate_path),
@@ -232,7 +291,7 @@ def _validate_phase_authority(
     }
     valid = (
         authority.get("schema_version") == "xir-lab-native-multihop-phase-authority-v1"
-        and authority.get("namespace") == "native-multihop-switching-v1"
+        and authority.get("namespace") == evidence_name
         and authority.get("phase") == phase
         and isinstance(prior, dict)
         and set(prior) == required_prior.get(phase, {"invalid"})
@@ -458,7 +517,6 @@ def freeze_multihop_sources(
         "review-closure.json": review_closure_path,
         "review-gate.json": review_gate_path,
         "topology.json": topology_path,
-        "identity-manifest.json": identity_manifest_path,
         "validator-volume-bootstrap.json": validator_volume_attestation_path,
         "validator-volume-transaction.json": validator_volume_journal_path,
         "toolchain-preflight.json": toolchain_preflight_path,
@@ -467,6 +525,9 @@ def freeze_multihop_sources(
     }
     for name, source in public_inputs.items():
         _copy(source, output_root / name)
+    _write_public_identity_manifest(
+        identity_manifest_path, output_root / "identity-manifest.json"
+    )
     prior_handoff_sources = {
         "smoke": smoke_handoff_path,
         "publication_smoke": publication_smoke_handoff_path,
@@ -503,7 +564,13 @@ def freeze_multihop_sources(
         ("worker.sqlite", worker_state_path),
         ("traces.sqlite", trace_state_path),
     ):
-        sqlite_backup(source, output_root / name)
+        destination = output_root / name
+        temporary = destination.with_name(f".{name}.{sqlite3.sqlite_version}.tmp")
+        if temporary.exists():
+            temporary.unlink()
+        sqlite_backup(source, temporary)
+        _normalize_frozen_sqlite(temporary)
+        temporary.replace(destination)
     _validate_phase_authority(
         runner_database=output_root / "runner.sqlite",
         authority_path=output_root / "phase-authority.json",
@@ -557,11 +624,8 @@ def freeze_multihop_sources(
             )
         }
         event_count = int(connection.execute("SELECT COUNT(*) FROM events").fetchone()[0])
-    expected = {
-        "smoke": 11,
-        "publication_smoke": 22,
-        "scale": 110_000,
-    }[phase]
+    evidence_name = evidence_namespace(config)
+    expected = phase_attempt_count(config, phase)
     expected_effects = _expected_effect_lineage(
         runner_state_path=output_root / "runner.sqlite",
         trace_state_path=output_root / "traces.sqlite",
@@ -577,6 +641,7 @@ def freeze_multihop_sources(
             "profile_sha256": _sha(output_root / "profile.json"),
             "deployment_sha256": _sha(output_root / "deployment.json"),
         },
+        expected_namespace=evidence_name,
     )
     if counts != {"succeeded": expected}:
         raise LocalTopologyError("frozen runner denominator is not exact")
@@ -625,7 +690,7 @@ def freeze_multihop_sources(
     ]
     manifest: dict[str, Any] = {
         "schema_version": "xir-lab-native-multihop-frozen-source-v1",
-        "namespace": "native-multihop-switching-v1",
+        "namespace": evidence_name,
         "phase": phase,
         "attempt_counts": counts,
         "event_count": event_count,
@@ -743,7 +808,7 @@ def _verify_frozen_source(source_root: Path) -> dict[str, Any]:
         .splitlines()
         if line.strip()
     ]
-    expected = {"smoke": 11, "publication_smoke": 22, "scale": 110_000}[str(manifest["phase"])]
+    expected = phase_attempt_count(frozen_config, str(manifest["phase"]))
     if (
         len(root_audit_rows) != expected
         or len({str(row.get("transaction_hash", "")).lower() for row in root_audit_rows})
@@ -867,10 +932,14 @@ def _build_multihop_handoff_document(
     )
     review_sha256 = _sha(review_closure_path)
     phase = str(validation.get("phase", ""))
+    frozen_config = cast(
+        dict[str, Any],
+        json.loads((frozen_source_root / "config.json").read_text(encoding="utf-8")),
+    )
+    evidence_name = evidence_namespace(frozen_config)
     phase_contract = {
-        "smoke": (11, "development_gate_only"),
-        "publication_smoke": (22, "publication_gate_not_formal_estimate"),
-        "scale": (110_000, "formal_measurement"),
+        name: (phase_attempt_count(frozen_config, name), phase_role(frozen_config, name))
+        for name in ("smoke", "publication_smoke", "scale")
     }
     if phase not in phase_contract:
         raise LocalTopologyError("multihop handoff phase is invalid")
@@ -888,7 +957,7 @@ def _build_multihop_handoff_document(
         raise LocalTopologyError("multihop handoff gates are incomplete")
     document: dict[str, Any] = {
         "schema_version": "xir-lab-native-multihop-final-handoff-v1",
-        "namespace": "native-multihop-switching-v1",
+        "namespace": evidence_name,
         "phase": phase,
         "role": role,
         "all_gates_pass": True,
@@ -969,6 +1038,7 @@ def verify_prior_phase_handoffs(
     smoke_handoff_path: Path | None,
     publication_smoke_handoff_path: Path | None,
     verify_full_trees: bool = False,
+    expected_namespace: str = "native-multihop-switching-v1",
 ) -> dict[str, dict[str, str]]:
     """Bind later phases to exact successful earlier phase handoffs."""
 
@@ -998,7 +1068,7 @@ def verify_prior_phase_handoffs(
         expected_semantic = str(semantic.pop("semantic_sha256", ""))
         valid = (
             handoff.get("schema_version") == "xir-lab-native-multihop-final-handoff-v1"
-            and handoff.get("namespace") == "native-multihop-switching-v1"
+            and handoff.get("namespace") == expected_namespace
             and handoff.get("phase") == expected_phase
             and handoff.get("role") == role
             and handoff.get("all_gates_pass") is True

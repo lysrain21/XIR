@@ -1,7 +1,7 @@
 {
   "schema_version": "xir-lab-native-multihop-switching-config-v1",
   "namespace": "native-multihop-switching-v1",
-  "fixed_seed": "xir-native-multihop-switching-v1-official-run-001",
+  "fixed_seed": "xir-native-multihop-switching-pilot-v1-100-per-route",
   "profile": "configs/profiles/native-multihop-five-chain-v1.json",
   "route_order": [
     "H",
@@ -40,7 +40,7 @@
   "attempts_per_route": {
     "smoke": 1,
     "publication_smoke": 2,
-    "scale": 10000
+    "scale": 100
   },
   "scheduling": {
     "matching_unit": "one_attempt_per_route_at_same_route_sequence",
@@ -55,9 +55,9 @@
   },
   "bootstrap": {
     "repetitions": 4000,
-    "block_length": 16,
+    "block_length": 8,
     "confidence": 0.95,
-    "seed": 20260812
+    "seed": 20260818
   },
   "equivalence_bounds": {
     "latency_seconds_per_prefix_receipt": 0.5,
@@ -66,7 +66,7 @@
     "confidence": 0.90
   },
   "incident_policy": {
-    "primary_denominator": "all_110000_validated_effects",
+    "primary_denominator": "all_1100_validated_effects",
     "latency_sensitivity_selection_unit": "complete_11_route_sequence_block",
     "eligible_sensitivity_reasons": [
       "host_process_interruption",
@@ -79,7 +79,7 @@
   "result_roles": {
     "smoke": "development_gate_only",
     "publication_smoke": "publication_gate_not_formal_estimate",
-    "scale": "formal_measurement",
+    "scale": "pilot_diagnostic_only",
     "gateway_analysis": "frozen_graph_analysis"
   },
   "source_sha256": {

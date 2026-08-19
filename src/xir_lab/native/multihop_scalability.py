@@ -18,6 +18,7 @@ import jsonschema
 import rfc8785
 
 from xir_lab.localnet.topology import LocalTopologyError
+from xir_lab.native.multihop_identity import config_identity
 
 MultihopPhase = Literal["smoke", "publication_smoke", "scale"]
 
@@ -141,9 +142,20 @@ def load_multihop_config(
 ) -> tuple[dict[str, Any], str]:
     """Load the preregistration and bind it to the exact local source tree."""
 
-    config, digest = _validated_document(
-        path, "native-multihop-switching-v1-config.schema.json"
+    try:
+        raw_document = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise LocalTopologyError(f"cannot read multihop document: {path}") from exc
+    if not isinstance(raw_document, dict):
+        raise LocalTopologyError("multihop document root must be an object")
+    scale_role = cast(dict[str, Any], raw_document.get("result_roles", {})).get("scale")
+    schema_name = (
+        "native-multihop-switching-pilot-v1-config.schema.json"
+        if scale_role == "pilot_diagnostic_only"
+        else "native-multihop-switching-v1-config.schema.json"
     )
+    config, digest = _validated_document(path, schema_name)
+    config_identity(config)
     if tuple(cast(list[str], config["route_order"])) != ROUTE_ORDER:
         raise LocalTopologyError("multihop route order differs from the preregistration")
     profile_path = (
@@ -247,7 +259,8 @@ def build_multihop_attempt(
     attempt_id = "mh_" + hashlib.sha256(
         rfc8785.dumps(
             {
-                "namespace": config["namespace"],
+                "namespace": config_identity(config).evidence_namespace,
+                "fixed_seed": config["fixed_seed"],
                 "phase": phase,
                 "route": route,
                 "route_sequence": route_sequence,
@@ -317,9 +330,10 @@ def build_multihop_plan(*, config_path: Path, phase: MultihopPhase) -> dict[str,
     _, profile_sha256 = load_multihop_profile(profile_path)
     per_route = int(cast(dict[str, int], config["attempts_per_route"])[phase])
     logical_attempts = per_route * len(ROUTE_ORDER)
+    identity = config_identity(config)
     payload: dict[str, Any] = {
         "schema_version": "xir-lab-native-multihop-switching-plan-v1",
-        "namespace": "native-multihop-switching-v1",
+        "namespace": identity.evidence_namespace,
         "phase": phase,
         "config_sha256": config_sha256,
         "profile_sha256": profile_sha256,
@@ -374,6 +388,7 @@ def load_multihop_plan(
     if (
         hashlib.sha256(rfc8785.dumps(semantic)).hexdigest() != expected_semantic
         or plan["phase"] != phase
+        or plan["namespace"] != config_identity(config).evidence_namespace
         or plan["config_sha256"] != config_sha256
         or cast(dict[str, int], plan["route_counts"])
         != {route: per_route for route in ROUTE_ORDER}

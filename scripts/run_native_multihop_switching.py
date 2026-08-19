@@ -14,8 +14,10 @@ from web3.exceptions import Web3RPCError
 
 from xir_lab.localnet.topology import LocalTopologyError
 from xir_lab.native.multihop_execution import verify_execution_authority
+from xir_lab.native.multihop_identity import config_identity
 from xir_lab.native.multihop_publication import verify_prior_phase_handoffs
 from xir_lab.native.multihop_runner import NativeMultihopRunner
+from xir_lab.native.multihop_scalability import load_multihop_config
 from xir_lab.native.rpc import is_transient_rpc_error
 
 
@@ -60,16 +62,18 @@ def main() -> int:
         lease_path=args.lease,
         lease_token_path=args.lease_token,
     )
+    config, _ = load_multihop_config(args.config)
     predecessor_handoffs = verify_prior_phase_handoffs(
         phase=args.phase,
         smoke_handoff_path=args.smoke_handoff,
         publication_smoke_handoff_path=args.publication_smoke_handoff,
         verify_full_trees=True,
+        expected_namespace=config_identity(config).evidence_namespace,
     )
     preflight_document = json.loads(args.preflight.read_text(encoding="utf-8"))
     phase_authority = {
         "schema_version": "xir-lab-native-multihop-phase-authority-v1",
-        "namespace": "native-multihop-switching-v1",
+        "namespace": config_identity(config).evidence_namespace,
         "phase": args.phase,
         "prior_phase_handoffs": predecessor_handoffs,
         "review_gate_sha256": authority["review_gate_sha256"],

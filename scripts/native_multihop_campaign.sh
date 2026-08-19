@@ -44,9 +44,33 @@ REPO="$WORKSPACE/xir-testnet-lab"
 SCRIPT_REPO="$(cd "$(dirname "$0")/.." && pwd)"
 CHANGE="$WORKSPACE/openspec/changes/measure-multihop-switching-scalability"
 TOPOLOGY="$REPO/configs/local/topology-multihop-remote-v1.json"
-CONFIG="$REPO/configs/native/native-multihop-switching-v1.json"
+CAMPAIGN_KIND=${XIR_MULTIHOP_CAMPAIGN_KIND:-formal}
+case "$CAMPAIGN_KIND" in
+  formal)
+    CONFIG="$REPO/configs/native/native-multihop-switching-v1.json"
+    PREREG="$CHANGE/artifacts/preregistration-v1.json"
+    EVIDENCE_NAMESPACE=native-multihop-switching-v1
+    PUBLICATION_NAMESPACE=native-multihop-switching-v1
+    ;;
+  pilot)
+    CONFIG="$REPO/configs/native/native-multihop-switching-pilot-v1.json"
+    PREREG="$CHANGE/artifacts/pilot-preregistration-v1.json"
+    EVIDENCE_NAMESPACE=native-multihop-switching-pilot-v1
+    PUBLICATION_NAMESPACE=native-multihop-switching-pilot-v1
+    ;;
+  *)
+    echo "unsupported XIR_MULTIHOP_CAMPAIGN_KIND: $CAMPAIGN_KIND" >&2
+    exit 2
+    ;;
+esac
+TRACE_CONCURRENCY=8
+TRACE_SETTLE_SECONDS=0
+if [[ $CAMPAIGN_KIND == pilot ]]; then
+  TRACE_CONCURRENCY=1
+  TRACE_SETTLE_SECONDS=30
+fi
 PROFILE_SOURCE="$REPO/configs/profiles/native-multihop-five-chain-v1.json"
-PREREG="$CHANGE/artifacts/preregistration-v1.json"
+DEPLOYMENT_RELATIVE=native-multihop-switching-v1/deployment/deployment.json
 if [[ $MODE == production ]]; then
   COMPOSE_PROJECT=$(jq -er \
     '.project_name | select(type == "string" and test("^[a-z0-9][a-z0-9-]*$"))' \
@@ -60,7 +84,7 @@ else
 fi
 if [[ $MODE == production ]]; then
   REVIEW_REL=$(jq -er '.review_gate.closure_audit_path | select(type == "string")' "$PREREG")
-  [[ $REVIEW_REL =~ ^openspec/changes/measure-multihop-switching-scalability/artifacts/independent-readonly-closure-v[0-9]+\.json$ ]] || {
+  [[ $REVIEW_REL =~ ^openspec/changes/measure-multihop-switching-scalability/artifacts/(pilot-)?independent-readonly-closure-v[0-9]+\.json$ ]] || {
     echo "preregistration review closure path is invalid" >&2
     exit 2
   }
@@ -98,6 +122,8 @@ fi
   echo "host-global lease base must be an absolute, non-symlink path" >&2
   exit 2
 }
+# Pilot and formal executions share one host-global writer lock because both
+# own the same five-chain Compose project and protocol service ports.
 GLOBAL_LEASE_ROOT="$HOST_LEASE_BASE/native-multihop-switching-v1"
 REVIEW_GATE="$RUNTIME/provenance/predeployment-review-gate.json"
 LEASE_SUPERVISOR_STOP="$RUNTIME/provenance/lease-supervisor.stop"
@@ -691,7 +717,7 @@ acquire_lease() {
       --review-closure "$REVIEW" \
       --lease "$LEASE" --token "$LEASE_TOKEN" \
       --global-lock-root "$GLOBAL_LEASE_ROOT" \
-      --holder native-multihop-switching-v1 --ttl-seconds 172800 \
+      --holder "$EVIDENCE_NAMESPACE" --ttl-seconds 172800 \
       --supervisor-pid "$LEASE_SUPERVISOR_PID"
     touch "$RUNTIME/provenance/lease-supervisor.ready"
   fi
@@ -815,7 +841,7 @@ deploy_and_preflight() {
     --workspace-root "$WORKSPACE" --repository-root "$REPO" \
     --runtime-root "$RUNTIME" --topology "$TOPOLOGY" \
     --identity "$RUNTIME/identity-manifest.json" --config "$CONFIG" \
-    --deployment "$RUNTIME/native-multihop-switching-v1/deployment/deployment.json" \
+    --deployment "$RUNTIME/$DEPLOYMENT_RELATIVE" \
     --preregistration "$PREREG" --review-gate "$REVIEW_GATE" \
     --lease "$LEASE" --lease-token "$LEASE_TOKEN" \
     --validator-volume-attestation \
@@ -829,12 +855,14 @@ deploy_and_preflight() {
 phase_runner_complete() {
   local phase=$1
   local database=$RUNTIME/runs/$phase/runner.sqlite
-  "$PY" - "$database" "$phase" <<'PY'
+  "$PY" - "$database" "$phase" "$CONFIG" <<'PY'
+import json
 import sqlite3
 import sys
 
-database, phase = sys.argv[1:]
-expected = {"smoke": 11, "publication_smoke": 22, "scale": 110_000}[phase]
+database, phase, config_path = sys.argv[1:]
+config = json.loads(open(config_path, encoding="utf-8").read())
+expected = int(config["attempts_per_route"][phase]) * len(config["route_order"])
 with sqlite3.connect(f"file:{database}?mode=ro", uri=True) as connection:
     succeeded = int(connection.execute(
         "SELECT COUNT(*) FROM attempts WHERE status='succeeded'"
@@ -903,17 +931,20 @@ postprocess_phase() {
     --start-blocks "$run/start-blocks.json" --end-blocks "$run/end-blocks.json" \
     --observer "$run/hyperlane-observer.jsonl" \
     --output "$run/hyperlane-processes.json"
+  if (( TRACE_SETTLE_SECONDS > 0 )); then
+    sleep "$TRACE_SETTLE_SECONDS"
+  fi
   "$PY" "$REPO/scripts/capture_native_multihop_traces.py" \
     --repository-root "$REPO" --config "$CONFIG" \
-    --deployment "$RUNTIME/native-multihop-switching-v1/deployment/deployment.json" \
+    --deployment "$RUNTIME/$DEPLOYMENT_RELATIVE" \
     --phase "$phase" --runner-state "$run/runner.sqlite" \
     --worker-state "$RUNTIME/layerzero/worker.sqlite" \
     --hyperlane-processes "$run/hyperlane-processes.json" \
     --root-signer-audit "$run/root-signer-audit.jsonl" \
-    --trace-state "$run/traces.sqlite" --concurrency 8
+    --trace-state "$run/traces.sqlite" --concurrency "$TRACE_CONCURRENCY"
   "$PY" "$REPO/scripts/capture_native_multihop_effects.py" reconcile \
     --repository-root "$REPO" --profile "$RUNTIME/profile.json" \
-    --deployment "$RUNTIME/native-multihop-switching-v1/deployment/deployment.json" \
+    --deployment "$RUNTIME/$DEPLOYMENT_RELATIVE" \
     --config "$CONFIG" --phase "$phase" --baseline "$run/effect-baseline.json" \
     --runner-state "$run/runner.sqlite" --trace-state "$run/traces.sqlite" \
     --output "$run/effect-audit.json"
@@ -925,7 +956,7 @@ postprocess_phase() {
     --output "$run/incidents.json"
   "$PY" "$REPO/scripts/freeze_native_multihop.py" --phase "$phase" \
     --config "$CONFIG" --profile "$RUNTIME/profile.json" \
-    --deployment "$RUNTIME/native-multihop-switching-v1/deployment/deployment.json" \
+    --deployment "$RUNTIME/$DEPLOYMENT_RELATIVE" \
     --plan "$run/plan.json" --preflight "$RUNTIME/preflight.json" \
     --runner-state "$run/runner.sqlite" --worker-state "$RUNTIME/layerzero/worker.sqlite" \
     --trace-state "$run/traces.sqlite" \
@@ -1054,7 +1085,7 @@ run_phase() {
   if [[ $resume -eq 0 ]]; then
     "$PY" "$REPO/scripts/capture_native_multihop_effects.py" baseline \
       --repository-root "$REPO" --profile "$RUNTIME/profile.json" \
-      --deployment "$RUNTIME/native-multihop-switching-v1/deployment/deployment.json" \
+      --deployment "$RUNTIME/$DEPLOYMENT_RELATIVE" \
       --config "$CONFIG" --phase "$phase" --output "$run/effect-baseline.json"
     "$PY" "$REPO/scripts/build_native_multihop_plan.py" \
       --config "$CONFIG" --phase "$phase" --output "$run/plan-a.json"
@@ -1079,7 +1110,7 @@ run_phase() {
     --review-gate "$REVIEW_GATE" --lease "$LEASE" --lease-token "$LEASE_TOKEN" \
     --preflight "$RUNTIME/preflight.json" --config "$CONFIG" --plan "$run/plan.json" \
     --phase-authority-output "$run/phase-authority.json" \
-    --deployment "$RUNTIME/native-multihop-switching-v1/deployment/deployment.json" \
+    --deployment "$RUNTIME/$DEPLOYMENT_RELATIVE" \
     --runner-key-file "$RUNTIME/private/accounts/runner.key" \
     --root-signer-key-file "$RUNTIME/private/accounts/root-signer.key" \
     --state "$run/runner.sqlite" --raw-root "$run/raw" --phase "$phase" \
@@ -1211,7 +1242,21 @@ PY
   complete_pidfile "$run/hyperlane-observer.pid"
   jq -e '.valid == true and .all_targets_scanned == true' \
     "$run/hyperlane-observer-completion.json" >/dev/null
+  # Freeze/rebuild reads worker and relayer SQLite state. Stop only protocol
+  # writers here; Besu containers remain alive for the next phase.
+  if ! "$REPO/scripts/native_multihop_processes.sh" stop "$RUNTIME"; then
+    echo "native protocol writers did not stop before phase postprocess" >&2
+    return 1
+  fi
+  record "native-protocol-writers-stopped-before-postprocess:$phase"
   postprocess_phase "$phase"
+  if [[ $phase != scale ]]; then
+    "$REPO/scripts/native_multihop_processes.sh" start-agents "$RUNTIME" \
+      "$WORKSPACE" "$PREREG" "$REVIEW_GATE" "$LEASE" "$LEASE_TOKEN"
+    "$REPO/scripts/native_multihop_processes.sh" start-worker "$RUNTIME" \
+      "$WORKSPACE" "$PREREG" "$REVIEW_GATE" "$LEASE" "$LEASE_TOKEN"
+    record "native-protocol-writers-restarted-after-postprocess:$phase"
+  fi
 }
 
 publish_gateway_and_figures() {
@@ -1250,7 +1295,7 @@ publish_gateway_and_figures() {
       --topology "$connectivity_v3/topology.json" \
       --mainnet "$connectivity_v4/mainnet-only.json" \
       --semantic "$connectivity_v4/semantic-aggregates.json" \
-      --multihop-deployment "$RUNTIME/native-multihop-switching-v1/deployment/deployment.json" \
+      --multihop-deployment "$RUNTIME/$DEPLOYMENT_RELATIVE" \
       --hyperlane-evidence "$RUNTIME/hyperlane/deployment-evidence.json" \
       --layerzero-evidence "$RUNTIME/layerzero/deployment-evidence.json" \
       --output-root "$RUNTIME/$build"
@@ -1294,26 +1339,86 @@ raise SystemExit(0 if checks else 1)
 PY
 }
 
+publish_gateway_only() {
+  local connectivity_v3=$WORKSPACE/experiments/results/connectivity-v3/publishable
+  local connectivity_v4=$WORKSPACE/experiments/results/connectivity-v4-robustness/publishable
+  local build
+  if [[ -d $RUNTIME/gateway-a && -d $RUNTIME/gateway-b \
+    && -f $RUNTIME/gateway-comparison.json ]]; then
+    local verify_root=$RUNTIME/resume-verification-$(date --utc +%Y%m%dT%H%M%S.%NZ)
+    mkdir "$verify_root"
+    "$PY" "$REPO/scripts/compare_gateway_deployment_rebuilds.py" \
+      --publication-a "$RUNTIME/gateway-a" --publication-b "$RUNTIME/gateway-b" \
+      --output "$verify_root/gateway-comparison.json"
+    cmp "$verify_root/gateway-comparison.json" "$RUNTIME/gateway-comparison.json"
+    record "pilot-gateway-products-reverified"
+    return 0
+  fi
+  for build in gateway-a gateway-b; do
+    "$PY" "$REPO/scripts/publish_gateway_deployment.py" \
+      --topology "$connectivity_v3/topology.json" \
+      --mainnet "$connectivity_v4/mainnet-only.json" \
+      --semantic "$connectivity_v4/semantic-aggregates.json" \
+      --multihop-deployment "$RUNTIME/$DEPLOYMENT_RELATIVE" \
+      --hyperlane-evidence "$RUNTIME/hyperlane/deployment-evidence.json" \
+      --layerzero-evidence "$RUNTIME/layerzero/deployment-evidence.json" \
+      --output-root "$RUNTIME/$build"
+  done
+  "$PY" "$REPO/scripts/compare_gateway_deployment_rebuilds.py" \
+    --publication-a "$RUNTIME/gateway-a" --publication-b "$RUNTIME/gateway-b" \
+    --output "$RUNTIME/gateway-comparison.json"
+  record "pilot-gateway-products-built"
+}
+
 sync_publication() {
   local public_list=$RUNTIME/provenance/public-sync-files.txt
   local local_public=$WORKSPACE/experiment-results/native-multihop-switching-v1/$RUN_ID
-  (
-    cd "$RUNTIME"
-    find runs/scale/source-publication runs/scale/rebuild-a runs/scale/rebuild-b \
-      runs/smoke/final-handoff.json runs/publication_smoke/final-handoff.json \
-      runs/scale/final-handoff.json gateway-a gateway-b gateway-comparison.json \
-      figure-a figure-b figure-comparison.json \
-      figure8-visual-approval.json \
-      -type f ! -name '*.sqlite' ! -name '*.key' ! -name '*.raw' -print0 \
-      | sort -z | xargs -0 -r printf '%s\n' >"$public_list"
-  )
-  "$PY" "$REPO/scripts/build_native_multihop_publication_handoff.py" \
-    --runtime-root "$RUNTIME" --file-list "$public_list" \
-    --visual-approval "$RUNTIME/figure8-visual-approval.json" \
-    --output "$RUNTIME/final-publication-handoff.json"
-  "$PY" "$REPO/scripts/sync_native_multihop_publication.py" \
-    --runtime-root "$RUNTIME" --handoff "$RUNTIME/final-publication-handoff.json" \
-    --destination "$local_public"
+  if [[ $CAMPAIGN_KIND == pilot ]]; then
+    local_public=$WORKSPACE/experiment-results/native-multihop-switching-pilot-v1/$RUN_ID
+  fi
+  if [[ $CAMPAIGN_KIND == pilot ]]; then
+    (
+      cd "$RUNTIME"
+      find runs/scale/source-publication runs/scale/rebuild-a runs/scale/rebuild-b \
+        runs/smoke/final-handoff.json runs/publication_smoke/final-handoff.json \
+        runs/scale/final-handoff.json gateway-a gateway-b gateway-comparison.json \
+        -type f ! -name '*.sqlite' ! -name '*.key' ! -name '*.raw' -print0 \
+        | sort -z | xargs -0 -r printf '%s\n' >"$public_list"
+    )
+    "$PY" "$REPO/scripts/build_native_multihop_pilot_handoff.py" \
+      --runtime-root "$RUNTIME" --file-list "$public_list" \
+      --output "$RUNTIME/final-pilot-publication-handoff.json"
+    printf '%s\n' final-pilot-publication-handoff.json >>"$public_list"
+    sort -u -o "$public_list" "$public_list"
+    "$PY" - "$RUNTIME" "$public_list" "$local_public" <<'PY'
+import hashlib
+import sys
+from pathlib import Path
+from xir_lab.native.multihop_sync import sync_exact_publication
+runtime = Path(sys.argv[1])
+files = Path(sys.argv[2]).read_text(encoding="utf-8").splitlines()
+expected = {name: hashlib.sha256((runtime / name).read_bytes()).hexdigest() for name in files}
+sync_exact_publication(runtime_root=runtime, relative_files=files, destination=Path(sys.argv[3]), expected_sha256=expected)
+PY
+  else
+    (
+      cd "$RUNTIME"
+      find runs/scale/source-publication runs/scale/rebuild-a runs/scale/rebuild-b \
+        runs/smoke/final-handoff.json runs/publication_smoke/final-handoff.json \
+        runs/scale/final-handoff.json gateway-a gateway-b gateway-comparison.json \
+        figure-a figure-b figure-comparison.json \
+        figure8-visual-approval.json \
+        -type f ! -name '*.sqlite' ! -name '*.key' ! -name '*.raw' -print0 \
+        | sort -z | xargs -0 -r printf '%s\n' >"$public_list"
+    )
+    "$PY" "$REPO/scripts/build_native_multihop_publication_handoff.py" \
+      --runtime-root "$RUNTIME" --file-list "$public_list" \
+      --visual-approval "$RUNTIME/figure8-visual-approval.json" \
+      --output "$RUNTIME/final-publication-handoff.json"
+    "$PY" "$REPO/scripts/sync_native_multihop_publication.py" \
+      --runtime-root "$RUNTIME" --handoff "$RUNTIME/final-publication-handoff.json" \
+      --destination "$local_public"
+  fi
 }
 
 stop_campaign_services() {
@@ -1375,7 +1480,11 @@ production_main() {
   run_phase smoke
   run_phase publication_smoke
   run_phase scale
-  publish_gateway_and_figures
+  if [[ $CAMPAIGN_KIND == pilot ]]; then
+    publish_gateway_only
+  else
+    publish_gateway_and_figures
+  fi
   finalize_stop_and_publish
 }
 
@@ -1425,7 +1534,11 @@ resume_main() {
     fi
   done
   if [[ -f $RUNTIME/runs/scale/final-handoff.json ]]; then
-    publish_gateway_and_figures
+    if [[ $CAMPAIGN_KIND == pilot ]]; then
+      publish_gateway_only
+    else
+      publish_gateway_and_figures
+    fi
   fi
   finalize_stop_and_publish
 }
