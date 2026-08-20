@@ -9,6 +9,11 @@ import yaml
 
 from xir_lab.localnet.topology import LocalIdentityManifest, LocalTopology
 
+# The formal campaign can span more than 100,000 one-second QBFT blocks before
+# postprocessing starts. Besu FULL sync retains Bonsai trie logs, but its
+# default 512-block load limit still makes older transaction traces unavailable.
+BONSAI_HISTORICAL_BLOCK_LIMIT = 250_000
+
 
 def _memory_megabytes(value: int) -> str:
     return f"{value // (1024 * 1024)}m"
@@ -68,6 +73,13 @@ def render_compose(
                 "--sync-min-peers=3",
                 "--data-storage-format=BONSAI",
             ]
+            if validator_index == 1:
+                command.extend(
+                    (
+                        "--bonsai-limit-trie-logs-enabled=false",
+                        f"--bonsai-historical-block-limit={BONSAI_HISTORICAL_BLOCK_LIMIT}",
+                    )
+                )
             data_mount: str | dict[str, str] = f"{runtime}/{data_path}:/data"
             if topology.validator_data_storage == "docker-volume":
                 volumes[volume_name] = {

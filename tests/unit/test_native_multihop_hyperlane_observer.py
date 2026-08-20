@@ -11,6 +11,7 @@ from xir_lab.native.multihop_analysis import capture_hyperlane_processes
 from xir_lab.native.multihop_hyperlane_observer import (
     SCHEMA,
     _pending_transactions,
+    _rpc,
     load_hyperlane_observer_events,
     observe_hyperlane_relayer,
 )
@@ -68,6 +69,45 @@ def _event(
         "observer_process_identity": observer_identity,
         "relayer_process_identity": relayer_identity,
     }
+
+
+def test_pending_transactions_treats_exhausted_rpc_disconnect_as_empty(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        "xir_lab.native.multihop_hyperlane_observer._rpc",
+        lambda *_args: (_ for _ in ()).throw(LocalTopologyError("disconnect")),
+    )
+    assert _pending_transactions("http://rpc") == []
+
+
+def test_rpc_retries_transient_disconnect_before_returning(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls = 0
+
+    def urlopen(_request: object, timeout: int) -> object:
+        nonlocal calls
+        calls += 1
+        if calls < 3:
+            raise ConnectionResetError("transient disconnect")
+
+        class Response:
+            def __enter__(self) -> "Response":
+                return self
+
+            def __exit__(self, *args: object) -> None:
+                return None
+
+            def read(self) -> bytes:
+                return b'{"jsonrpc":"2.0","id":1,"result":[]}'
+
+        return Response()
+
+    monkeypatch.setattr("urllib.request.urlopen", urlopen)
+    monkeypatch.setattr("time.sleep", lambda _seconds: None)
+    assert _rpc("http://rpc", "eth_getBlockByNumber", ["pending", True]) == []
+    assert calls == 3
 
 
 def test_process_capture_requires_stable_observer_and_relayer_identity(

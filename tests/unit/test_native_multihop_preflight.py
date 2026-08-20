@@ -14,6 +14,7 @@ from xir_lab.native.multihop_deployer import CHAIN_ROLES
 from xir_lab.native.multihop_preflight import (
     _require_review_closure,
     _semantic_sha256,
+    _validate_trace_probe,
     preregistration_review_payload_sha256,
     verify_multihop_preflight_document,
     verify_multihop_review_gate,
@@ -25,6 +26,32 @@ def _write(path: Path, value: object) -> str:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(value, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def test_trace_probe_requires_nonempty_root_with_gas() -> None:
+    valid = {
+        "result": [
+            {
+                "action": {"callType": "call"},
+                "result": {"gasUsed": "0x5208"},
+                "traceAddress": [],
+                "type": "call",
+            }
+        ]
+    }
+    _validate_trace_probe(valid, role="a")
+
+    with pytest.raises(LocalTopologyError, match="empty result"):
+        _validate_trace_probe({"result": []}, role="a")
+    with pytest.raises(LocalTopologyError, match="one root trace"):
+        _validate_trace_probe(
+            {"result": [{"result": {"gasUsed": "0x1"}, "traceAddress": [0]}]},
+            role="a",
+        )
+    with pytest.raises(LocalTopologyError, match="root gas"):
+        _validate_trace_probe(
+            {"result": [{"result": {}, "traceAddress": []}]}, role="a"
+        )
 
 
 def test_review_gate_fails_closed_until_pass_digest_exists(tmp_path: Path) -> None:

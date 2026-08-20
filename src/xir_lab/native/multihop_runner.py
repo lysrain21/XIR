@@ -544,15 +544,11 @@ class NativeMultihopRunner:
             "validator_volume_attestation_semantic_sha256": self.preflight[
                 "validator_volume_attestation_semantic_sha256"
             ],
-            "validator_volume_journal_sha256": self.preflight[
-                "validator_volume_journal_sha256"
-            ],
+            "validator_volume_journal_sha256": self.preflight["validator_volume_journal_sha256"],
             "validator_volume_journal_semantic_sha256": self.preflight[
                 "validator_volume_journal_semantic_sha256"
             ],
-            "toolchain_preflight_sha256": self.preflight[
-                "toolchain_preflight_sha256"
-            ],
+            "toolchain_preflight_sha256": self.preflight["toolchain_preflight_sha256"],
             "toolchain_preflight_semantic_sha256": self.preflight[
                 "toolchain_preflight_semantic_sha256"
             ],
@@ -818,8 +814,7 @@ class NativeMultihopRunner:
             runtime_root=self.runtime_root,
             preregistration_path=self.preregistration_path,
         )
-        if self.submission_stop_file is not None and self.submission_stop_file.exists():
-            raise LocalTopologyError("multihop submissions stopped by resource monitor")
+        self._raise_if_submissions_stopped()
         with ThreadPoolExecutor(max_workers=self.concurrency) as pool:
             futures = [pool.submit(self._run_if_needed, attempt) for attempt in attempts]
             for future in futures:
@@ -1285,6 +1280,7 @@ class NativeMultihopRunner:
             ),
         ]
         while time.monotonic() < deadline:
+            self._raise_if_submissions_stopped()
             if all(
                 adapter.functions.verify(
                     receipt.profile_hash,
@@ -1310,6 +1306,10 @@ class NativeMultihopRunner:
         raise LocalTopologyError(
             f"timed out waiting for multihop bundle at {destination_role}:{adapter_role}"
         )
+
+    def _raise_if_submissions_stopped(self) -> None:
+        if self.submission_stop_file is not None and self.submission_stop_file.exists():
+            raise LocalTopologyError("multihop submissions stopped by resource monitor")
 
     @staticmethod
     def _envelope(

@@ -63,6 +63,11 @@ case "$CAMPAIGN_KIND" in
     exit 2
     ;;
 esac
+STOP_AFTER_PHASE=${XIR_MULTIHOP_STOP_AFTER_PHASE:-}
+if [[ -n $STOP_AFTER_PHASE && ! ( $CAMPAIGN_KIND == pilot && $STOP_AFTER_PHASE == smoke ) ]]; then
+  echo "XIR_MULTIHOP_STOP_AFTER_PHASE supports only pilot smoke verification" >&2
+  exit 2
+fi
 TRACE_CONCURRENCY=8
 TRACE_SETTLE_SECONDS=0
 if [[ $CAMPAIGN_KIND == pilot ]]; then
@@ -178,6 +183,25 @@ owned_process_alive() {
   alive "$pid" || return 1
   "$PY" "$REPO/scripts/native_multihop_process_identity.py" verify \
     --identity "$(identity_path_for_pidfile "$pidfile")" >/dev/null 2>&1
+}
+
+failed_protocol_writer() {
+  [[ $MODE == production ]] || return 1
+  local name pidfile
+  for name in layerzero-worker relayer \
+    validator-xirlocalchaina validator-xirlocalchainb validator-xirlocalchainc \
+    validator-xirlocalchaind validator-xirlocalchaine; do
+    if [[ $name == layerzero-worker ]]; then
+      pidfile="$RUNTIME/pids/$name.pid"
+    else
+      pidfile="$RUNTIME/hyperlane/agents/pids/$name.pid"
+    fi
+    if ! owned_process_alive "$pidfile"; then
+      printf '%s\n' "$name"
+      return 0
+    fi
+  done
+  return 1
 }
 
 complete_pidfile() {
@@ -657,20 +681,46 @@ trap 'exit $?' ERR
 
 start_lease_supervisor() {
   rm -f "$LEASE_SUPERVISOR_STOP"
-  (
-    while [[ ! -f $LEASE_SUPERVISOR_STOP ]]; do
-      date +%s%N >"$RUNTIME/provenance/lease-supervisor-heartbeat-ns"
-      if [[ $MODE == production && -f $RUNTIME/provenance/lease-supervisor.ready \
-        && -L $LEASE && -f $LEASE_TOKEN ]]; then
-        "$PY" "$REPO/scripts/native_multihop_lease.py" heartbeat \
-          --runtime-root "$RUNTIME" --preregistration "$PREREG" \
-          --lease "$LEASE" --token "$LEASE_TOKEN"
-      fi
-      sleep 1
-    done
-  ) >"$RUNTIME/logs/lease-supervisor.log" 2>&1 &
-  LEASE_SUPERVISOR_PID=$!
-  disown "$LEASE_SUPERVISOR_PID" 2>/dev/null || true
+  local supervisor_pid_path="$RUNTIME/provenance/lease-supervisor.child.pid"
+  rm -f "$supervisor_pid_path"
+  nohup bash -c '
+    stop_file=$1
+    runtime=$2
+    mode=$3
+    ready=$4
+    lease=$5
+    token=$6
+    prereg=$7
+    python=$8
+    repo=$9
+    pid_path=${10}
+    (
+      while [[ ! -f $stop_file ]]; do
+        date +%s%N >"$runtime/provenance/lease-supervisor-heartbeat-ns"
+        if [[ $mode == production && -f $ready && -L $lease && -f $token ]]; then
+          "$python" "$repo/scripts/native_multihop_lease.py" heartbeat \
+            --runtime-root "$runtime" --preregistration "$prereg" \
+            --lease "$lease" --token "$token"
+        fi
+        sleep 1
+      done
+    ) &
+    child=$!
+    printf "%s\\n" "$child" >"$pid_path"
+    wait "$child"
+  ' _ "$LEASE_SUPERVISOR_STOP" "$RUNTIME" "$MODE" \
+    "$RUNTIME/provenance/lease-supervisor.ready" "$LEASE" "$LEASE_TOKEN" \
+    "$PREREG" "$PY" "$REPO" "$supervisor_pid_path" \
+    >"$RUNTIME/logs/lease-supervisor.log" 2>&1 </dev/null &
+  local reaper_pid=$!
+  disown "$reaper_pid" 2>/dev/null || true
+  local pid_wait_deadline=$((SECONDS + 5))
+  while [[ ! -s "$supervisor_pid_path" && SECONDS -lt pid_wait_deadline ]]; do sleep 0.05; done
+  [[ -s "$supervisor_pid_path" ]] || {
+    echo "lease supervisor did not publish its child PID" >&2
+    return 1
+  }
+  LEASE_SUPERVISOR_PID=$(<"$supervisor_pid_path")
   record_pid_identity "$RUNTIME/provenance/lease-supervisor.pid" \
     "$LEASE_SUPERVISOR_PID"
 }
@@ -1140,7 +1190,34 @@ run_phase() {
     --identity "$(identity_path_for_pidfile "$run/runner.pid")" --signal SIGCONT \
     >/dev/null
   local runner_status=0
+  local next_writer_health_check=0
   while owned_process_alive "$run/runner.pid"; do
+    local writer_failure=
+    if (( SECONDS >= next_writer_health_check )); then
+      writer_failure=$(failed_protocol_writer || true)
+      next_writer_health_check=$((SECONDS + 5))
+    fi
+    if [[ -n $writer_failure ]]; then
+      write_sidecar_failure_stop "$run/submission.stop" \
+        "protocol_writer_process_failed:$writer_failure"
+      record "protocol-writer-failed-during-run:$phase:$writer_failure"
+      local writer_stop_deadline=$((SECONDS + 120))
+      while owned_process_alive "$run/runner.pid" \
+        && (( SECONDS < writer_stop_deadline )); do sleep 0.2; done
+      if owned_process_alive "$run/runner.pid"; then
+        "$PY" "$REPO/scripts/native_multihop_process_identity.py" signal \
+          --identity "$(identity_path_for_pidfile "$run/runner.pid")" --signal SIGTERM \
+          >/dev/null || true
+      fi
+      wait "$runner_pid" || true
+      complete_pidfile "$run/runner.pid"
+      touch "$run/monitor.stop"
+      wait "$monitor_pid" || true
+      complete_pidfile "$run/resource-monitor.pid"
+      quarantine_incomplete_resource_tail "$run"
+      RESUME_REQUIRED=1
+      return 75
+    fi
     if ! owned_process_alive "$run/hyperlane-observer.pid"; then
       local observer_status=0
       wait "$observer_pid" || observer_status=$?
@@ -1478,6 +1555,10 @@ production_main() {
   deploy_and_preflight
   failpoint preflight
   run_phase smoke
+  if [[ $STOP_AFTER_PHASE == smoke ]]; then
+    record "pilot-smoke-verification-complete"
+    return 0
+  fi
   run_phase publication_smoke
   run_phase scale
   if [[ $CAMPAIGN_KIND == pilot ]]; then

@@ -66,6 +66,8 @@ def test_runbook_requires_one_fail_closed_versioned_executable() -> None:
     assert "XIR_MULTIHOP_HOST_LEASE_BASE" in script
     assert 'HOST_LEASE_BASE="/run/lock/xir-lab-runtime-leases"' in script
     assert 'HOST_LEASE_BASE="/run/user/' not in script
+    assert "nohup bash -c '" in script
+    assert 'disown "$reaper_pid"' in script
     assert 'export PYTHONPATH="$REPO/src"' in script
     assert "--target-blocks" in script and "--completion" in script
     assert "wait_for_durable_ready" in script
@@ -76,15 +78,19 @@ def test_runbook_requires_one_fail_closed_versioned_executable() -> None:
     assert "campaign-signal-resume-required" in script
     assert "hyperlane_observer_process_failed" in script
     assert "resource_monitor_process_failed" in script
+    assert "protocol_writer_process_failed" in script
+    assert "protocol-writer-failed-during-run" in script
+    assert "failed_protocol_writer" in script
+    entrypoint = (ROOT / "scripts/run_native_multihop_switching.py").read_text(encoding="utf-8")
+    assert "TimeExhausted" in entrypoint
+    assert "raise SystemExit(75) from exc" in entrypoint
     assert "SECONDS + 150" in script
     assert "hyperlane-observer-ready" in script
     assert "resource-monitor-ready" in script
     assert "resource-monitor-failed-during-run" in script
     assert "stage_native_multihop_validator_volumes.py" in script
-    assert script.index("stage_native_multihop_validator_volumes.py") < script.index(
-        "up --detach"
-    )
-    assert 'down --remove-orphans' in script
+    assert script.index("stage_native_multihop_validator_volumes.py") < script.index("up --detach")
+    assert "down --remove-orphans" in script
     assert "validator_containers_absent" in script
     assert "validator_volume_command remove-existing" in script
     assert "validator_volume_command verify-existing" in script
@@ -117,16 +123,20 @@ def test_cleanup_distinguishes_natural_exit_from_live_identity_mismatch() -> Non
     # Identity verification remains mandatory for every live process, but a
     # process that exits between kill(0) and pidfd verification is successful
     # cleanup rather than a live identity mismatch.
-    assert '>/dev/null 2>&1' in campaign
+    assert ">/dev/null 2>&1" in campaign
     assert 'owned_process_alive "$pidfile" || {\n    if ! alive "$pid"; then' in campaign
     assert campaign.count('if ! alive "$pid"; then\n      complete_pidfile "$pidfile"') >= 3
-    assert '>/dev/null 2>&1' in processes
-    assert 'if kill -0 "$pid" 2>/dev/null; then\n    echo "$label exited; reused PID left untouched"' in processes
-    assert '>/dev/null 2>&1' in agents
+    assert ">/dev/null 2>&1" in processes
+    assert (
+        'if kill -0 "$pid" 2>/dev/null; then\n    echo "$label exited; reused PID left untouched"'
+        in processes
+    )
+    assert ">/dev/null 2>&1" in agents
     assert (
         'if ! "$python" "$identity_cli" signal' in agents
         and 'if kill -0 "$pid" 2>/dev/null; then\n'
-        '              echo "$name PID identity mismatch; refusing signal"' in agents
+        '              echo "$name PID identity mismatch; refusing signal"'
+        in agents
     )
 
 
@@ -143,8 +153,8 @@ def test_cleanup_stops_runner_before_resource_monitor_and_rechecks_tail() -> Non
             'stop_resource_monitor_pidfile "$run_root"'
         )
     assert "resource_completion_covers_runner_tail" in script
-    assert 'SELECT COALESCE(MAX(utc_ns),0) FROM events' in script
-    assert '.last_utc_ns >= $runner_utc' in script
+    assert "SELECT COALESCE(MAX(utc_ns),0) FROM events" in script
+    assert ".last_utc_ns >= $runner_utc" in script
     assert "quarantine_resource_segment" in script
 
 
@@ -153,8 +163,7 @@ def test_production_publication_namespace_is_derived_from_runtime_identity() -> 
     assert 'RUN_ID=$(basename "$RUNTIME")' in script
     assert "production runtime basename must be run-NNN" in script
     assert (
-        "local local_public=$WORKSPACE/experiment-results/"
-        "native-multihop-switching-v1/$RUN_ID"
+        "local local_public=$WORKSPACE/experiment-results/native-multihop-switching-v1/$RUN_ID"
     ) in script
     for terminal_run in ("run-001", "run-002", "run-003"):
         assert (
@@ -171,8 +180,8 @@ def test_formal_compose_project_matches_the_frozen_topology_identity() -> None:
     topology = json.loads(MULTIHOP_TOPOLOGY.read_text(encoding="utf-8"))
     project = topology["project_name"]
     assert project == "xir-native-multihop-v1"
-    assert 'COMPOSE_PROJECT=$(jq -er' in script
-    assert '[[ $COMPOSE_PROJECT == xir-native-multihop-v1 ]]' in script
+    assert "COMPOSE_PROJECT=$(jq -er" in script
+    assert "[[ $COMPOSE_PROJECT == xir-native-multihop-v1 ]]" in script
     compose_commands = re.findall(
         r"docker compose --project-name ([^ \\\n]+)",
         script,
@@ -191,6 +200,33 @@ def test_formal_compose_project_matches_the_frozen_topology_identity() -> None:
     assert script.index("start_and_admit_validator_containers", resume) < script.index(
         "start-agents", resume
     )
+
+
+def test_smoke_only_stop_is_restricted_to_pilot_verification(tmp_path: Path) -> None:
+    script = CAMPAIGN.read_text(encoding="utf-8")
+    assert "XIR_MULTIHOP_STOP_AFTER_PHASE supports only pilot smoke verification" in script
+    smoke = script.index("  run_phase smoke\n", script.index("production_main()"))
+    gate = script.index("  if [[ $STOP_AFTER_PHASE == smoke ]]; then\n", smoke)
+    publication_smoke = script.index("  run_phase publication_smoke\n", smoke)
+    assert smoke < gate < publication_smoke
+    assert 'record "pilot-smoke-verification-complete"' in script[gate:publication_smoke]
+    assert "    return 0\n" in script[gate:publication_smoke]
+
+    runtime = tmp_path / "run-902"
+    result = subprocess.run(
+        [str(CAMPAIGN), str(ROOT.parent), str(runtime)],
+        text=True,
+        capture_output=True,
+        check=False,
+        env={
+            **os.environ,
+            "XIR_MULTIHOP_CAMPAIGN_KIND": "formal",
+            "XIR_MULTIHOP_STOP_AFTER_PHASE": "smoke",
+        },
+    )
+    assert result.returncode == 2
+    assert "supports only pilot smoke verification" in result.stderr
+    assert not runtime.exists()
 
 
 def test_production_entry_rejects_nonversioned_runtime_before_writes(
@@ -232,8 +268,7 @@ def test_volume_bootstrap_direct_entry_requires_review_and_live_lease_before_sta
             str(runtime / "compose-must-not-be-read.yaml"),
             "--preregistration",
             str(
-                ROOT.parent
-                / "openspec/changes/measure-multihop-switching-scalability/"
+                ROOT.parent / "openspec/changes/measure-multihop-switching-scalability/"
                 "artifacts/preregistration-v1.json"
             ),
             "--review-gate",
@@ -255,7 +290,13 @@ def test_volume_bootstrap_direct_entry_requires_review_and_live_lease_before_sta
         env={**os.environ, "PYTHONPATH": str(ROOT / "src")},
     )
     assert result.returncode != 0
-    assert "independent review closure has not enabled execution" in result.stderr
+    assert any(
+        message in result.stderr
+        for message in (
+            "independent review closure has not enabled execution",
+            "reviewed implementation source digest drift",
+        )
+    )
     assert not runtime.exists()
 
 
@@ -284,8 +325,7 @@ def test_live_preflight_requires_review_and_lease_before_volume_probe_or_output(
             str(runtime / "must-not-read-deployment.json"),
             "--preregistration",
             str(
-                ROOT.parent
-                / "openspec/changes/measure-multihop-switching-scalability/"
+                ROOT.parent / "openspec/changes/measure-multihop-switching-scalability/"
                 "artifacts/preregistration-v1.json"
             ),
             "--review-gate",
@@ -307,7 +347,13 @@ def test_live_preflight_requires_review_and_lease_before_volume_probe_or_output(
         env={**os.environ, "PYTHONPATH": str(ROOT / "src")},
     )
     assert result.returncode != 0
-    assert "independent review closure has not enabled execution" in result.stderr
+    assert any(
+        message in result.stderr
+        for message in (
+            "independent review closure has not enabled execution",
+            "reviewed implementation source digest drift",
+        )
+    )
     assert not runtime.exists()
 
 
@@ -318,13 +364,9 @@ def test_every_runbook_shell_block_and_campaign_are_syntactically_valid() -> Non
     for block in blocks:
         subprocess.run(["bash", "-n"], input=block, text=True, check=True)
     subprocess.run(["bash", "-n", str(CAMPAIGN)], check=True)
-    direct_python_lines = [
-        line for line in runbook.splitlines() if ".venv/bin/python" in line
-    ]
+    direct_python_lines = [line for line in runbook.splitlines() if ".venv/bin/python" in line]
     assert len(direct_python_lines) == 3
-    assert all(
-        line.startswith('PYTHONPATH="$REPO/src" ') for line in direct_python_lines
-    )
+    assert all(line.startswith('PYTHONPATH="$REPO/src" ') for line in direct_python_lines)
 
 
 @pytest.mark.parametrize("script", (PROVISION, WORKER_ROLES))
@@ -523,9 +565,7 @@ def test_layerzero_worker_cannot_omit_runtime_authority_for_five_chain_config(
 def test_layerzero_worker_rejects_five_chain_config_schema_downgrade_before_state(
     tmp_path: Path, schema_version: str | None
 ) -> None:
-    document: dict[str, object] = {
-        "chains": [{"chain_id": index} for index in range(5)]
-    }
+    document: dict[str, object] = {"chains": [{"chain_id": index} for index in range(5)]}
     if schema_version is not None:
         document["schema_version"] = schema_version
     config = tmp_path / "worker-config.json"

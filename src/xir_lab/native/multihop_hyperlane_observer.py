@@ -6,6 +6,7 @@ import hashlib
 import json
 import os
 import time
+import urllib.error
 import urllib.request
 from pathlib import Path
 from typing import Any, cast
@@ -36,14 +37,19 @@ def _rpc(url: str, method: str, params: list[Any]) -> Any:
         headers={"content-type": "application/json"},
         method="POST",
     )
-    try:
-        with urllib.request.urlopen(request, timeout=30) as response:
-            document = json.loads(response.read())
-    except (OSError, json.JSONDecodeError) as exc:
-        raise LocalTopologyError(f"Hyperlane observer RPC failed: {method}") from exc
-    if not isinstance(document, dict) or document.get("error") is not None:
-        raise LocalTopologyError(f"Hyperlane observer RPC error: {method}")
-    return document.get("result")
+    last_error: BaseException | None = None
+    for attempt in range(4):
+        try:
+            with urllib.request.urlopen(request, timeout=30) as response:
+                document = json.loads(response.read())
+            if not isinstance(document, dict) or document.get("error") is not None:
+                raise LocalTopologyError(f"Hyperlane observer RPC error: {method}")
+            return document.get("result")
+        except (OSError, urllib.error.HTTPError, json.JSONDecodeError, LocalTopologyError) as exc:
+            last_error = exc
+            if attempt < 3:
+                time.sleep(0.25 * (2**attempt))
+    raise LocalTopologyError(f"Hyperlane observer RPC failed: {method}") from last_error
 
 
 def _relayer_pid(pid_path: Path) -> int:
@@ -64,7 +70,13 @@ def _pending_transactions(rpc_url: str) -> list[dict[str, Any]]:
     full transaction objects needed by this observer.
     """
 
-    pending_block = _rpc(rpc_url, "eth_getBlockByNumber", ["pending", True])
+    try:
+        pending_block = _rpc(rpc_url, "eth_getBlockByNumber", ["pending", True])
+    except LocalTopologyError:
+        # Pending-block RPC is an optional submission hint. A busy Besu node
+        # may reset this expensive full-transaction request; mined-block
+        # scanning below remains the authoritative, explicitly labeled fallback.
+        return []
     if not isinstance(pending_block, dict) or not isinstance(
         pending_block.get("transactions"), list
     ):
@@ -202,33 +214,13 @@ def observe_hyperlane_relayer(
     while True:
         _relayer_pid(pid_path)
         for role, rpc_url in role_rpc.items():
-            for transaction in _pending_transactions(rpc_url):
-                transaction_hash = str(transaction.get("hash", "")).lower()
-                if (
-                    str(transaction.get("from", "")).lower() == relayer_address
-                    and transaction_hash not in seen_submitted
-                ):
-                    _append_event(
-                        output_path,
-                        event="submitted_observed",
-                        runtime_root=runtime_root,
-                        relayer_pid_path=pid_path,
-                        chain_role=role,
-                        transaction_hash=transaction_hash,
-                        source="eth_getBlockByNumber:pending",
-                    )
-                    seen_submitted.add(transaction_hash)
-            head = int(str(_rpc(rpc_url, "eth_blockNumber", [])), 16)
-            while next_block[role] <= head:
-                block_number = next_block[role]
-                block = _rpc(rpc_url, "eth_getBlockByNumber", [hex(block_number), True])
-                if not isinstance(block, dict) or not isinstance(block.get("transactions"), list):
-                    raise LocalTopologyError("Hyperlane observer block is invalid")
-                for transaction in cast(list[dict[str, Any]], block["transactions"]):
-                    if str(transaction.get("from", "")).lower() != relayer_address:
-                        continue
+            try:
+                for transaction in _pending_transactions(rpc_url):
                     transaction_hash = str(transaction.get("hash", "")).lower()
-                    if transaction_hash not in seen_submitted:
+                    if (
+                        str(transaction.get("from", "")).lower() == relayer_address
+                        and transaction_hash not in seen_submitted
+                    ):
                         _append_event(
                             output_path,
                             event="submitted_observed",
@@ -236,23 +228,49 @@ def observe_hyperlane_relayer(
                             relayer_pid_path=pid_path,
                             chain_role=role,
                             transaction_hash=transaction_hash,
-                            block_number=block_number,
-                            source="mined_block_fallback",
+                            source="eth_getBlockByNumber:pending",
                         )
                         seen_submitted.add(transaction_hash)
-                    if transaction_hash not in seen_mined:
-                        _append_event(
-                            output_path,
-                            event="mined_observed",
-                            runtime_root=runtime_root,
-                            relayer_pid_path=pid_path,
-                            chain_role=role,
-                            transaction_hash=transaction_hash,
-                            block_number=block_number,
-                            source="eth_getBlockByNumber",
-                        )
-                        seen_mined.add(transaction_hash)
-                next_block[role] += 1
+                head = int(str(_rpc(rpc_url, "eth_blockNumber", [])), 16)
+                while next_block[role] <= head:
+                    block_number = next_block[role]
+                    block = _rpc(rpc_url, "eth_getBlockByNumber", [hex(block_number), True])
+                    if not isinstance(block, dict) or not isinstance(block.get("transactions"), list):
+                        raise LocalTopologyError("Hyperlane observer block is invalid")
+                    for transaction in cast(list[dict[str, Any]], block["transactions"]):
+                        if str(transaction.get("from", "")).lower() != relayer_address:
+                            continue
+                        transaction_hash = str(transaction.get("hash", "")).lower()
+                        if transaction_hash not in seen_submitted:
+                            _append_event(
+                                output_path,
+                                event="submitted_observed",
+                                runtime_root=runtime_root,
+                                relayer_pid_path=pid_path,
+                                chain_role=role,
+                                transaction_hash=transaction_hash,
+                                block_number=block_number,
+                                source="mined_block_fallback",
+                            )
+                            seen_submitted.add(transaction_hash)
+                        if transaction_hash not in seen_mined:
+                            _append_event(
+                                output_path,
+                                event="mined_observed",
+                                runtime_root=runtime_root,
+                                relayer_pid_path=pid_path,
+                                chain_role=role,
+                                transaction_hash=transaction_hash,
+                                block_number=block_number,
+                                source="eth_getBlockByNumber",
+                            )
+                            seen_mined.add(transaction_hash)
+                    next_block[role] += 1
+            except LocalTopologyError:
+                # A transient RPC reset on one chain must not terminate the
+                # observer. The next poll retries that chain from its durable
+                # next_block cursor, preserving mined-block fallback evidence.
+                continue
         if stop_file.exists():
             if target_blocks is None:
                 if target_blocks_path is not None and target_blocks_path.is_file():
