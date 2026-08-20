@@ -36,6 +36,8 @@ def test_five_chain_topology_renders_twenty_isolated_validators(tmp_path: Path) 
     assert first_sha == second_sha
     text = first.decode()
     assert text.count("org.xir.validator-id") == 20
+    assert text.count("--bonsai-historical-block-limit=250000") == 5
+    assert text.count("--bonsai-limit-trie-logs-enabled=false") == 5
     assert "127.0.0.1:58545:8545" in text
     assert "local-chain-e-v4" in text
 

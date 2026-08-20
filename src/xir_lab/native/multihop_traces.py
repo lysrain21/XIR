@@ -558,7 +558,8 @@ def capture_multihop_traces(
 
     config_document = json.loads(config_path.read_text(encoding="utf-8"))
     pilot_trace_fallback = (
-        isinstance(config_document, dict)
+        phase == "scale"
+        and isinstance(config_document, dict)
         and config_document.get("result_roles", {}).get("scale") == "pilot_diagnostic_only"
     )
 
@@ -583,7 +584,7 @@ def capture_multihop_traces(
         trace_result = _trace_with_retry(
             role_rpc[role],
             transaction_hash,
-            attempts=1 if pilot_trace_fallback else 8,
+            attempts=8,
         )
         if trace_result is None and pilot_trace_fallback:
             trace = {

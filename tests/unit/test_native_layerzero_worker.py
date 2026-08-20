@@ -57,11 +57,21 @@ def test_worker_state_is_resumable_and_intent_precedes_signature(tmp_path: Path)
         call_data=b"call",
     )
     assert action["calldata_bytes"] == 4
+    assert action["nonce"] == 7
+    resumed_action = state.intend_action(
+        guid="0x" + packet.guid.hex(),
+        stage="commit_verification",
+        destination_chain_id=3133702,
+        nonce=7,
+        target="0x" + "55" * 20,
+        call_data=b"resumed",
+    )
+    assert resumed_action["nonce"] == 8
     state.record_signed(str(action["action_id"]), b"signed", "0xdead")
     observations = state.connection.execute(
         "SELECT state FROM observations ORDER BY observation_id"
     ).fetchall()
-    assert [row["state"] for row in observations] == ["intended", "signed"]
+    assert [row["state"] for row in observations] == ["intended", "intended", "signed"]
     assert state.cursor(49001, 12) == 12
     state.advance_cursor(49001, 200)
     assert state.cursor(49001, 12) == 200

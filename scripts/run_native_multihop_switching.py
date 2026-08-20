@@ -10,7 +10,7 @@ from pathlib import Path
 
 import rfc8785
 from requests import RequestException
-from web3.exceptions import Web3RPCError
+from web3.exceptions import TimeExhausted, Web3RPCError
 
 from xir_lab.localnet.topology import LocalTopologyError
 from xir_lab.native.multihop_execution import verify_execution_authority
@@ -48,9 +48,7 @@ def main() -> int:
     parser.add_argument("--root-signer-key-file", type=Path, required=True)
     parser.add_argument("--state", type=Path, required=True)
     parser.add_argument("--raw-root", type=Path, required=True)
-    parser.add_argument(
-        "--phase", choices=("smoke", "publication_smoke", "scale"), required=True
-    )
+    parser.add_argument("--phase", choices=("smoke", "publication_smoke", "scale"), required=True)
     parser.add_argument("--submission-stop-file", type=Path)
     args = parser.parse_args()
     authority = verify_execution_authority(
@@ -81,37 +79,29 @@ def main() -> int:
         "lease_identity_sha256": authority["lease_identity_sha256"],
         "lease_identity": authority["lease_identity"],
         "preflight_sha256": hashlib.sha256(args.preflight.read_bytes()).hexdigest(),
-        "preflight_semantic_sha256": json.loads(
-            args.preflight.read_text(encoding="utf-8")
-        )["semantic_sha256"],
+        "preflight_semantic_sha256": json.loads(args.preflight.read_text(encoding="utf-8"))[
+            "semantic_sha256"
+        ],
         "validator_volume_attestation_sha256": preflight_document[
             "validator_volume_attestation_sha256"
         ],
         "validator_volume_attestation_semantic_sha256": preflight_document[
             "validator_volume_attestation_semantic_sha256"
         ],
-        "validator_volume_journal_sha256": preflight_document[
-            "validator_volume_journal_sha256"
-        ],
+        "validator_volume_journal_sha256": preflight_document["validator_volume_journal_sha256"],
         "validator_volume_journal_semantic_sha256": preflight_document[
             "validator_volume_journal_semantic_sha256"
         ],
-        "toolchain_preflight_sha256": preflight_document[
-            "toolchain_preflight_sha256"
-        ],
+        "toolchain_preflight_sha256": preflight_document["toolchain_preflight_sha256"],
         "toolchain_preflight_semantic_sha256": preflight_document[
             "toolchain_preflight_semantic_sha256"
         ],
         "config_sha256": hashlib.sha256(args.config.read_bytes()).hexdigest(),
         "plan_sha256": hashlib.sha256(args.plan.read_bytes()).hexdigest(),
         "deployment_sha256": hashlib.sha256(args.deployment.read_bytes()).hexdigest(),
-        "preregistration_sha256": hashlib.sha256(
-            args.preregistration.read_bytes()
-        ).hexdigest(),
+        "preregistration_sha256": hashlib.sha256(args.preregistration.read_bytes()).hexdigest(),
     }
-    phase_authority["semantic_sha256"] = hashlib.sha256(
-        rfc8785.dumps(phase_authority)
-    ).hexdigest()
+    phase_authority["semantic_sha256"] = hashlib.sha256(rfc8785.dumps(phase_authority)).hexdigest()
     serialized_authority = json.dumps(phase_authority, indent=2, sort_keys=True) + "\n"
     if args.phase_authority_output.exists():
         if args.phase_authority_output.read_text(encoding="utf-8") != serialized_authority:
@@ -152,6 +142,11 @@ if __name__ == "__main__":
         if "submissions stopped by resource monitor" in str(exc):
             raise SystemExit(75) from exc
         raise
+    except TimeExhausted as exc:
+        # The signed transaction is durable before receipt polling. Resume must
+        # re-check the same hash instead of treating a slow QBFT block as a
+        # terminal experiment failure.
+        raise SystemExit(75) from exc
     except (RequestException, Web3RPCError) as exc:
         if is_transient_rpc_error(exc):
             raise SystemExit(75) from exc

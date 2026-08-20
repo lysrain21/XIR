@@ -282,28 +282,52 @@ class LayerZeroWorkerState:
         call_data: bytes,
     ) -> sqlite3.Row:
         action_id = "lz_" + hashlib.sha256(f"{guid}:{stage}".encode()).hexdigest()[:24]
-        self.connection.execute(
-            """
-            INSERT INTO actions(
-              action_id, guid, stage, destination_chain_id, nonce, target,
-              calldata_bytes, calldata_hex, calldata_sha256, status, intended_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'intended', ?)
-            """,
-            (
-                action_id,
-                guid,
-                stage,
-                destination_chain_id,
-                nonce,
-                target.lower(),
-                len(call_data),
-                "0x" + call_data.hex(),
-                hashlib.sha256(call_data).hexdigest(),
-                _now(),
-            ),
-        )
-        self._record_observation(action_id=action_id, state="intended", details={})
-        self.connection.commit()
+        outer_transaction = self.connection.in_transaction
+        savepoint = f"intend_action_{action_id}"
+        if outer_transaction:
+            self.connection.execute(f"SAVEPOINT {savepoint}")
+        else:
+            self.connection.execute("BEGIN IMMEDIATE")
+        try:
+            durable_row = self.connection.execute(
+                "SELECT MAX(nonce) FROM actions WHERE destination_chain_id = ?",
+                (destination_chain_id,),
+            ).fetchone()
+            durable_nonce = None if durable_row is None else durable_row[0]
+            if durable_nonce is not None:
+                nonce = max(nonce, int(durable_nonce) + 1)
+            self.connection.execute(
+                """
+                INSERT INTO actions(
+                  action_id, guid, stage, destination_chain_id, nonce, target,
+                  calldata_bytes, calldata_hex, calldata_sha256, status, intended_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'intended', ?)
+                """,
+                (
+                    action_id,
+                    guid,
+                    stage,
+                    destination_chain_id,
+                    nonce,
+                    target.lower(),
+                    len(call_data),
+                    "0x" + call_data.hex(),
+                    hashlib.sha256(call_data).hexdigest(),
+                    _now(),
+                ),
+            )
+            self._record_observation(action_id=action_id, state="intended", details={})
+            if outer_transaction:
+                self.connection.execute(f"RELEASE SAVEPOINT {savepoint}")
+            else:
+                self.connection.commit()
+        except BaseException:
+            if outer_transaction:
+                self.connection.execute(f"ROLLBACK TO SAVEPOINT {savepoint}")
+                self.connection.execute(f"RELEASE SAVEPOINT {savepoint}")
+            else:
+                self.connection.rollback()
+            raise
         return cast(
             sqlite3.Row,
             self.connection.execute(

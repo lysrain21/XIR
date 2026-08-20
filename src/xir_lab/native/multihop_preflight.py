@@ -56,6 +56,36 @@ def _canonical_transaction_hash(value: str) -> str:
     return "0x" + value.lower().removeprefix("0x")
 
 
+def _validate_trace_probe(response: Any, *, role: str) -> None:
+    if not isinstance(response, dict) or response.get("error") is not None:
+        raise LocalTopologyError(f"Besu TRACE unavailable: {role}")
+    result = response.get("result")
+    if not isinstance(result, list) or not result:
+        raise LocalTopologyError(f"Besu TRACE returned an empty result: {role}")
+    roots = [
+        row
+        for row in result
+        if isinstance(row, dict) and row.get("traceAddress") == []
+    ]
+    if len(roots) != 1:
+        raise LocalTopologyError(f"Besu TRACE lacks one root trace: {role}")
+    root_result = roots[0].get("result")
+    if not isinstance(root_result, dict) or "gasUsed" not in root_result:
+        raise LocalTopologyError(f"Besu TRACE root gas is unavailable: {role}")
+    gas_used = root_result["gasUsed"]
+    try:
+        if isinstance(gas_used, int):
+            parsed_gas = gas_used
+        elif isinstance(gas_used, str):
+            parsed_gas = int(gas_used, 16) if gas_used.startswith("0x") else int(gas_used)
+        else:
+            raise TypeError("unsupported gas quantity")
+    except (TypeError, ValueError) as exc:
+        raise LocalTopologyError(f"Besu TRACE root gas is invalid: {role}") from exc
+    if parsed_gas < 0:
+        raise LocalTopologyError(f"Besu TRACE root gas is invalid: {role}")
+
+
 def _load(path: Path) -> dict[str, Any]:
     try:
         value = json.loads(path.read_text(encoding="utf-8"))
@@ -381,8 +411,7 @@ def run_multihop_preflight(
         trace = client.provider.make_request(
             RPCEndpoint("trace_transaction"), [str(sample["transaction_hash"])]
         )
-        if trace.get("error") is not None or not isinstance(trace.get("result"), list):
-            raise LocalTopologyError(f"Besu TRACE unavailable: {role}")
+        _validate_trace_probe(trace, role=role)
         raw_response = client.provider.make_request(
             RPCEndpoint(BESU_RAW_TRANSACTION_RPC_METHOD),
             [str(sample["transaction_hash"])],
