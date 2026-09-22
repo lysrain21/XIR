@@ -1,18 +1,60 @@
 cff-version: 1.2.0
-message: "If you use this research prototype or its evidence, please cite it."
-title: "XIR Testnet Lab"
+message: >-
+  If you use XIR, cite the associated paper using the preferred citation below.
+  For data reuse, also cite the Kaggle dataset and the exact version used.
+title: "XIR: Cross-Chain Protocol Interoperability"
 type: software
 authors:
   - name: "XIR Research Authors"
 version: 0.1.0
-date-released: 2026-07-25
 license: MIT
+repository-code: "https://github.com/lysrain21/XIR"
+url: "https://github.com/lysrain21/XIR"
 abstract: >-
-  A reproducible research prototype for matched baseline and XIR execution
-  over Hyperlane and LayerZero V2 on a fixed three-chain public-testnet route.
+  Research implementation of a verifiable intermediate representation for
+  composing cross-chain protocol connections. Solidity contracts and Python
+  orchestration integrate Hyperlane and LayerZero V2 in controlled experiments.
 keywords:
+  - blockchain
   - cross-chain
   - interoperability
-  - reproducible experiments
+  - reachability
   - Hyperlane
   - LayerZero
+preferred-citation:
+  type: article
+  title: >-
+    XIR: A Framework for Interoperability across Cross-Chain Protocols Based on
+    a Verifiable Intermediate Representation
+  authors:
+    - family-names: Li
+      given-names: Yushen
+      orcid: "https://orcid.org/0009-0003-5069-0337"
+    - family-names: Jia
+      given-names: Linpeng
+      orcid: "https://orcid.org/0000-0003-1916-6193"
+    - family-names: Feng
+      given-names: Jiaying
+      orcid: "https://orcid.org/0009-0009-3418-1552"
+    - family-names: Liao
+      given-names: Ziliang
+      orcid: "https://orcid.org/0009-0008-0259-243X"
+    - family-names: Sun
+      given-names: Yi
+      orcid: "https://orcid.org/0000-0002-9817-8004"
+  year: 2026
+  journal: arXiv
+  url: "https://arxiv.org/abs/2609.20010"
+  notes: >-
+    arXiv:2609.20010. Manuscript submitted to Blockchain: Research and
+    Applications (BCRA).
+references:
+  - type: data
+    title: "XIR Cross-Chain Events (Jan-Oct 2025)"
+    authors:
+      - name: "yushenlee"
+    year: 2026
+    url: "https://www.kaggle.com/datasets/yushenlee/xir-cross-chain-events-2025"
+    notes: >-
+      Kaggle account owner shown for attribution. Cite the exact dataset version
+      and release manifest used; no dataset DOI is asserted here.

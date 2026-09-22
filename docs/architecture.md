@@ -1,10 +1,16 @@
 # Architecture and experiment boundaries
 
-XIR Testnet Lab compares a carrier-only baseline with XIR on one fixed
-three-chain route: OP Sepolia to Arbitrum Sepolia to Base Sepolia. `HH`, `HL`,
-`LH`, and `LL` select Hyperlane or LayerZero V2 independently for the two
-carrier legs. A condition contains isolated baseline and XIR arms; a primary
-pair is the scientific unit.
+XIR composes configured cross-chain protocol connections while carrying a
+stable application record and ordered verification evidence. The EVM prototype
+integrates Hyperlane and LayerZero V2 through Solidity contracts and a Python
+runtime. In protocol paths, `H` denotes Hyperlane and `L` denotes LayerZero.
+
+The repository contains several experiment families. The original public-testnet
+design uses OP Sepolia, Arbitrum Sepolia, and Base Sepolia, with isolated
+baseline and XIR arms where configured. The paper also reports native
+protocol-stack experiments on three local chains and multi-hop paths across
+five local chains. Each profile and frozen campaign defines its own execution
+and comparison units; see [claim boundaries](../CLAIM_BOUNDARIES.md).
 
 The repository has five trust zones:
 
@@ -23,16 +29,18 @@ and research-data hosts are external dependencies. Their availability,
 ordering, private queues, internal costs, security, and correctness are not
 controlled by this project.
 
-Experiment-controlled funds use two public addresses: a deployer/admin address
-for deployment and configuration, and a runner address for bounded experiment
-transactions. Custody and funding occur outside this repository at explicit
-human checkpoints. The code creates no wallet, requests no faucet funds, and
-performs no transfer.
+The public-testnet design separates deployer/admin and runner identities.
+Custody and funding occur outside the repository; state-changing operations
+require the documented approvals, signer configuration, and network preflight.
+The controlled local lab separately generates disposable development keys
+under its repository-external runtime root.
 
-The primary experiment contains four conditions and two arms. Pilot, warm-up,
-primary, retry, and scale attempts remain separate. The 10,000-attempt scale
-profile measures only the named runner, collector, recovery, storage, and
-reconciliation pipeline; it is not carrier capacity or production reliability.
+The original matched design specifies four protocol conditions and two arms.
+Its legacy 10,000-attempt scale profile measures runner and evidence-pipeline
+behavior. The preserved public-testnet observations have no eligible matched
+pairs, so they cannot establish a paired overhead estimate. Native four-route
+and five-chain campaigns use their separately documented workloads and
+denominators.
 
 Resources remain in their native units by chain. Gas, calldata bytes, execution
 fees, rollup L1 data fees, carrier quotes, carrier payments, transaction value,
@@ -74,3 +82,25 @@ reconciliation.
 Controlled carriers exercise ordering, replay rejection, outage, and recovery
 inside the local environment. They do not emulate the private infrastructure
 or public behavior of Hyperlane and LayerZero.
+
+## Native protocol stacks and multi-hop experiments
+
+The [native-stack runbook](native-stack-runbook.md) describes the controlled
+three-chain environment with official Hyperlane and LayerZero EVM contracts.
+Hyperlane uses upstream Rust validator and relayer binaries. LayerZero's
+chain-external roles are provided by a self-hosted Python research worker.
+The paper's four-route campaign records 10,000 requests for each of HH, LL, HL,
+and LH, for 40,000 requests in total. Each result retains the exact protocol
+and verification configuration used for execution.
+
+The [five-chain profile](../configs/profiles/native-multihop-five-chain-v1.json)
+extends the local topology to five Besu QBFT chains with four validators per
+chain. Its multi-hop campaign supplies the paper's 22,000-execution cost
+analysis. These local campaigns have different component and physical
+transaction accounting from the earlier controlled-carrier workload above.
+
+The [Kaggle event dataset](https://www.kaggle.com/datasets/yushenlee/xir-cross-chain-events-2025)
+contains historical observations from six protocol feeds. It is a separate
+input to the paper's graph analysis and does not contain those local execution
+campaigns. The [paper](https://arxiv.org/abs/2609.20010) explains how the graph,
+provisioning model, conditional analysis, and prototype measurements relate.

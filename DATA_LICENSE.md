@@ -16,3 +16,8 @@ artifact must retain its own license and provenance metadata. Private recovery
 spools, credentials, authenticated RPC material, reusable signed
 transactions, and live keystores are not publication data and must never be
 included in a release.
+
+The [Kaggle event dataset](https://www.kaggle.com/datasets/yushenlee/xir-cross-chain-events-2025)
+is distributed separately. Its dataset page and release license govern the
+collected records; this repository's MIT software license and default CC BY
+4.0 artifact notice do not grant additional rights over that dataset.
