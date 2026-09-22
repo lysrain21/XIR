@@ -27,3 +27,34 @@ jobs:
           ! git ls-files | grep -E '(^|/)(private-spool|keystore)(/|$)'
           uv run python scripts/check_publishable_tree.py
           uv run pytest tests/unit/test_publication.py -q
+  go-runtime:
+    runs-on: ubuntu-latest
+    env:
+      XIR_LIVE_WRITES_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.23"
+          cache-dependency-path: go-runtime/go.sum
+      - uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: v1.5.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Build pinned real protocol fixtures
+        run: scripts/prepare_go_e2e.sh "$RUNNER_TEMP/go-e2e-protocols"
+      - run: go vet ./...
+        working-directory: go-runtime
+      - run: go test -count=1 ./...
+        working-directory: go-runtime
+        env:
+          XIR_REQUIRE_E2E: "1"
+      - name: Require real Anvil and recovery tests (no skips)
+        run: scripts/run_go_e2e.sh "$RUNNER_TEMP/go-e2e-results.json"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: go-e2e-results
+          path: ${{ runner.temp }}/go-e2e-results.json

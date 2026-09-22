@@ -55,6 +55,22 @@ XIR-minus-baseline overhead requires matched routes, inputs, environments,
 and eligible samples from both arms. Planning a paired experiment does not
 establish that its measurements were collected.
 
+## Go runtime
+
+`go-runtime/` is an independent implementation of the execution layer. Its
+claims are limited to byte compatibility with the Solidity contracts and the
+Python runtime, verified by the generated parity vectors, and to the execution
+behaviour its integration tests exercise on disposable local chains.
+
+A Go run is not a campaign result: it does not reproduce the review gate, phase
+authority, validator-volume attestation, resource monitor, or preflight digests,
+and it produces no published measurement. The integration tests use anvil with
+the frozen chain ids and the same contracts because the five-chain Besu QBFT
+topology does not fit on a development host; they are fixtures, not the
+environment of record. The Go runtime has no mainnet path and no public-testnet
+write path, and its self-hosted Hyperlane validator/relayer and LayerZero
+DVN/Executor roles are research roles, not managed third-party services.
+
 ## Trust, costs, and reporting
 
 The paper's theorem is conditional on sound protocol deliveries, correct XIR

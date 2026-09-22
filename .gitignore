@@ -73,6 +73,8 @@ data/blobs/
 data/releases/
 results/
 artifacts/
+# The Go runtime's Forge artifact loader is source, not evidence output.
+!go-runtime/internal/artifacts/
 release/
 releases/
 
