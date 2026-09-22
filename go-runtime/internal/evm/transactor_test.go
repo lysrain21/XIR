@@ -762,3 +762,33 @@ func TestNewTransactorRejectsAMismatchedChain(t *testing.T) {
 		t.Fatal("a signer bound to another chain must be rejected")
 	}
 }
+
+func TestExecuteFreezesCallerIntentAndRejectsDrift(t *testing.T) {
+	h := newHarness(t)
+	request := TxRequest{ActionID: "caller-intent", ChainRole: "a", To: destination(t), Gas: 100000, IntentDetail: map[string]any{"record_nonce": uint64(7)}}
+	first, err := h.transactor.Execute(context.Background(), request)
+	if err != nil {
+		t.Fatal(err)
+	}
+	action, err := h.store.Action(request.ActionID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	detail, err := action.Detail()
+	if err != nil {
+		t.Fatal(err)
+	}
+	frozen, err := state.CanonicalJSON(detail["intent_detail"])
+	expected, _ := state.CanonicalJSON(request.IntentDetail)
+	if err != nil || frozen != expected {
+		t.Fatalf("intent not persisted: %s %v", frozen, err)
+	}
+	again, err := h.transactor.Execute(context.Background(), request)
+	if err != nil || again.TransactionHash != first.TransactionHash {
+		t.Fatalf("replay: %+v %v", again, err)
+	}
+	request.IntentDetail["record_nonce"] = uint64(8)
+	if _, err := h.transactor.Execute(context.Background(), request); !errors.Is(err, state.ErrDrift) {
+		t.Fatalf("changed intent was not rejected: %v", err)
+	}
+}

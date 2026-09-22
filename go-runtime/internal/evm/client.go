@@ -167,6 +167,17 @@ func (c *Client) CallContract(ctx context.Context, to common.Address, data []byt
 	return result, nil
 }
 
+// CallContractAtHash reads the exact historical block that produced an event.
+func (c *Client) CallContractAtHash(ctx context.Context, to common.Address, data []byte, hash common.Hash) ([]byte, error) {
+	result, err := withTimeout(ctx, c.timeout, func(callCtx context.Context) ([]byte, error) {
+		return c.eth.CallContractAtHash(callCtx, ethereum.CallMsg{To: &to, Data: data}, hash)
+	})
+	if err != nil {
+		return nil, fmt.Errorf("xir evm: historical eth_call failed: %w", err)
+	}
+	return result, nil
+}
+
 // EstimateGas returns the node's gas estimate for a call message.
 func (c *Client) EstimateGas(ctx context.Context, message ethereum.CallMsg) (uint64, error) {
 	estimate, err := withTimeout(ctx, c.timeout, func(callCtx context.Context) (uint64, error) {

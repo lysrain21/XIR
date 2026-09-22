@@ -87,19 +87,22 @@ func (c *hyperlaneCarrier) Dispatch(ctx context.Context, request HopRequest) (Di
 		CurrentProfileHash:    request.CurrentProfile,
 		CurrentTransitionHash: request.CurrentTransition,
 	}
-	quoted, err := adapter.call(ctx, "quoteBundle", bundle)
+	stage := dispatchStage(request.HopIndex, request.Protocol)
+	fee, err := dispatchFee(c.chains.store, actionID(request.AttemptID, stage), func() (*big.Int, error) {
+		quoted, err := adapter.call(ctx, "quoteBundle", bundle)
+		if err != nil {
+			return nil, err
+		}
+		return singleBigInt(quoted)
+	})
 	if err != nil {
-		return DispatchResult{}, err
+		return DispatchResult{}, fmt.Errorf("runner: hyperlane dispatch fee: %w", err)
 	}
-	fee, err := singleBigInt(quoted)
-	if err != nil {
-		return DispatchResult{}, fmt.Errorf("runner: hyperlane quoteBundle: %w", err)
-	}
+
 	name := "sendSourceBundle"
 	if request.HopIndex > 1 {
 		name = "forwardInFlightBundle"
 	}
-	stage := dispatchStage(request.HopIndex, request.Protocol)
 	result, err := adapter.send(ctx, request.AttemptID, stage, name, []any{bundle}, fee)
 	if err != nil {
 		return DispatchResult{}, err

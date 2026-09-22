@@ -343,13 +343,29 @@ func (r *Runner) createRoot(
 	if err != nil {
 		return xir.Record{}, xir.Context{}, [32]byte{}, nil, err
 	}
-	result, err := gateway.send(
+	rootIntent := map[string]any{"record_nonce": record.Nonce}
+	// Legacy actions did not freeze caller metadata; keep their intent intact.
+	existing, err := r.state.Action(actionID(attempt.AttemptID, StageRootCreate))
+	if err != nil {
+		return xir.Record{}, xir.Context{}, [32]byte{}, nil, err
+	}
+	if existing != nil {
+		detail, err := existing.Detail()
+		if err != nil {
+			return xir.Record{}, xir.Context{}, [32]byte{}, nil, err
+		}
+		if _, ok := detail["intent_detail"]; !ok {
+			rootIntent = nil
+		}
+	}
+	result, err := gateway.sendWithIntent(
 		ctx,
 		attempt.AttemptID,
 		StageRootCreate,
 		"createRecord",
 		[]any{record.DestinationApp.ABI(), payload, context.ABI(), xir.RegistryVersion},
 		nil,
+		rootIntent,
 	)
 	if err != nil {
 		return xir.Record{}, xir.Context{}, [32]byte{}, nil, err
@@ -568,10 +584,51 @@ func sleepContext(ctx context.Context, interval time.Duration) error {
 }
 
 // rootNonce returns the gateway record nonce of one attempt. A resumed attempt
-// reuses the nonce frozen in its own root stage, exactly as the Python runner
-// does; a fresh attempt takes max(nextNonce, next reserved nonce) so a signed
-// but never broadcast record can never have its nonce reused.
+// reuses its pre-signing intent nonce, or recovers legacy roots from their
+// receipt/stage. A fresh attempt takes max(nextNonce, next reserved nonce)
+// so another durable intent cannot reuse the same record nonce.
 func (r *Runner) rootNonce(ctx context.Context, attempt Attempt, gateway *bound, runner common.Address) (uint64, error) {
+	action, err := r.state.Action(actionID(attempt.AttemptID, StageRootCreate))
+	if err != nil {
+		return 0, err
+	}
+	if action != nil {
+		if err := state.VerifyActionIdentity(action); err != nil {
+			return 0, err
+		}
+		detail, err := action.Detail()
+		if err != nil {
+			return 0, err
+		}
+		if frozen, ok := detail["intent_detail"]; ok {
+			encoded, err := state.CanonicalJSON(frozen)
+			if err != nil {
+				return 0, err
+			}
+			if nonce, ok := recordNonceFromDetail(encoded); ok {
+				return nonce, nil
+			}
+			return 0, fmt.Errorf("runner: root action has invalid frozen record nonce")
+		}
+		// Upgrade recovery for roots mined by the previous runtime, whose
+		// current stage may lack record_nonce after a finality timeout.
+		if action.TransactionHash != "" {
+			receipt, err := gateway.client.Receipt(ctx, common.HexToHash(action.TransactionHash))
+			if err != nil {
+				return 0, err
+			}
+			if receipt != nil && receipt.Status == types.ReceiptStatusSuccessful {
+				events, err := gateway.events(ctx, state.ActionResult{TransactionHash: action.TransactionHash}, "RootCreated")
+				if err != nil {
+					return 0, err
+				}
+				if len(events) != 1 {
+					return 0, fmt.Errorf("runner: existing root has %d creation events", len(events))
+				}
+				return asUint64(events[0]["nonce"])
+			}
+		}
+	}
 	stage, err := r.state.Stage(attempt.AttemptID, StageRootCreate)
 	if err != nil {
 		return 0, err

@@ -58,6 +58,8 @@ type TxRequest struct {
 	// ActionID identifies the durable action. It must be stable across restarts
 	// because it is the ledger key the frozen intent is replayed under.
 	ActionID string
+	// IntentDetail freezes caller metadata before signing (under a separate namespace).
+	IntentDetail map[string]any
 	// AttemptID and Stage bind the action to the runner attempt ledger. When both
 	// are set, the signed transaction is also mirrored into the Python runner's
 	// stages/stage_history/durable_signed_transactions tables.
@@ -399,6 +401,9 @@ func (t *Transactor) freezeIntent(
 		detailMaxFeePerGas:         maxFee.String(),
 		detailMaxPriorityFeePerGas: maxPriority.String(),
 	}
+	if request.IntentDetail != nil {
+		detail["intent_detail"] = request.IntentDetail
+	}
 	if request.Stage != "" {
 		detail["stage"] = request.Stage
 	}
@@ -489,6 +494,23 @@ func frozenRequest(request TxRequest, action *state.Action, sender string) ([]by
 	value, ok := new(big.Int).SetString(action.Value, 10)
 	if !ok {
 		return drift("action %s froze value %q", action.ActionID, action.Value)
+	}
+	if request.IntentDetail != nil {
+		detail, err := action.Detail()
+		if err != nil {
+			return nil, false, nil, err
+		}
+		stored, err := state.CanonicalJSON(detail["intent_detail"])
+		if err != nil {
+			return nil, false, nil, err
+		}
+		supplied, err := state.CanonicalJSON(request.IntentDetail)
+		if err != nil {
+			return nil, false, nil, err
+		}
+		if stored != supplied {
+			return drift("action %s caller intent metadata changed", action.ActionID)
+		}
 	}
 	creation := action.To == ""
 	if action.Sender != "" && action.Sender != sender {

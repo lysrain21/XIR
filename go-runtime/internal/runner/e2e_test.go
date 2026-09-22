@@ -66,6 +66,9 @@ func requireArtifacts(t *testing.T, root string) {
 	}
 	for _, path := range required {
 		if _, err := os.Stat(path); err != nil {
+			if os.Getenv("XIR_REQUIRE_E2E") == "1" {
+				t.Fatalf("required protocol artifact missing: %s: %v", path, err)
+			}
 			t.Skipf("integration test needs Forge artifacts: run `forge build --root contracts` and `scripts/bootstrap_native_protocols.sh` (%v)", err)
 		}
 	}
@@ -89,6 +92,9 @@ func startAnvilLab(t *testing.T, routes []string) *anvilLab {
 	root := repoRoot(t)
 	requireArtifacts(t, root)
 	if lab.AnvilPath("") == "" {
+		if os.Getenv("XIR_REQUIRE_E2E") == "1" {
+			t.Fatal("required anvil binary missing")
+		}
 		t.Skip("integration test needs the anvil binary")
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)

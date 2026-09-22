@@ -2,6 +2,9 @@ package runner
 
 import (
 	"context"
+	"fmt"
+	"github.com/lysrain21/XIR/go-runtime/internal/state"
+	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
 
@@ -64,4 +67,24 @@ func bundleWithCurrent(request HopRequest, evidence Evidence) []xir.Receipt {
 		TransitionHash: request.CurrentTransition,
 	})
 	return bundle
+}
+
+// dispatchFee reuses the original payable amount on recovery. Re-quoting an
+// already frozen dispatch against newer gas prices would change its identity.
+func dispatchFee(store *state.Store, id string, quote func() (*big.Int, error)) (*big.Int, error) {
+	action, err := store.Action(id)
+	if err != nil {
+		return nil, err
+	}
+	if action == nil {
+		return quote()
+	}
+	if err := state.VerifyActionIdentity(action); err != nil {
+		return nil, err
+	}
+	fee, ok := new(big.Int).SetString(action.Value, 10)
+	if !ok || fee.Sign() < 0 {
+		return nil, fmt.Errorf("runner: invalid frozen dispatch fee")
+	}
+	return fee, nil
 }

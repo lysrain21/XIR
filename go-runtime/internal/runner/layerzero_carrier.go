@@ -9,6 +9,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 
+	"github.com/lysrain21/XIR/go-runtime/internal/abiutil"
 	"github.com/lysrain21/XIR/go-runtime/internal/evm"
 	"github.com/lysrain21/XIR/go-runtime/internal/layerzero"
 	"github.com/lysrain21/XIR/go-runtime/internal/state"
@@ -48,18 +49,19 @@ type layerZeroDelivery struct {
 }
 
 type layerZeroCarrier struct {
-	chains         *contractSet
-	protocolRoot   string
-	eids           map[string]uint32
-	chainsByRole   map[string]ChainConfig
-	workerKey      string
-	embedded       bool
-	poll           time.Duration
-	timeout        time.Duration
-	confirmations  uint64
-	gasLimit       uint64
-	transactionGas uint64
-	options        []byte
+	chains          *contractSet
+	protocolRoot    string
+	eids            map[string]uint32
+	chainsByRole    map[string]ChainConfig
+	workerKey       string
+	embedded        bool
+	poll            time.Duration
+	timeout         time.Duration
+	confirmations   uint64
+	gasLimit        uint64
+	transactionGas  uint64
+	options         []byte
+	faultAfterStage string
 }
 
 func newLayerZeroCarrier(
@@ -84,18 +86,19 @@ func newLayerZeroCarrier(
 		options = generated
 	}
 	return &layerZeroCarrier{
-		chains:         chains,
-		protocolRoot:   protocolRoot,
-		eids:           eids,
-		chainsByRole:   byRole,
-		workerKey:      keys.LayerZeroWorker,
-		embedded:       config.EmbeddedAgents,
-		poll:           time.Duration(config.PollInterval) * time.Second,
-		timeout:        time.Duration(config.Timeout) * time.Second,
-		confirmations:  defaultConfirmations,
-		gasLimit:       defaultDeliveryGasLimit,
-		transactionGas: layerzero.DefaultTransactionGas,
-		options:        options,
+		chains:          chains,
+		protocolRoot:    protocolRoot,
+		eids:            eids,
+		chainsByRole:    byRole,
+		workerKey:       keys.LayerZeroWorker,
+		embedded:        config.EmbeddedAgents,
+		poll:            config.PollInterval,
+		timeout:         config.Timeout,
+		confirmations:   defaultConfirmations,
+		gasLimit:        defaultDeliveryGasLimit,
+		transactionGas:  layerzero.DefaultTransactionGas,
+		options:         options,
+		faultAfterStage: config.FaultAfterStage,
 	}, nil
 }
 
@@ -120,19 +123,22 @@ func (c *layerZeroCarrier) Dispatch(ctx context.Context, request HopRequest) (Di
 		CurrentTransitionHash: request.CurrentTransition,
 		Options:               c.options,
 	}
-	quoted, err := adapter.call(ctx, "quoteForward", forward)
+	stage := dispatchStage(request.HopIndex, request.Protocol)
+	fee, err := dispatchFee(c.chains.store, actionID(request.AttemptID, stage), func() (*big.Int, error) {
+		quoted, err := adapter.call(ctx, "quoteForward", forward)
+		if err != nil {
+			return nil, err
+		}
+		return nativeFee(quoted)
+	})
 	if err != nil {
-		return DispatchResult{}, err
+		return DispatchResult{}, fmt.Errorf("runner: layerzero dispatch fee: %w", err)
 	}
-	fee, err := nativeFee(quoted)
-	if err != nil {
-		return DispatchResult{}, fmt.Errorf("runner: layerzero quoteForward: %w", err)
-	}
+
 	name := "sendSource"
 	if request.HopIndex > 1 {
 		name = "forwardInFlight"
 	}
-	stage := dispatchStage(request.HopIndex, request.Protocol)
 	result, err := adapter.send(ctx, request.AttemptID, stage, name, []any{forward}, fee)
 	if err != nil {
 		return DispatchResult{}, err
@@ -243,6 +249,24 @@ func (c *layerZeroCarrier) deliver(ctx context.Context, request HopRequest, deli
 		return fmt.Errorf("runner: layerzero worker signer: %w", err)
 	}
 	expiration := big.NewInt(time.Now().Add(time.Hour).Unix())
+	frozen, err := c.chains.store.Action(actionID(request.AttemptID, layerZeroStage(request.HopIndex, layerzero.StageDVNExecute)))
+	if err != nil {
+		return err
+	}
+	if frozen != nil {
+		if err := state.VerifyActionIdentity(frozen); err != nil {
+			return err
+		}
+		data, err := abiutil.DecodeHex(frozen.CalldataHex)
+		if err != nil {
+			return err
+		}
+		expiration, err = layerzero.DVNExpiration(data)
+		if err != nil {
+			return fmt.Errorf("runner: frozen DVN expiration: %w", err)
+		}
+	}
+
 	actions, err := layerzero.Plan(delivery.Packet, layerzero.PlanConfig{
 		DVN:            dvn,
 		ReceiveULN:     receiveULN,
@@ -268,6 +292,9 @@ func (c *layerZeroCarrier) deliver(ctx context.Context, request HopRequest, deli
 		})
 		if err != nil {
 			return fmt.Errorf("runner: layerzero %s: %w", action.Stage, err)
+		}
+		if c.faultAfterStage == stage {
+			return fmt.Errorf("runner: injected fault after stage %s", stage)
 		}
 		if err := verifyStageTopic(ctx, destination.client, result, action.ExpectedTopic, action.Stage); err != nil {
 			return err

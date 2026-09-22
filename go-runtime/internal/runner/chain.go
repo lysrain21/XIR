@@ -55,19 +55,24 @@ func (b *bound) send(
 	args []any,
 	value *big.Int,
 ) (state.ActionResult, error) {
+	return b.sendWithIntent(ctx, attemptID, stage, name, args, value, nil)
+}
+
+func (b *bound) sendWithIntent(ctx context.Context, attemptID, stage, name string, args []any, value *big.Int, detail map[string]any) (state.ActionResult, error) {
 	data, err := b.artifact.ABI.PackCall(name, args...)
 	if err != nil {
 		return state.ActionResult{}, err
 	}
 	result, err := b.transactor.Execute(ctx, evm.TxRequest{
-		ActionID:  actionID(attemptID, stage),
-		AttemptID: attemptID,
-		Stage:     stage,
-		ChainRole: b.role,
-		To:        b.address,
-		Data:      data,
-		Value:     value,
-		Gas:       b.gasLimit,
+		ActionID:     actionID(attemptID, stage),
+		IntentDetail: detail,
+		AttemptID:    attemptID,
+		Stage:        stage,
+		ChainRole:    b.role,
+		To:           b.address,
+		Data:         data,
+		Value:        value,
+		Gas:          b.gasLimit,
 	})
 	if err != nil {
 		return state.ActionResult{}, fmt.Errorf("runner: %s.%s on %s: %w", b.key, name, b.role, err)

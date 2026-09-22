@@ -1477,10 +1477,8 @@ func (s *Store) RecordError(attemptID, class, message string) error {
 }
 
 // NextReservedRootNonce returns the next gateway record nonce this ledger has
-// reserved. Both Python runners derive it the same way from the highest
-// `record_nonce` already frozen in a root stage; the stage name differs between
-// them (multihop_runner uses root_create, runner.py uses xir_root_record), so
-// both are considered.
+// reserved. Include Go pre-signing action intents and the root stages used
+// by both Python runners (root_create and xir_root_record).
 func (s *Store) NextReservedRootNonce() (uint64, error) {
 	var (
 		maximum sql.NullInt64
@@ -1489,7 +1487,12 @@ func (s *Store) NextReservedRootNonce() (uint64, error) {
 	err := s.query(func(db *sql.DB) error {
 		row := db.QueryRow(
 			`SELECT MAX(CAST(json_extract(detail_json, '$.record_nonce') AS INTEGER)) AS maximum
-                           FROM stages WHERE stage IN ('root_create', 'xir_root_record')`,
+                           FROM (
+                              SELECT detail_json FROM stages WHERE stage IN ('root_create', 'xir_root_record')
+                              UNION ALL
+                              SELECT json_extract(detail_json, '$.intent_detail') AS detail_json
+                              FROM actions WHERE stage = 'root_create'
+                           )`,
 		)
 		if err := row.Scan(&maximum); err != nil {
 			return fmt.Errorf("xir state: cannot read the reserved root nonce: %w", err)

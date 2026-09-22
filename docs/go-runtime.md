@@ -62,16 +62,22 @@ $ go vet ./...
 $ go test ./...
 ```
 
-Unit and parity tests run anywhere. The integration tests deploy the real
-Hyperlane and LayerZero stacks plus one XIR application onto three disposable
-anvil chains and then execute a route end to end; they skip unless the anvil
-binary and the Forge artifacts are present:
+Unit and parity tests run anywhere. Integration tests deploy the pinned real
+Hyperlane and LayerZero contracts onto disposable local Anvil chains. Build the
+fixtures from the protocol lock (Git, jq, Foundry, Node 22 and Corepack required):
 
 ```console
-$ forge build --root contracts
-$ scripts/bootstrap_native_protocols.sh      # pinned protocol sources and artifacts
-$ cd go-runtime && go test ./internal/runner/ -run Anvil -v
+$ scripts/prepare_go_e2e.sh /tmp/xir-go-e2e-protocols
+$ scripts/run_go_e2e.sh /tmp/xir-go-e2e-results.json
 ```
+
+The preparation script fetches the two locked protocol commits, installs their
+Soldeer/Yarn dependencies and builds Solidity artifacts. It does not build Rust
+validators or send transactions to remote networks. The test script forces
+`XIR_REQUIRE_E2E=1`, disables test caching, retains Go JSON output and rejects any
+skip, failure, or missing required recovery test. CI runs both scripts; a skipped
+integration test cannot count as success. Plain `go test ./...` still permits
+missing-fixture skips for developers; use the script for release verification.
 
 The integration tests assert the destination `NativeMultihopEffectApplied`
 event, the receiver's `deliveryCount`, and that each carrier dispatched exactly
