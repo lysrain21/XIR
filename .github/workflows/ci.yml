@@ -27,3 +27,28 @@ jobs:
           ! git ls-files | grep -E '(^|/)(private-spool|keystore)(/|$)'
           uv run python scripts/check_publishable_tree.py
           uv run pytest tests/unit/test_publication.py -q
+  go-runtime:
+    runs-on: ubuntu-latest
+    env:
+      XIR_LIVE_WRITES_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.8.15"
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.23"
+          cache-dependency-path: go-runtime/go.sum
+      - uses: foundry-rs/foundry-toolchain@v1
+      - run: uv sync --frozen
+      - name: Regenerate parity vectors and require a clean tree
+        run: |
+          uv run python scripts/generate_go_parity_vectors.py \
+            --output go-runtime/testdata/vectors.json
+          git diff --exit-code -- go-runtime/testdata/vectors.json
+      - run: forge build --root contracts
+      - run: go vet ./...
+        working-directory: go-runtime
+      - run: go test ./...
+        working-directory: go-runtime

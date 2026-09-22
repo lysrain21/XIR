@@ -1,0 +1,31 @@
+{
+  "schema_version": "xir-go-runtime-config-v1",
+  "chains": [
+    {"role": "a", "chain_id": 3133701, "rpc_url": "http://127.0.0.1:18545", "hyperlane_domain": 3133701, "layerzero_eid": 49001},
+    {"role": "b", "chain_id": 3133702, "rpc_url": "http://127.0.0.1:28545", "hyperlane_domain": 3133702, "layerzero_eid": 49002},
+    {"role": "c", "chain_id": 3133703, "rpc_url": "http://127.0.0.1:38545", "hyperlane_domain": 3133703, "layerzero_eid": 49003}
+  ],
+  "attempts": [
+    {"attempt_id": "go-runtime-example-000001", "phase": "smoke", "route": "HL", "route_sequence": 0, "switch_count": 1}
+  ],
+  "payload_schedule": {"minimum_bytes": 32, "size_bucket_count": 4, "size_step_bytes": 32},
+  "fixed_seed": "xir-go-runtime-example",
+  "policy_label": "XIR_NATIVE_MULTIHOP_POLICY_V1",
+  "deployment": "../xir-lab-runtime/deployment.json",
+  "artifacts_root": "contracts/out",
+  "protocol_root": "protocol-projects",
+  "state_path": "../xir-lab-runtime/runner-state.sqlite",
+  "raw_root": "../xir-lab-runtime/raw",
+  "timeout_seconds": 600,
+  "poll_millis": 500,
+  "gas_limit": 6000000,
+  "embedded_agents": true,
+  "finality": {"mode": "rpc-finalized", "timeout_seconds": 120},
+  "key_environment": {
+    "runner": "XIR_RUNNER_KEY",
+    "root_signer": "XIR_ROOT_SIGNER_KEY",
+    "layerzero_worker": "XIR_LZ_WORKER_KEY",
+    "hyperlane_validator": "XIR_HL_VALIDATOR_KEY",
+    "hyperlane_relayer": "XIR_HL_RELAYER_KEY"
+  }
+}

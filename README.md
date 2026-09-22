@@ -27,10 +27,11 @@ Adapters carry this record across hops so that the destination can check the
 message and its verification history before execution.
 
 This repository contains the XIR research implementation and experiment tools:
-Solidity contracts, Python orchestration, Bash deployment scripts, versioned
-configurations, and selected verification artifacts. The implemented EVM
-protocol integrations are **Hyperlane and LayerZero V2**. The accompanying
-observational dataset covers six protocols.
+Solidity contracts, a Python orchestration runtime, an independent Go runtime
+for the execution layer, Bash deployment scripts, versioned configurations, and
+selected verification artifacts. The implemented EVM protocol integrations are
+**Hyperlane and LayerZero V2**. The accompanying observational dataset covers
+six protocols.
 
 ## How XIR works
 
@@ -52,6 +53,7 @@ protocol for both connections.
 | [XIR Registry](contracts/src/XIRRegistry.sol) | Store verification profiles, approved components, and source authorization configuration |
 | [Hyperlane Adapter](contracts/src/HyperlaneAdapter.sol) and [LayerZero Adapter](contracts/src/LayerZeroAdapter.sol) | Connect native protocol callbacks and sends to the common representation |
 | [Python runtime](src/xir_lab/) | Plan and execute bounded experiments, collect evidence, reconcile outcomes, and build reports |
+| [Go runtime](go-runtime/) | Independently implement the execution layer: byte-compatible encoding and signing, durable dispatch and confirmation, and restart recovery. It consumes frozen plans and deployment documents; planning, governance gates, analysis, and publication stay Python-side ([notes](docs/go-runtime.md)) |
 
 The controlled experiments use Besu QBFT chains. Hyperlane's validator and
 relayer are upstream Rust components; the local LayerZero deployment combines

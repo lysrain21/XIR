@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/lysrain21/XIR/schemas/xir-go-runtime-config-v1.schema.json",
+  "title": "XIR Go runtime configuration",
+  "description": "One invocation of the Go execution layer: chains, attempts, deployment document, durable state paths, and the names of the environment variables that hold the signing keys.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "chains",
+    "attempts",
+    "payload_schedule",
+    "fixed_seed",
+    "deployment",
+    "state_path",
+    "raw_root"
+  ],
+  "properties": {
+    "schema_version": {"const": "xir-go-runtime-config-v1"},
+    "chains": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 5,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["role", "chain_id", "rpc_url", "hyperlane_domain", "layerzero_eid"],
+        "properties": {
+          "role": {"enum": ["a", "b", "c", "d", "e"]},
+          "chain_id": {"type": "integer", "minimum": 1},
+          "rpc_url": {"type": "string", "pattern": "^https?://"},
+          "hyperlane_domain": {"type": "integer", "minimum": 0},
+          "layerzero_eid": {"type": "integer", "minimum": 0}
+        }
+      }
+    },
+    "attempts": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["attempt_id", "phase", "route", "route_sequence"],
+        "properties": {
+          "attempt_id": {"type": "string", "minLength": 1},
+          "phase": {"type": "string", "minLength": 1},
+          "route": {"type": "string", "pattern": "^[HL]{1,4}$"},
+          "route_sequence": {"type": "integer", "minimum": 0},
+          "switch_count": {"type": "integer", "minimum": 0},
+          "payload_sha256": {"type": "string", "pattern": "^[0-9a-fA-F]{64}$"}
+        }
+      }
+    },
+    "payload_schedule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["minimum_bytes", "size_bucket_count", "size_step_bytes"],
+      "properties": {
+        "minimum_bytes": {"type": "integer", "minimum": 0},
+        "size_bucket_count": {"type": "integer", "minimum": 1},
+        "size_step_bytes": {"type": "integer", "minimum": 0}
+      }
+    },
+    "fixed_seed": {"type": "string", "minLength": 1},
+    "policy_label": {"type": "string"},
+    "deployment": {"type": "string", "minLength": 1},
+    "artifacts_root": {"type": "string"},
+    "protocol_root": {"type": "string"},
+    "state_path": {"type": "string", "minLength": 1},
+    "raw_root": {"type": "string", "minLength": 1},
+    "timeout_seconds": {"type": "integer", "minimum": 1},
+    "poll_millis": {"type": "integer", "minimum": 1},
+    "concurrency": {"type": "integer", "minimum": 1},
+    "gas_limit": {"type": "integer", "minimum": 1},
+    "stop_file": {"type": "string"},
+    "embedded_agents": {"type": "boolean"},
+    "fault_after_stage": {"type": "string"},
+    "finality": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode"],
+      "properties": {
+        "mode": {"enum": ["rpc-finalized", "confirmations", "none"]},
+        "confirmations": {"type": "integer", "minimum": 0},
+        "timeout_seconds": {"type": "integer", "minimum": 1}
+      }
+    },
+    "key_environment": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "runner": {"type": "string"},
+        "root_signer": {"type": "string"},
+        "layerzero_worker": {"type": "string"},
+        "hyperlane_validator": {"type": "string"},
+        "hyperlane_relayer": {"type": "string"}
+      }
+    }
+  }
+}
