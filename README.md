@@ -36,12 +36,11 @@ observational dataset covers six protocols.
 
 ```mermaid
 flowchart LR
-    App[Source application] --> A[XIR Gateway on chain A]
-    A --> HA[Hyperlane XIR Adapter]
-    HA -->|Authenticated delivery| B[XIR Gateway on chain B]
-    B -->|Verify and extend history| LA[LayerZero XIR Adapter]
-    LA -->|Authenticated delivery| C[XIR Gateway on chain C]
-    C -->|Check history and replay state| D[Destination application]
+    A["Chain A<br/>XIR Gateway<br/>Authorize message"]
+    B["Chain B<br/>XIR Gateway<br/>Verify and extend history"]
+    C["Chain C<br/>XIR Gateway<br/>Verify and execute"]
+    A -->|Hyperlane| B
+    B -->|LayerZero| C
 ```
 
 The example switches protocols at B. A same-protocol path uses the same
