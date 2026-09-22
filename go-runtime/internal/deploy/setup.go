@@ -158,16 +158,20 @@ func validate(chains []ChainSpec, options Options) ([]ChainSpec, []string, []str
 		specs[index] = spec
 		order[index] = spec.Role
 	}
-	if err := validateOptions(options); err != nil {
-		return nil, nil, nil, err
-	}
 	routes, err := validateRoutes(options.Routes, len(specs))
 	if err != nil {
+		return nil, nil, nil, err
+	}
+	if err := validateOptions(options); err != nil {
 		return nil, nil, nil, err
 	}
 	return specs, order, routes, nil
 }
 
+// validateOptions rejects a request the deployment cannot honour. The request
+// itself is checked before the artifact trees are resolved, so a caller who
+// mixed up the roles or the route selection is told that instead of being told
+// that a forge output is missing.
 func validateOptions(options Options) error {
 	if _, err := evm.NewSigner(options.DeployerKey, big.NewInt(1)); err != nil {
 		return fmt.Errorf("deploy: invalid deployer key: %w", err)
@@ -185,15 +189,6 @@ func validateOptions(options Options) error {
 			return fmt.Errorf("deploy: %s is not set", required.field)
 		}
 	}
-	if info, err := os.Stat(options.ArtifactsRoot); err != nil || !info.IsDir() {
-		return fmt.Errorf("deploy: artifacts root %s is not a directory", options.ArtifactsRoot)
-	}
-	for _, stack := range []string{hyperlaneProject, layerZeroProject} {
-		path := filepath.Join(options.ProtocolArtifactsRoot, stack, "out")
-		if info, err := os.Stat(path); err != nil || !info.IsDir() {
-			return fmt.Errorf("deploy: protocol artifacts %s are missing", path)
-		}
-	}
 	if options.RootSigner == (common.Address{}) {
 		return fmt.Errorf("deploy: the root signer address is not set")
 	}
@@ -208,6 +203,15 @@ func validateOptions(options Options) error {
 	}
 	if options.HyperlaneValidator == (common.Address{}) {
 		return fmt.Errorf("deploy: the Hyperlane validator address is not set")
+	}
+	if info, err := os.Stat(options.ArtifactsRoot); err != nil || !info.IsDir() {
+		return fmt.Errorf("deploy: artifacts root %s is not a directory", options.ArtifactsRoot)
+	}
+	for _, stack := range []string{hyperlaneProject, layerZeroProject} {
+		path := filepath.Join(options.ProtocolArtifactsRoot, stack, "out")
+		if info, err := os.Stat(path); err != nil || !info.IsDir() {
+			return fmt.Errorf("deploy: protocol artifacts %s are missing", path)
+		}
 	}
 	return nil
 }

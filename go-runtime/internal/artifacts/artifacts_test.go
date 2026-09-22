@@ -27,6 +27,18 @@ func repositoryRoot(t *testing.T) string {
 	return root
 }
 
+// protocolRootOrSkip returns one protocol stack's forge output, or skips when
+// the stack has not been built. The protocol projects are built in a developer
+// checkout but not in CI, where only `contracts/out` exists.
+func protocolRootOrSkip(t *testing.T, stack string) string {
+	t.Helper()
+	root := filepath.Join(repositoryRoot(t), "protocol-projects", stack, "out")
+	if info, err := os.Stat(root); err != nil || !info.IsDir() {
+		t.Skipf("protocol artifacts are absent: %s is not a directory", root)
+	}
+	return root
+}
+
 func TestLoadXIRGateway(t *testing.T) {
 	outRoot := filepath.Join(repositoryRoot(t), "contracts", "out")
 	artifact, err := artifacts.Load(outRoot, "XIRGateway")
@@ -133,10 +145,11 @@ func TestLoadXIRGateway(t *testing.T) {
 	}
 }
 
+// TestLoadEndpointV2 covers the LayerZero stack artifact. The protocol stacks
+// are built in this checkout but not in CI, where only `contracts/out` is
+// built, so the test skips when the stack has no forge output.
 func TestLoadEndpointV2(t *testing.T) {
-	outRoot := filepath.Join(
-		repositoryRoot(t), "protocol-projects", "layerzero-native", "out",
-	)
+	outRoot := protocolRootOrSkip(t, "layerzero-native")
 	artifact, err := artifacts.Load(outRoot, "EndpointV2")
 	if err != nil {
 		t.Fatalf("load EndpointV2: %v", err)
@@ -165,10 +178,10 @@ func TestLoadEndpointV2(t *testing.T) {
 
 // TestLoadFromSourceFile covers artifacts whose source file name differs from
 // the contract name, the only way to reach StaticMessageIdMultisigIsmFactory.
+// Like the other protocol-stack test it skips when the stack has no forge
+// output, which is the case in CI.
 func TestLoadFromSourceFile(t *testing.T) {
-	outRoot := filepath.Join(
-		repositoryRoot(t), "protocol-projects", "hyperlane-native", "out",
-	)
+	outRoot := protocolRootOrSkip(t, "hyperlane-native")
 	if _, err := artifacts.Load(outRoot, "StaticMessageIdMultisigIsmFactory"); err == nil {
 		t.Error("same-named artifact path was accepted for a contract in another source file")
 	}

@@ -85,6 +85,7 @@ func TestDeployHLRouteApplication(t *testing.T) {
 		t.Skip("anvil binary is unavailable: foundry is not installed and anvil is not on PATH")
 	}
 	repository := repositoryRoot(t)
+	protocolRoot := requireProtocolArtifacts(t, repository)
 	vectors := fixtureKeys(t)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
 	defer cancel()
@@ -131,7 +132,7 @@ func TestDeployHLRouteApplication(t *testing.T) {
 	outputPath := filepath.Join(t.TempDir(), "deployment.json")
 	options := deploy.Options{
 		ArtifactsRoot:         filepath.Join(repository, "contracts", "out"),
-		ProtocolArtifactsRoot: filepath.Join(repository, "protocol-projects"),
+		ProtocolArtifactsRoot: protocolRoot,
 		RuntimeRoot:           runtimeRoot,
 		DeployerKey:           deployerKeyHex,
 		OutputPath:            outputPath,
@@ -156,17 +157,23 @@ func TestDeployHLRouteApplication(t *testing.T) {
 // TestDeployRejectsInvalidRequests covers the requests a deployment must refuse
 // before it dials or signs anything.
 func TestDeployRejectsInvalidRequests(t *testing.T) {
-	repository := repositoryRoot(t)
 	vectors := fixtureKeys(t)
 	valid := deploy.ChainSpec{Role: "a", ChainID: 3133701, RPCEndpoint: "http://127.0.0.1:1", HyperlaneDomain: 3133701, LayerZeroEID: 49001}
 	second := deploy.ChainSpec{Role: "b", ChainID: 3133702, RPCEndpoint: "http://127.0.0.1:1", HyperlaneDomain: 3133702, LayerZeroEID: 49002}
+	// Empty artifact roots keep this table independent of any forge output:
+	// every case below is refused before an artifact is read, and the two cases
+	// that are about artifacts point at paths that do not exist.
+	artifactsRoot := t.TempDir()
+	protocolRoot := t.TempDir()
 	base := deploy.Options{
-		ArtifactsRoot:         filepath.Join(repository, "contracts", "out"),
-		ProtocolArtifactsRoot: filepath.Join(repository, "protocol-projects"),
+		ArtifactsRoot:         artifactsRoot,
+		ProtocolArtifactsRoot: protocolRoot,
 		RuntimeRoot:           t.TempDir(),
 		DeployerKey:           "0x2222222222222222222222222222222222222222222222222222222222222222",
 		OutputPath:            filepath.Join(t.TempDir(), "deployment.json"),
-		Routes:                []string{"HL"},
+		// One hop, which the two chains below can carry; the route cases change
+		// it to what they are about.
+		Routes: []string{"H"},
 		RoleAddresses: deploy.RoleAddresses{
 			Runner:             keyAddress(t, vectors["root_signer"]),
 			RootSigner:         keyAddress(t, vectors["validator"]),
@@ -209,14 +216,16 @@ func TestDeployRejectsInvalidRequests(t *testing.T) {
 			func(options *deploy.Options) { options.HyperlaneValidator = common.Address{} }, "validator address is not set"},
 		{"invalid deployer key", []deploy.ChainSpec{valid, second},
 			func(options *deploy.Options) { options.DeployerKey = "0xzz" }, "invalid deployer key"},
+		// The artifact cases come last because a request is always checked
+		// before the artifact trees are resolved.
 		{"missing artifacts root", []deploy.ChainSpec{valid, second},
 			func(options *deploy.Options) {
-				options.ArtifactsRoot = filepath.Join(repository, "contracts", "missing")
+				options.ArtifactsRoot = filepath.Join(artifactsRoot, "missing")
 			},
 			"not a directory"},
 		{"missing protocol artifacts", []deploy.ChainSpec{valid, second},
 			func(options *deploy.Options) {
-				options.ProtocolArtifactsRoot = filepath.Join(repository, "protocol-projects", "layerzero-native")
+				options.ProtocolArtifactsRoot = filepath.Join(protocolRoot, "absent")
 			},
 			"are missing"},
 	} {
@@ -1164,6 +1173,24 @@ func fixtureKeys(t *testing.T) map[string]string {
 		}
 	}
 	return vectors.Constants.FixtureKeys
+}
+
+// requireProtocolArtifacts returns the protocol project root, or skips when the
+// carrier stacks have no forge output. CI builds `contracts/out` only, so the
+// Hyperlane and LayerZero artifacts are absent there and the carrier bootstrap
+// cannot be exercised; the deployment document's carrier sections are also
+// derived from those artifacts, so the whole integration test is skipped rather
+// than weakened.
+func requireProtocolArtifacts(t *testing.T, repository string) string {
+	t.Helper()
+	root := filepath.Join(repository, "protocol-projects")
+	for _, stack := range []string{"hyperlane-native", "layerzero-native"} {
+		path := filepath.Join(root, stack, "out")
+		if info, err := os.Stat(path); err != nil || !info.IsDir() {
+			t.Skipf("protocol artifacts are absent: %s is not a directory", path)
+		}
+	}
+	return root
 }
 
 func repositoryRoot(t *testing.T) string {
